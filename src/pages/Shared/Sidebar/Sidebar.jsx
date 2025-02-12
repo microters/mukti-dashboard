@@ -15,7 +15,6 @@ const Sidebar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
 
-  // Function to handle window resize
   const handleResize = () => {
     if (window.innerWidth >= 1024) {
       setSidebarOpen(true);
