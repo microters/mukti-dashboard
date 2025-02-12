@@ -1,10 +1,12 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import { FaUserMd, FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 const AddDoctor = () => {
   const { t, i18n } = useTranslation(["addDoctor"]);
   const [profilePhoto, setProfilePhoto] = useState("https://placehold.co/100");
+  const [selectedFile, setSelectedFile] = useState(null); // Store selected image file
 
   const [formData, setFormData] = useState({
     name: "",
@@ -15,13 +17,12 @@ const AddDoctor = () => {
     gender: "",
     department: "",
     shortBio: "",
-    academicqualifcation: "",
-    yearexperiences: "",
+    academicQualification: "",
+    yearsExperience: "",
     appointmentFee: "",
     followUpFee: "",
     patientAttended: "",
     avgConsultationTime: "",
-    faqs: "",
   });
 
   // Dynamic Fields
@@ -32,8 +33,10 @@ const AddDoctor = () => {
   const [conditions, setConditions] = useState([{ name: "" }]);
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
 
-   // Handle Language Change
-   const handleLanguageChange = (e) => {
+  const [doctorData, setDoctorData] = useState(null);
+
+  // Handle Language Change
+  const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
   };
 
@@ -46,32 +49,29 @@ const AddDoctor = () => {
   const handleProfilePhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        const fileURL = URL.createObjectURL(file);
-        setProfilePhoto(fileURL);
-        setFormData(prev => ({
-            ...prev,
-            profilePhoto: fileURL
-        }));
+      const fileURL = URL.createObjectURL(file);
+      setProfilePhoto(fileURL);
+      setSelectedFile(file); // Store file for API upload
     }
-};
-
-  const handleAddField = (setList, type) => {
-    setList(prev => [...prev, type === "awards" ? { title: "" } : { name: "" }]);
   };
 
-const handleRemoveField = (index, list, setList) => {
-  setList(list.filter((_, i) => i !== index));
-};
+  // Handle dynamic field changes
+  const handleFieldChange = (index, value, list, setList, key = "name") => {
+    const updatedList = list.map((item, i) =>
+      i === index ? { ...item, [key]: value } : item
+    );
+    setList(updatedList);
+  };
 
-const handleFieldChange = (index, value, list, setList, type) => {
-  const updatedList = list.map((item, i) => 
-      i === index 
-          ? (type === "awards" ? { ...item, title: value } : { ...item, name: value }) 
-          : item
-  );
-  setList(updatedList);
-};
-  // Schedule for Appointment
+  const handleAddField = (setList, type) => {
+    setList([...setList, type === "awards" ? { title: "" } : { name: "" }]);
+  };
+
+  const handleRemoveField = (index, list, setList) => {
+    setList(list.filter((_, i) => i !== index));
+  };
+
+  // Handle Schedule
   const handleAddSchedule = () => {
     setSchedules([...schedules, { day: "", startTime: "", endTime: "" }]);
   };
@@ -87,69 +87,101 @@ const handleFieldChange = (index, value, list, setList, type) => {
     setSchedules(updatedSchedules);
   };
 
-  // Handle FAQ Input Change
-const handleFaqChange = (index, field, value) => {
+  // Handle FAQ
+  const handleFaqChange = (index, field, value) => {
     const updatedFaqs = faqs.map((faq, i) =>
       i === index ? { ...faq, [field]: value } : faq
     );
     setFaqs(updatedFaqs);
   };
-  
-  // Add a new FAQ
+
   const handleAddFaq = () => {
     setFaqs([...faqs, { question: "", answer: "" }]);
   };
-  
-  // Remove an FAQ
+
   const handleRemoveFaq = (index) => {
     setFaqs(faqs.filter((_, i) => i !== index));
   };
 
-  // Form Submission
-  const handleSubmit = (e) => {
+  // Form Submission with Axios
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const doctorData = {
-      ...formData,
-      avgConsultationTime: `${formData.avgConsultationTime} mins`,
-      yearsOfExperience: `${formData.yearexperiences} years`,
-      profilePhoto: formData.profilePhoto,
-      memberships: memberships,
-      awardsAchievements: awards,
-      treatmentsList: treatments,
-      conditionsList: conditions,
-      schedule: schedules,
-      faqs: faqs,
-    };
-    console.log("Submitted Data:", doctorData);
+  
+    const formDataObj = new FormData();
+    formDataObj.append("name", formData.name);
+    formDataObj.append("email", formData.email);
+    formDataObj.append("contactNumber", formData.contactNumber);
+    formDataObj.append("contactNumberSerial", formData.contactNumberSerial);
+    formDataObj.append("designation", formData.designation);
+    formDataObj.append("gender", formData.gender);
+    formDataObj.append("department", formData.department);
+    formDataObj.append("shortBio", formData.shortBio);
+    formDataObj.append("academicQualification", formData.academicQualification);
+    formDataObj.append("yearsExperience", formData.yearsExperience);
+    formDataObj.append("appointmentFee", formData.appointmentFee);
+    formDataObj.append("followUpFee", formData.followUpFee);
+    formDataObj.append("patientAttended", formData.patientAttended);
+    formDataObj.append("avgConsultationTime", `${formData.avgConsultationTime} mins`);
+    formDataObj.append("profilePhoto", selectedFile); // Attach the selected file here
+  
+    // Append dynamic fields like memberships, awards, etc.
+    formDataObj.append("memberships", JSON.stringify(memberships));
+    formDataObj.append("awardsAchievements", JSON.stringify(awards));
+    formDataObj.append("treatmentsList", JSON.stringify(treatments));
+    formDataObj.append("conditionsList", JSON.stringify(conditions));
+    formDataObj.append("schedule", JSON.stringify(schedules));
+    formDataObj.append("faqs", JSON.stringify(faqs));
+  
+    try {
+      const response = await axios.post("http://localhost:5000/api/doctor/add", formDataObj, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Ensure this is the correct API key
+        },
+      });
+      
+      if (response.status === 200 || response.status === 201) {
+        alert("Doctor added successfully!");
+        setDoctorData(response.data.doctor);
+        handleDiscard();  // Reset the form after submission
+      } else {
+        alert(`Failed to add doctor: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error submitting doctor data:", error);
+      alert("An error occurred while adding the doctor.");
+    }
   };
+  
 
   // Reset Form
   const handleDiscard = () => {
     setFormData({
-        name: "",
-        email: "",
-        contactNumber: "",
-        contactNumberSerial: "",
-        designation: "",
-        gender: "",
-        department: "",
-        shortBio: "",
-        academicqualifcation: "",
-        yearexperiences: "",
-        appointmentFee: "",
-        followUpFee: "",
-        patientAttended: "",
-        avgConsultationTime: "",
-        faqs: "",
+      name: "",
+      email: "",
+      contactNumber: "",
+      contactNumberSerial: "",
+      designation: "",
+      gender: "",
+      department: "",
+      shortBio: "",
+      academicQualification: "",
+      yearsExperience: "",
+      appointmentFee: "",
+      followUpFee: "",
+      patientAttended: "",
+      avgConsultationTime: "",
     });
     setProfilePhoto("https://placehold.co/100");
+    setSelectedFile(null);
     setSchedules([]);
-    setMemberships([]);
-    setAwards([]);
-    setTreatments([]);
-    setConditions([]);
-    setFaqs([{ question: "", answer: "" }]); 
+    setMemberships([{ name: "" }]);
+    setAwards([{ title: "" }]);
+    setTreatments([{ name: "" }]);
+    setConditions([{ name: "" }]);
+    setFaqs([{ question: "", answer: "" }]);
   };
+
 
   return (
     <div className="bg-gray-100 min-h-screen p-6">
@@ -277,7 +309,7 @@ const handleFaqChange = (index, field, value) => {
                 </label>
                 <textarea 
                     name="academicqualifcation"
-                    value={formData.academicqualifcation} 
+                    value={formData.academicQualifcation} 
                     onChange={handleChange} 
                     className="input-field"
                     placeholder="Enter academic qualifications"
@@ -355,23 +387,23 @@ const handleFaqChange = (index, field, value) => {
           <div className="md:col-span-2">
               <label className="label">Awards & Achievements</label>
               {awards.map((award, index) => (
-                  <div key={index} className="flex gap-2 mt-2">
-                      <input
-                          type="text"
-                          value={award.title}
-                          onChange={(e) => handleFieldChange(index, e.target.value, awards, setAwards, "awards")}
-                          className="p-2 border rounded-md w-full"
-                          placeholder="Enter Award Title"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => handleRemoveField(index, awards, setAwards)}
-                          className="text-red-500 hover:text-red-700"
-                      >
-                          <FaTrash />
-                      </button>
-                  </div>
-              ))}
+                <div key={index} className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={award.title} // The value of the input comes from the award object
+                    onChange={(e) => handleFieldChange(index, e.target.value, awards, setAwards, "title")}
+                    className="p-2 border rounded-md w-full"
+                    placeholder="Enter Award Title"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveField(index, awards, setAwards)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+                 ))}
               <button
                   type="button"
                   onClick={() => handleAddField(setAwards, "awards")}

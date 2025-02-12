@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import JoditEditor from "jodit-react";
 
 const AddBlog = () => {
+  const editor = useRef(null);
   const [formData, setFormData] = useState({
     metaTitle: "",
     metaDescription: "",
@@ -26,8 +27,10 @@ const AddBlog = () => {
   };
 
   const handleContentChange = (newContent) => {
-    setFormData({ ...formData, content: newContent });
+    const strippedContent = newContent.replace(/<\/?p>/g, "");
+    setFormData({ ...formData, content: strippedContent });
   };
+  
 
   const handleCategoryChange = (e) => {
     setFormData({ ...formData, categories: e.target.value });
@@ -170,6 +173,7 @@ const AddBlog = () => {
             Content
           </label>
           <JoditEditor
+            ref={editor}
             value={formData.content}
             onChange={handleContentChange}
             config={{
