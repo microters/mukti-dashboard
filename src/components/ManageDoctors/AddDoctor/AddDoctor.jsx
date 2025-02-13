@@ -35,7 +35,7 @@ const AddDoctor = () => {
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
 
   const [doctorData, setDoctorData] = useState(null);
-console.log(doctorData);
+  console.log(doctorData);
 
   // Handle language change
   const handleLanguageChange = (e) => {
@@ -382,7 +382,7 @@ console.log(doctorData);
                         </button>
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAddField(setTreatments, "treatments")} className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1">Add Treatment</button>
+                <button type="button" onClick={() => handleAddField(setTreatments, "treatments")} className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1"> <FaPlus /> Add Treatment</button>
             </div>
             {/* Memberships List */}
           <div className="md:col-span-2">
