@@ -35,6 +35,7 @@ const AddDoctor = () => {
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
 
   const [doctorData, setDoctorData] = useState(null);
+console.log(doctorData);
 
   // Handle language change
   const handleLanguageChange = (e) => {
