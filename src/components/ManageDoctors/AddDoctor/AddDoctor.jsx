@@ -20,10 +20,10 @@ const AddDoctor = () => {
     shortBio: { en: "", bn: "" },
     academicQualification: { en: "", bn: "" },
     yearsOfExperience: { en: "", bn: "" },
-    appointmentFee: "",
-    followUpFee: "",
-    patientAttended: "",
-    avgConsultationTime: "",
+    appointmentFee: { en: "", bn: "" },
+    followUpFee: { en: "", bn: "" },
+    patientAttended: { en: "", bn: "" },
+    avgConsultationTime: { en: "", bn: "" },
   });  
 
   // Dynamic Fields for memberships, awards, etc.
@@ -122,59 +122,88 @@ const AddDoctor = () => {
     setFaqs(faqs.filter((_, i) => i !== index));
   };
 
-  // Form Submission with Axios
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Prepare FormData for file upload
-    const formDataObj = new FormData();
-    formDataObj.append("name", JSON.stringify(formData.name));
-    formDataObj.append("email", formData.email);
-    formDataObj.append("contactNumber", JSON.stringify(formData.contactNumber));
-    formDataObj.append("contactNumberSerial", JSON.stringify(formData.contactNumberSerial));
-    formDataObj.append("designation", JSON.stringify(formData.designation));
-    formDataObj.append("gender", JSON.stringify(formData.gender));
-    formDataObj.append("department", JSON.stringify(formData.department));
-    formDataObj.append("shortBio", JSON.stringify(formData.shortBio));
-    formDataObj.append("academicQualification", JSON.stringify(formData.academicQualification));
-    formDataObj.append("yearsOfExperience", JSON.stringify(formData.yearsOfExperience));
-
-    // Append other fields
-    formDataObj.append("appointmentFee", formData.appointmentFee);
-    formDataObj.append("followUpFee", formData.followUpFee);
-    formDataObj.append("patientAttended", formData.patientAttended);
-    formDataObj.append("avgConsultationTime", `${formData.avgConsultationTime} mins`);
-    formDataObj.append("profilePhoto", selectedFile);
-
-    // Append dynamic fields like memberships, awards, etc.
-    formDataObj.append("memberships", JSON.stringify(memberships));
-    formDataObj.append("awards", JSON.stringify(awards));
-    formDataObj.append("treatments", JSON.stringify(treatments));
-    formDataObj.append("conditions", JSON.stringify(conditions));
-    formDataObj.append("schedules", JSON.stringify(schedules));
-    formDataObj.append("faqs", JSON.stringify(faqs));
-
+  
+    const payload = {
+      email: formData.email,
+      profilePhoto: profilePhoto || "",
+  
+      // ✅ Multi-language fields inside `translations`
+      translations: {
+        en: {
+          name: formData.name.en,
+          designation: formData.designation.en,
+          department: formData.department.en,
+          shortBio: formData.shortBio.en,
+          contactNumber: formData.contactNumber.en,
+          contactNumberSerial: formData.contactNumberSerial.en,
+          gender: formData.gender.en,
+          yearsOfExperience:formData.yearsOfExperience.en,
+          appointmentFee: formData.appointmentFee.en,
+          followUpFee: formData.followUpFee.en,
+          patientAttended: formData.patientAttended.en,
+          avgConsultationTime: formData.avgConsultationTime.en,
+        },
+        bn: {
+          name: formData.name.bn,
+          designation: formData.designation.bn,
+          department: formData.department.bn,
+          shortBio: formData.shortBio.bn,
+          contactNumber: formData.contactNumber.bn,
+          contactNumberSerial: formData.contactNumberSerial.bn,
+          gender: formData.gender.bn,
+          yearsOfExperience:formData.yearsOfExperience.bn,
+          appointmentFee: formData.appointmentFee.bn,
+          followUpFee: formData.followUpFee.bn,
+          patientAttended: formData.patientAttended.bn,
+          avgConsultationTime: formData.avgConsultationTime.bn,
+        }
+      },
+      memberships,
+      awards,
+      treatments,
+      conditions,
+      schedule: schedules,
+      faqs,
+    };
+  console.log(payload);
+  
     try {
-      const response = await axios.post("http://localhost:5000/api/doctor/add", formDataObj, {
+      const response = await axios.post("http://localhost:5000/api/doctor/add", payload, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
           "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
       });
-      console.log(response)
-      
+  console.log(response);
+  
       if (response.status === 200 || response.status === 201) {
-        alert("Doctor added successfully!");
-        setDoctorData(response.data.doctor);
-        handleDiscard();
+        alert("✅ Doctor added successfully!");
+        setFormData({
+          name: { en: "", bn: "" },
+          email: "",
+          designation: { en: "", bn: "" },
+          department: { en: "", bn: "" },
+          shortBio: { en: "", bn: "" },
+          contactNumber: { en: "", bn: "" },
+          contactNumberSerial: { en: "", bn: "" },
+          gender: { en: "", bn: "" },
+          appointmentFee: { en: "", bn: "" },
+          followUpFee: { en: "", bn: "" },
+          patientAttended: { en: "", bn: "" },
+          avgConsultationTime: { en: "", bn: "" },
+        });
       } else {
-        alert(`Failed to add doctor: ${response.data.message}`);
+        alert(`❌ Failed to add doctor: ${response.data.message}`);
       }
     } catch (error) {
-      console.error("Error submitting doctor data:", error);
+      console.error("❌ Error submitting doctor data:", error);
       alert("An error occurred while adding the doctor.");
     }
   };
+  
+
 
   // Reset Form
   const handleDiscard = () => {
@@ -189,10 +218,10 @@ const AddDoctor = () => {
       shortBio: { en: "", bn: "" },
       academicQualification: { en: "", bn: "" },
       yearsOfExperience: { en: "", bn: "" },
-      appointmentFee: "",
-      followUpFee: "",
-      patientAttended: "",
-      avgConsultationTime: "",
+      appointmentFee: { en: "", bn: "" },
+      followUpFee:{ en: "", bn: "" },
+      patientAttended: { en: "", bn: "" },
+      avgConsultationTime:{ en: "", bn: "" },
     });
     setProfilePhoto("https://placehold.co/100");
     setSelectedFile(null);
@@ -280,10 +309,10 @@ const AddDoctor = () => {
                 onChange={handleChange}
                 className="input-field"
             >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">{t('selectGender')}</option>
+                <option value={t("male")}>{t('male')}</option>
+                <option value={t("female")}>{t("female")}</option>
+                <option value={t('other')}>{t('other')}</option>
             </select>
             </div>
             {/* Department (Dropdown) */}
@@ -313,7 +342,10 @@ const AddDoctor = () => {
              {/* Appointment Fee */}
             <div>
               <label className="label">{t('appointmentFee')}</label>
-              <input type="number" name="appointmentFee" value={formData.appointmentFee} onChange={handleChange} className="input-field" />
+              <input type="number" name="appointmentFee" 
+              value={formData.appointmentFee[i18n.language] || ""}
+              onChange={handleChange}
+               className="input-field" />
             </div>
             {/* Follow-Up Fee */}
             <div>
@@ -321,7 +353,7 @@ const AddDoctor = () => {
             <input
                 type="number"
                 name="followUpFee"
-                value={formData.followUpFee}
+                value={formData.followUpFee[i18n.language] || ""}
                 onChange={handleChange}
                 className="input-field"
                 placeholder="Enter Follow-Up Fee"
@@ -354,12 +386,18 @@ const AddDoctor = () => {
 
             <div>
               <label className="label">{t('patientAttended')}</label>
-              <input type="number" name="patientAttended" value={formData.patientAttended} onChange={handleChange} className="input-field" />
+              <input type="number" name="patientAttended"
+              value={formData.patientAttended[i18n.language] || ""}
+               onChange={handleChange} 
+               className="input-field" />
             </div>
 
             <div>
               <label className="label">{t('avgConsultationTime')}</label>
-              <input type="number" name="avgConsultationTime" value={formData.avgConsultationTime} onChange={handleChange} className="input-field" />
+              <input type="number" name="avgConsultationTime"
+              value={formData.avgConsultationTime[i18n.language] || ""}
+                onChange={handleChange}
+                 className="input-field" />
             </div>
              {/* Treatments List */}
             <div className="md:col-span-2">
