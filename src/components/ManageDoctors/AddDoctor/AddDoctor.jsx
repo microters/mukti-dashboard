@@ -6,26 +6,27 @@ import { useTranslation } from "react-i18next";
 const AddDoctor = () => {
   const { t, i18n } = useTranslation(["addDoctor"]);
   const [profilePhoto, setProfilePhoto] = useState("https://placehold.co/100");
-  const [selectedFile, setSelectedFile] = useState(null); // Store selected image file
+  const [selectedFile, setSelectedFile] = useState(null);
 
+  // Define form state, each field is an object with keys for each language
   const [formData, setFormData] = useState({
-    name: "",
+    name: { en: "", bn: "" },
     email: "",
-    contactNumber: "",
-    contactNumberSerial: "",
-    designation: "",
-    gender: "",
-    department: "",
-    shortBio: "",
-    academicQualification: "",
-    yearsExperience: "",
+    contactNumber: { en: "", bn: "" },
+    contactNumberSerial: { en: "", bn: "" },
+    designation: { en: "", bn: "" },
+    gender: { en: "", bn: "" },
+    department: { en: "", bn: "" },
+    shortBio: { en: "", bn: "" },
+    academicQualification: { en: "", bn: "" },
+    yearsOfExperience: { en: "", bn: "" },
     appointmentFee: "",
     followUpFee: "",
     patientAttended: "",
     avgConsultationTime: "",
-  });
+  });  
 
-  // Dynamic Fields
+  // Dynamic Fields for memberships, awards, etc.
   const [schedules, setSchedules] = useState([]);
   const [memberships, setMemberships] = useState([{ name: "" }]);
   const [awards, setAwards] = useState([{ title: "" }]);
@@ -35,15 +36,30 @@ const AddDoctor = () => {
 
   const [doctorData, setDoctorData] = useState(null);
 
-  // Handle Language Change
+  // Handle language change
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
   };
 
-  // Handle input changes
+  // Handle form field changes
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+  
+    if (formData[name] && typeof formData[name] === "object") {
+      // Multi-language field, update based on current language
+      setFormData({
+        ...formData,
+        [name]: { ...formData[name], [i18n.language]: value },
+      });
+    } else {
+      // Regular field, just update the value directly
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
+  
 
   // Handle Profile Photo Upload
   const handleProfilePhotoChange = (event) => {
@@ -63,10 +79,12 @@ const AddDoctor = () => {
     setList(updatedList);
   };
 
+  // Add a new dynamic field (e.g., memberships, awards)
   const handleAddField = (setList, type) => {
-    setList([...setList, type === "awards" ? { title: "" } : { name: "" }]);
-  };
+    setList((prevList) => [...prevList, type === "awards" ? { title: "" } : { name: "" }]);
+  };  
 
+  // Remove dynamic field
   const handleRemoveField = (index, list, setList) => {
     setList(list.filter((_, i) => i !== index));
   };
@@ -106,44 +124,48 @@ const AddDoctor = () => {
   // Form Submission with Axios
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    // Prepare FormData for file upload
     const formDataObj = new FormData();
-    formDataObj.append("name", formData.name);
+    formDataObj.append("name", JSON.stringify(formData.name));
     formDataObj.append("email", formData.email);
-    formDataObj.append("contactNumber", formData.contactNumber);
-    formDataObj.append("contactNumberSerial", formData.contactNumberSerial);
-    formDataObj.append("designation", formData.designation);
-    formDataObj.append("gender", formData.gender);
-    formDataObj.append("department", formData.department);
-    formDataObj.append("shortBio", formData.shortBio);
-    formDataObj.append("academicQualification", formData.academicQualification);
-    formDataObj.append("yearsExperience", formData.yearsExperience);
+    formDataObj.append("contactNumber", JSON.stringify(formData.contactNumber));
+    formDataObj.append("contactNumberSerial", JSON.stringify(formData.contactNumberSerial));
+    formDataObj.append("designation", JSON.stringify(formData.designation));
+    formDataObj.append("gender", JSON.stringify(formData.gender));
+    formDataObj.append("department", JSON.stringify(formData.department));
+    formDataObj.append("shortBio", JSON.stringify(formData.shortBio));
+    formDataObj.append("academicQualification", JSON.stringify(formData.academicQualification));
+    formDataObj.append("yearsOfExperience", JSON.stringify(formData.yearsOfExperience));
+
+    // Append other fields
     formDataObj.append("appointmentFee", formData.appointmentFee);
     formDataObj.append("followUpFee", formData.followUpFee);
     formDataObj.append("patientAttended", formData.patientAttended);
     formDataObj.append("avgConsultationTime", `${formData.avgConsultationTime} mins`);
-    formDataObj.append("profilePhoto", selectedFile); // Attach the selected file here
-  
+    formDataObj.append("profilePhoto", selectedFile);
+
     // Append dynamic fields like memberships, awards, etc.
     formDataObj.append("memberships", JSON.stringify(memberships));
-    formDataObj.append("awardsAchievements", JSON.stringify(awards));
-    formDataObj.append("treatmentsList", JSON.stringify(treatments));
-    formDataObj.append("conditionsList", JSON.stringify(conditions));
-    formDataObj.append("schedule", JSON.stringify(schedules));
+    formDataObj.append("awards", JSON.stringify(awards));
+    formDataObj.append("treatments", JSON.stringify(treatments));
+    formDataObj.append("conditions", JSON.stringify(conditions));
+    formDataObj.append("schedules", JSON.stringify(schedules));
     formDataObj.append("faqs", JSON.stringify(faqs));
-  
+
     try {
       const response = await axios.post("http://localhost:5000/api/doctor/add", formDataObj, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Ensure this is the correct API key
+          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
       });
+      console.log(response)
       
       if (response.status === 200 || response.status === 201) {
         alert("Doctor added successfully!");
         setDoctorData(response.data.doctor);
-        handleDiscard();  // Reset the form after submission
+        handleDiscard();
       } else {
         alert(`Failed to add doctor: ${response.data.message}`);
       }
@@ -152,21 +174,20 @@ const AddDoctor = () => {
       alert("An error occurred while adding the doctor.");
     }
   };
-  
 
   // Reset Form
   const handleDiscard = () => {
     setFormData({
-      name: "",
+      name: { en: "", bn: "" },
       email: "",
-      contactNumber: "",
-      contactNumberSerial: "",
-      designation: "",
-      gender: "",
-      department: "",
-      shortBio: "",
-      academicQualification: "",
-      yearsExperience: "",
+      contactNumber: { en: "", bn: "" },
+      contactNumberSerial: { en: "", bn: "" },
+      designation: { en: "", bn: "" },
+      gender: { en: "", bn: "" },
+      department: { en: "", bn: "" },
+      shortBio: { en: "", bn: "" },
+      academicQualification: { en: "", bn: "" },
+      yearsOfExperience: { en: "", bn: "" },
       appointmentFee: "",
       followUpFee: "",
       patientAttended: "",
@@ -185,16 +206,16 @@ const AddDoctor = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-6">
-      <div className=" bg-white shadow-lg rounded-lg p-6">
-        <div className="flex items-center justify-between">
+    <div className=" bg-white shadow-lg rounded-lg p-6">
+      <div className="flex items-center justify-between">
         <div>
-            <h2 className="text-2xl font-bold text-gray-700 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-700 flex items-center gap-2">
             <FaUserMd /> {t('addNewDoctor')}
-            </h2>
-            <p className="text-gray-500 text-sm mt-2">{t('description')}</p>
+          </h2>
+          <p className="text-gray-500 text-sm mt-2">{t('description')}</p>
         </div>
-         {/* Language switcher */}
-         <div className="mb-4">
+        {/* Language switcher */}
+        <div className="mb-4">
           <select
             className="p-2 border rounded-md"
             onChange={handleLanguageChange}
@@ -204,15 +225,22 @@ const AddDoctor = () => {
             <option value="bn">Bangla</option>
           </select>
         </div>
-        </div>
-        <form className="mt-6" onSubmit={handleSubmit}>
-          {/* Grid Layout for Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div>
-              <label className="label">{t('doctorName')}</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} className="input-field" placeholder="Enter Doctor Name" />
-            </div>
+      </div>
+      <form className="mt-6" onSubmit={handleSubmit}>
+        {/* Grid Layout for Form Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Name */}
+          <div>
+            <label className="label">{t('doctorName')}</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name[i18n.language] || ""}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Enter Doctor Name"
+            />
+          </div>
 
             {/* Email */}
             <div>
@@ -223,24 +251,31 @@ const AddDoctor = () => {
             {/* Contact Numbers */}
             <div>
               <label className="label">{t('contactNumber')}</label>
-              <input type="tel" name="contactNumber" value={formData.contactNumber} onChange={handleChange} className="input-field" placeholder="Enter Contact Number" />
+              <input
+                type="tel"
+                name="contactNumber"
+                value={formData.contactNumber[i18n.language] || ""}
+                onChange={handleChange}
+                className="input-field"
+                placeholder="Enter Contact Number"
+              />
             </div>
             <div>
               <label className="label">{t('contactNumberSerial')}</label>
-              <input type="tel" name="contactNumberSerial" value={formData.contactNumberSerial} onChange={handleChange} className="input-field" placeholder="Enter Serial Contact Number" />
+              <input type="tel" name="contactNumberSerial" value={formData.contactNumberSerial[i18n.language] || ""} onChange={handleChange} className="input-field" placeholder="Enter Serial Contact Number" />
             </div>
 
             {/* Designation */}
             <div>
               <label className="label">{t('designation')}</label>
-              <input type="text" name="designation" value={formData.designation} onChange={handleChange} className="input-field" placeholder="Enter Designation" />
+              <input type="text" name="designation" value={formData.designation[i18n.language] || ""} onChange={handleChange} className="input-field" placeholder="Enter Designation" />
             </div>
             {/* Gender (Dropdown) */}
             <div>
             <label className="label">{t('gender')}</label>
             <select
                 name="gender"
-                value={formData.gender}
+                value={formData.gender[i18n.language] || ""}
                 onChange={handleChange}
                 className="input-field"
             >
@@ -253,7 +288,7 @@ const AddDoctor = () => {
             {/* Department (Dropdown) */}
             <div>
               <label className="label">{t('department')}</label>
-              <select name="department" value={formData.department} onChange={handleChange} className="input-field">
+              <select name="department" value={formData.department[i18n.language] || ""} onChange={handleChange} className="input-field">
                 <option value="">Select Department</option>
                 <option>Cardiology</option>
                 <option>Neurology</option>
@@ -267,8 +302,8 @@ const AddDoctor = () => {
             <label className="label">{t('yearsOfExperience')}</label>
             <input
                 type="number"
-                name="yearexperiences"
-                value={formData.yearexperiences}
+                name="yearsOfExperience"
+                value={formData.yearsOfExperience[i18n.language] || ""}
                 onChange={handleChange}
                 className="input-field"
                 placeholder="Enter years of experience"
@@ -296,7 +331,7 @@ const AddDoctor = () => {
             <label className="label">{t('shortBio')}</label>
             <textarea
                 name="shortBio"
-                value={formData.shortBio}
+                value={formData.shortBio[i18n.language] || ""}
                 onChange={handleChange}
                 className="input-field"
                 placeholder="Enter a short bio"
@@ -308,8 +343,8 @@ const AddDoctor = () => {
                    {t('academicQualification')}
                 </label>
                 <textarea 
-                    name="academicqualifcation"
-                    value={formData.academicQualifcation} 
+                    name="academicQualification"
+                    value={formData.academicQualification[i18n.language] || ""} 
                     onChange={handleChange} 
                     className="input-field"
                     placeholder="Enter academic qualifications"
@@ -346,13 +381,7 @@ const AddDoctor = () => {
                         </button>
                     </div>
                 ))}
-                <button
-                    type="button"
-                    onClick={() => handleAddField(setTreatments)}
-                    className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1"
-                >
-                    <FaPlus /> Add Treatment
-                </button>
+                <button type="button" onClick={() => handleAddField(setTreatments, "treatments")} className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1">Add Treatment</button>
             </div>
             {/* Memberships List */}
           <div className="md:col-span-2">
