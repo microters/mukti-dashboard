@@ -5,6 +5,7 @@ import AllDoctors from "../components/ManageDoctors/AllDoctors/AllDoctors";
 import AddDoctor from "../components/ManageDoctors/AddDoctor/AddDoctor";
 import AddPatient from "../components/ManagePatients/AddPatient/AddPatient";
 import AddBlog from "../components/Blogs/AddBlog/AddBlog";
+import EditDoctor from "../components/ManageDoctors/EditDoctor/EditDoctor";
 
 // Importing necessary pages
 
@@ -33,6 +34,14 @@ export const router = createBrowserRouter([
         element: (
         //   <AdminRoute>
             <AddDoctor/>
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-doctor/:id",
+        element: (
+        //   <AdminRoute>
+            <EditDoctor/>
         //   </AdminRoute>
         ),
       },
