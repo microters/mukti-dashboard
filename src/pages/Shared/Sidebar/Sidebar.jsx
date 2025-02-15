@@ -5,8 +5,10 @@ import {
   HiOutlineBookOpen,
   HiChevronRight,
   HiChevronLeft,
+  HiOutlineTrash,
+  HiLogout,
 } from "react-icons/hi";
-import { FaHome, FaUserMd, FaUserInjured, FaCalendarCheck, FaCog } from "react-icons/fa";
+import { FaHome, FaUserMd, FaUserInjured, FaCalendarCheck, FaCog, FaEnvelope, FaTools, FaTag } from "react-icons/fa";
 import logo from "../../../assets/logo/MH-icon.png"; 
 
 const Sidebar = () => {
@@ -130,7 +132,7 @@ const Sidebar = () => {
   const settingsConfig = [
     {
       name: "Settings",
-      icon: FaCog,
+      icon: FaTools,
       isSubmenu: true,
       submenus: [
         { name: "Site Name", link: "/site-name" },
@@ -139,7 +141,7 @@ const Sidebar = () => {
     },
     {
       name: "Email Configuration",
-      icon: FaCog,
+      icon: FaEnvelope,
       isSubmenu: true,
       submenus: [
         { name: "Email Config", link: "/email-config" },
@@ -148,15 +150,23 @@ const Sidebar = () => {
     },
     {
       name: "Promo Code",
-      icon: FaCog,
+      icon: FaTag,
       link: "/promo-code",
       isSubmenu: false,
     },
   ];
 
   const others = [
-    { name: "Cache Clear", icon: HiOutlineBookOpen, link: "/cache-clear" },
-    { name: "Logout", icon: HiOutlineBookOpen, link: "/logout" },
+    {
+      name: "Cache Clear",
+      icon: HiOutlineTrash,
+      link: "/cache-clear",
+    },
+    {
+      name: "Logout",
+      icon: HiLogout,
+      link: "/logout",
+    },
   ];
 
   // Toggle expanded state for each section
@@ -200,17 +210,17 @@ const Sidebar = () => {
         {/* Toggle Button with Conditional Border Radius */}
         <span
           onClick={() => setSidebarOpen(!isSidebarOpen)}
-          className={`bg-orange-500 text-white px-1 py-4 transition-all duration-300 absolute top-1/2 transform translate-y-[-50%] 
-            ${isSidebarOpen ? "rounded-l-[10px] left-[260px]" : "rounded-r-[10px] left-full"}`}
+          className={`hidden lg:block bg-orange-500 text-white px-1 py-4 transition-all duration-300 absolute top-1/2 transform translate-y-[-50%] 
+            ${isSidebarOpen ? "rounded-l-[10px] left-[262px]" : "rounded-r-[10px] left-full"}`}
         >
-          {isSidebarOpen ? <HiChevronLeft size={18}/> : <HiChevronRight size={18} />}
+          {isSidebarOpen ? <HiChevronLeft size={18} /> : <HiChevronRight size={18} />}
         </span>
       </div>
 
       {/* Sidebar Menu */}
-      <div className="menu-bar mt-6 px-5 h-[calc(100vh-164px)] overflow-y-auto">
+      <div className="menu-bar hide-scrollbar mt-6 px-5 h-[calc(100vh-164px)] overflow-y-auto">
         {/* Main Menu Section */}
-        <h4 className="pb-2 border-b border-[#2a2d3b] text-red-500">Main Menu</h4>
+        <h4 className={`pb-2 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Main Menu</h4>
         <ul className="flex flex-col gap-3">
           {mainMenu.map((menu, i) => {
             const isActive = activeMainMenu === i;
@@ -283,7 +293,7 @@ const Sidebar = () => {
           })}
         </ul>
         {/* CMS & Blogs Section */}
-        <h4 className="pb-2 mt-6 border-b border-[#2a2d3b] text-red-500">CMS & Blogs</h4>
+        <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>CMS & Blogs</h4>
         <ul className="flex flex-col gap-3">
           {cmsBlogs.map((menu, i) => {
             const isActive = activeCmsMenu === i;
@@ -315,7 +325,7 @@ const Sidebar = () => {
 
                   {/* If the menu has a submenu, display it as a non-linkable h2 */}
                   {isSidebarOpen && menu.isSubmenu && (
-                    <h2 className="ml-3 text-base">{menu.name}</h2>
+                    <h2 className={"ml-3 text-base"}>{menu.name}</h2>
                   )}
 
                   {/* Show submenu indicator if the menu has submenus */}
@@ -357,7 +367,7 @@ const Sidebar = () => {
           })}
        </ul>
         {/* Settings & Config Section */}
-        <h4 className="pb-2 mt-6 border-b border-[#2a2d3b] text-red-500">Settings & Config</h4>
+        <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Settings & Config</h4>
         <ul className="flex flex-col gap-3">
           {settingsConfig.map((menu, i) => {
             const isActive = activeSettingsMenu === i;
@@ -429,7 +439,7 @@ const Sidebar = () => {
           })}
         </ul>
        {/* Others Section */}
-      <h4 className="pb-2 mt-6 border-b border-[#2a2d3b] text-red-500">Others</h4>
+      <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Others</h4>
       <ul className="flex flex-col gap-3">
           {others.map((menu, i) => {
             const isActive = activeOtherMenu === i;

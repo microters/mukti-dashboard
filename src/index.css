@@ -18,3 +18,12 @@ code {
 .input-field {
   @apply mt-2 p-2 w-full border rounded-md;
 }
+
+/* Scrollbar */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
