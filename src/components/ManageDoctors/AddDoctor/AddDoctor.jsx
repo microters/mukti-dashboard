@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEdit, FaPlus, FaTrash, FaUserMd } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import Skeleton from "react-loading-skeleton";
+import { toast, ToastContainer } from "react-toastify";
 
 // Example utility: Convert Bengali digits (০-৯) to English (0-9)
 function convertBengaliToEnglish(str = "") {
@@ -22,6 +24,7 @@ function convertBengaliToEnglish(str = "") {
 
 const AddDoctor = () => {
   const { t, i18n } = useTranslation(["addDoctor"]);
+  const [loading, setLoading] = useState(false); 
 
   // -----------------------------
   // 1) Profile photo state
@@ -74,7 +77,7 @@ const AddDoctor = () => {
     const fetchDepartments = async () => {
       try {
         const lang = i18n.language; // "en" or "bn"
-        const response = await axios.get(`http://api.muktihospital.com/api/department?lang=${lang}`, {
+        const response = await axios.get(`http://localhost:5000/api/department?lang=${lang}`, {
           headers: {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
@@ -219,21 +222,15 @@ const AddDoctor = () => {
       formData.avgConsultationTime.bn || ""
     );
 
-    // Build the payload
     const payload = {
       email: formData.email,
       profilePhoto: profilePhoto || "",
       translations: {
         en: {
-          metaTitle: formData.metaTitle.en,
-          metaDescription: formData.metaDescription.en,
           name: formData.name.en,
           designation: formData.designation.en,
           department: formData.department.en,
           shortBio: formData.shortBio.en,
-          contactNumber: formData.contactNumber.en,
-          contactNumberSerial: formData.contactNumberSerial.en,
-          gender: formData.gender.en,
           yearsOfExperience: finalYearsEn,
           appointmentFee: finalAppFeeEn,
           followUpFee: finalFollowUpEn,
@@ -241,15 +238,10 @@ const AddDoctor = () => {
           avgConsultationTime: finalAvgEn,
         },
         bn: {
-          metaTitle: formData.metaTitle.bn,
-          metaDescription: formData.metaDescription.bn,
           name: formData.name.bn,
           designation: formData.designation.bn,
           department: formData.department.bn,
           shortBio: formData.shortBio.bn,
-          contactNumber: formData.contactNumber.bn,
-          contactNumberSerial: formData.contactNumberSerial.bn,
-          gender: formData.gender.bn,
           yearsOfExperience: finalYearsBn,
           appointmentFee: finalAppFeeBn,
           followUpFee: finalFollowUpBn,
@@ -267,7 +259,7 @@ const AddDoctor = () => {
 
     try {
       const response = await axios.post(
-        "http://api.muktihospital.com/api/doctor/add",
+        "http://localhost:5000/api/doctor/add",
         payload,
         {
           headers: {
@@ -278,15 +270,16 @@ const AddDoctor = () => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        alert("✅ Doctor added successfully!");
-        // Reset the form
+        toast.success("✅ Doctor added successfully!");  // Show success message
         handleDiscard();
       } else {
-        alert(`❌ Failed to add doctor: ${response.data?.message || "Error"}`);
+        toast.error(`❌ Failed to add doctor: ${response.data?.message || "Error"}`);  // Show error message
       }
     } catch (error) {
       console.error("❌ Error submitting doctor data:", error);
-      alert("An error occurred while adding the doctor.");
+      toast.error("An error occurred while adding the doctor.");  // Show error message
+    } finally {
+      setLoading(false);  // Stop loading
     }
   };
 
@@ -382,27 +375,31 @@ const AddDoctor = () => {
             {/* Doctor Name */}
             <div>
               <label className="label">{t("doctorName")}</label>
-              <input
-                type="text"
-                name="name"
-                className="input-field"
-                placeholder="Enter Doctor Name"
-                value={formData.name[i18n.language] || ""}
-                onChange={handleChange}
-              />
+              {loading ? <Skeleton height={40} /> : (
+                 <input
+                 type="text"
+                 name="name"
+                 className="input-field"
+                 placeholder="Enter Doctor Name"
+                 value={formData.name[i18n.language] || ""}
+                 onChange={handleChange}
+               />
+              )}
             </div>
 
             {/* Email */}
             <div>
               <label className="label">{t("email")}</label>
-              <input
-                type="email"
-                name="email"
-                className="input-field"
-                placeholder="Enter Email"
-                value={formData.email}
-                onChange={handleChange}
-              />
+              {loading ? <Skeleton height={40} /> : (
+                  <input
+                  type="email"
+                  name="email"
+                  className="input-field"
+                  placeholder="Enter Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              )}
             </div>
 
             {/* Contact Number */}
@@ -829,6 +826,8 @@ const AddDoctor = () => {
           </div>
         </form>
       </div>
+        {/* Toast container to show messages */}
+        <ToastContainer />
     </div>
   );
 };

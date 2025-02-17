@@ -138,23 +138,22 @@ const handleFileChange = (e) => {
   // ---------------------------------------------------------
   return (
     <div className="bg-gray-100 min-h-screen p-6">
-      <div className="max-w-lg mx-auto bg-white shadow-lg rounded p-6">
-        <h2 className="text-xl font-semibold mb-4">Add Department</h2>
-
-        {/* Language dropdown */}
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Language:</label>
-          <select
-            value={selectedLanguage}
-            onChange={handleLanguageChange}
-            className="border p-2 rounded w-full"
-          >
-            <option value="en">English</option>
-            <option value="bn">Bangla</option>
-            {/* Add more languages if needed */}
-          </select>
+      <div className=" bg-white shadow-lg rounded p-6">
+        <div className="flex justify-between">
+          <h2 className="text-xl font-bold mb-4">Add Department</h2>
+          {/* Language dropdown */}
+          <div className="mb-4">
+            <select
+              value={selectedLanguage}
+              onChange={handleLanguageChange}
+              className="border p-2 rounded w-full"
+            >
+              <option value="en">English</option>
+              <option value="bn">Bangla</option>
+              {/* Add more languages if needed */}
+            </select>
+          </div>
         </div>
-
         {/* Department Form */}
         <form onSubmit={handleSubmit}>
           {/* 1) Department Name */}
@@ -233,7 +232,7 @@ const handleFileChange = (e) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition ${
+              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

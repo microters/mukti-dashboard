@@ -10,7 +10,7 @@ const Dashboard = () => {
     <div className="flex">
       {/* Sidebar */}
       <div
-        className={`fixed lg:relative z-50 transition-transform duration-300 bg-gray-900 text-white min-h-screen 
+        className={`fixed lg:relative z-50 transition-transform duration-300 bg-gray-900 text-white min-h-screen p-0
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />

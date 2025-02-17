@@ -14,7 +14,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
   };
 
   return (
-    <div className="bg-white text-gray-800 px-8 py-6 flex justify-between items-center shadow-md">
+    <div className="bg-white text-gray-800 px-8 py-5 flex justify-between items-center shadow-md">
       <div className="flex gap-3">
         {/* Left Section - Hamburger Icon (For Mobile) */}
         <button className="lg:hidden text-gray-600 hover:text-gray-800" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
