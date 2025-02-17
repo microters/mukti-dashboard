@@ -2,17 +2,25 @@ import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   HiChevronDown,
-  HiChevronUp,
   HiOutlineBookOpen,
-  HiMenuAlt3,
-  HiX,
+  HiChevronRight,
+  HiChevronLeft,
+  HiOutlineTrash,
+  HiLogout,
 } from "react-icons/hi";
-import { FaUserMd, FaUserInjured, FaCalendarCheck, FaCog, FaRegCircle, FaCircle } from "react-icons/fa";
-import logo from "../../../assets/logo/MH-icon.png";
+import { FaHome, FaUserMd, FaUserInjured, FaCalendarCheck, FaCog, FaEnvelope, FaTools, FaTag } from "react-icons/fa";
+import logo from "../../../assets/logo/MH-icon.png"; 
 
 const Sidebar = () => {
-  const [expanded, setExpanded] = useState(null);
+  const [expandedMainMenu, setExpandedMainMenu] = useState(null);
+  const [expandedCmsMenu, setExpandedCmsMenu] = useState(null);
+  const [expandedSettingsMenu, setExpandedSettingsMenu] = useState(null);
+  const [expandedOtherMenu, setExpandedOtherMenu] = useState(null);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [activeMainMenu, setActiveMainMenu] = useState(null);  
+  const [activeCmsMenu, setActiveCmsMenu] = useState(null); 
+  const [activeSettingsMenu, setActiveSettingsMenu] = useState(null);
+  const [activeOtherMenu, setActiveOtherMenu] = useState(null);
   const location = useLocation();
 
   const handleResize = () => {
@@ -30,19 +38,32 @@ const Sidebar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const menuItems = [
+  // Define the sections and submenus
+  const mainMenu = [
+    {
+      name: "Dashboard",
+      icon: FaHome,
+      link: "/dashboard",
+      isSubmenu: false,
+    },
     {
       name: "Manage Doctors",
       icon: FaUserMd,
+      link: "/manage-doctors",
+      isSubmenu: true,
       submenus: [
         { name: "All Doctors", link: "/all-doctors" },
         { name: "Add New Doctor", link: "/add-doctor" },
-        { name: "Edit Doctor", link: "/edit-doctor" },
+        { name: "Add Department", link: "/add-department" },
+        { name: "All Department", link: "/all-department" },
+       
       ],
     },
     {
       name: "Manage Patients",
       icon: FaUserInjured,
+      link: "/manage-patients",
+      isSubmenu: true,
       submenus: [
         { name: "All Patients", link: "/all-patients" },
         { name: "Add New Patient", link: "/add-patient" },
@@ -51,6 +72,8 @@ const Sidebar = () => {
     {
       name: "Manage Appointments",
       icon: FaCalendarCheck,
+      link: "/manage-appointments",
+      isSubmenu: true,
       submenus: [
         { name: "All Appointments", link: "/all-appointments" },
         { name: "Upcoming Appointments", link: "/upcoming-appointments" },
@@ -58,9 +81,14 @@ const Sidebar = () => {
         { name: "Add New Appointment", link: "/add-appointment" },
       ],
     },
+  ];
+
+  const cmsBlogs = [
     {
-      name: "CMS & Blogs",
-      icon: HiOutlineBookOpen,
+      name: "Manage Blogs",
+      icon: FaUserMd,
+      link: "/manage-blogs",
+      isSubmenu: true,
       submenus: [
         { name: "All Blogs", link: "/all-blogs" },
         { name: "Add New Blog", link: "/add-blog" },
@@ -68,113 +96,416 @@ const Sidebar = () => {
       ],
     },
     {
-      name: "Settings & Config",
-      icon: FaCog,
+      name: "Manage Pages",
+      icon: FaUserInjured,
+      link: "/manage-patients",
+      isSubmenu: true,
       submenus: [
-        { name: "General Settings", link: "/settings" },
-        { name: "Email Configuration", link: "/email-config" },
-        { name: "Email Template", link: "/email-template" },
+        { name: "All Pages", link: "/all-patients" },
+        { name: "Add New Page", link: "/add-patient" },
+      ],
+    },
+    {
+      name: "Manage Sections",
+      icon: FaCalendarCheck,
+      link: "/manage-appointments",
+      isSubmenu: true,
+      submenus: [
+        { name: "Homepage Section", link: "/all-appointments" },
+        { name: "About us", link: "/upcoming-appointments" },
+        { name: "Contact Us", link: "/todays-appointments" },
+      ],
+    },
+    {
+      name: "Website Setup",
+      icon: HiOutlineBookOpen,
+      isSubmenu: true,
+      submenus: [
+        { name: "Cookie Consent", link: "/cookie-consent" },
+        { name: "Error Page Message", link: "/error-page-message" },
+        { name: "Login Page", link: "/login-page" },
+        { name: "Admin Page", link: "/admin-page" },
+        { name: "Menu Management", link: "/menu-management" },
+        { name: "Footer Management", link: "/footer-management" },
       ],
     },
   ];
+  
+  const settingsConfig = [
+    {
+      name: "Settings",
+      icon: FaTools,
+      isSubmenu: true,
+      submenus: [
+        { name: "Site Name", link: "/site-name" },
+        { name: "Logo & Favicon", link: "/logo-favicon" },
+      ],
+    },
+    {
+      name: "Email Configuration",
+      icon: FaEnvelope,
+      isSubmenu: true,
+      submenus: [
+        { name: "Email Config", link: "/email-config" },
+        { name: "Email Template", link: "/email-template" },
+      ],
+    },
+    {
+      name: "Promo Code",
+      icon: FaTag,
+      link: "/promo-code",
+      isSubmenu: false,
+    },
+  ];
 
-  const toggleDropdown = (index) => {
-    setExpanded(expanded === index ? null : index);
+  const others = [
+    {
+      name: "Cache Clear",
+      icon: HiOutlineTrash,
+      link: "/cache-clear",
+    },
+    {
+      name: "Logout",
+      icon: HiLogout,
+      link: "/logout",
+    },
+  ];
+
+  // Toggle expanded state for each section
+  const toggleMenu = (index, section) => {
+    if (section === "main") {
+      setExpandedMainMenu(expandedMainMenu === index ? null : index);
+      setActiveMainMenu(expandedMainMenu === index ? null : index);
+    } else if (section === "cms") {
+      setExpandedCmsMenu(expandedCmsMenu === index ? null : index);
+      setActiveCmsMenu(expandedCmsMenu === index ? null : index);
+    } else if (section === "settings") {
+      setExpandedSettingsMenu(expandedSettingsMenu === index ? null : index);
+      setActiveSettingsMenu(expandedSettingsMenu === index ? null : index);
+    } else if (section === "others") {
+      setExpandedOtherMenu(expandedOtherMenu === index ? null : index);
+      setActiveOtherMenu(expandedOtherMenu === index ? null : index);
+    }
   };
 
   return (
-    <div
-      className={`h-full bg-gray-900 text-white min-h-screen transition-all duration-300
-        ${isSidebarOpen ? "w-64" : "w-16"}`}
-    >
-      {/* Sidebar Toggle Button */}
-      <div className="py-3 justify-end lg:flex hidden">
-        {isSidebarOpen ? (
-          <HiX
-            title="Close Sidebar"
-            size={26}
-            className="cursor-pointer"
-            onClick={() => setSidebarOpen(false)}
-          />
-        ) : (
-          <HiMenuAlt3
-            title="Open Sidebar"
-            size={26}
-            className="cursor-pointer"
-            onClick={() => setSidebarOpen(true)}
-          />
-        )}
-      </div>
-
-      {/* User Profile */}
-      <Link to={`/profile`} title="User Profile" className="flex justify-center mt-6">
-        <div
-          className={`rounded-full ring ring-white ring-offset-base-100 ${isSidebarOpen ? "w-20" : "w-10"} duration-300`}
-        >
-          <img
-            src={logo}
-            alt="User Profile"
-            title="User Profile"
-            className="rounded-full"
-          />
+    <div className={`h-full bg-gray-900 text-white min-h-screen transition-all duration-300 ${isSidebarOpen ? "w-72" : "w-28"}`}>
+      {/* Header Section */}
+      <div className="relative">
+      <div className="gap-2 bg-gray-900 p-6 border-b border-[#2a2d3b]">
+      {/* Sidebar Profile Section */}
+      <Link to="/profile" title="User Profile">
+        <div className="flex items-center justify-between">
+          {isSidebarOpen ? (
+            <span className="text-white font-bold text-xl">
+              Mukti Hospital
+            </span>
+          ) : (
+            <div className="rounded-full ring ring-white ring-offset-base-100 w-10 duration-300 mx-auto">
+              <img src={logo} alt="User Profile" title="User Profile" className="rounded-full" />
+            </div>
+          )}
         </div>
       </Link>
-
-      {/* User Info (Only Visible if Sidebar is Open) */}
-      {isSidebarOpen && (
-        <div className="text-center mt-4">
-          <h4 className="text-lg font-semibold">Mukti Hospital</h4>
-          <p className="text-xs text-gray-400">info@muktihospital.com</p>
-        </div>
-      )}
+      </div>
+     
+        {/* Toggle Button with Conditional Border Radius */}
+        <span
+          onClick={() => setSidebarOpen(!isSidebarOpen)}
+          className={`hidden lg:block bg-orange-500 text-white px-1 py-4 transition-all duration-300 absolute top-1/2 transform translate-y-[-50%] 
+            ${isSidebarOpen ? "rounded-l-[10px] left-[262px]" : "rounded-r-[10px] left-full"}`}
+        >
+          {isSidebarOpen ? <HiChevronLeft size={18} /> : <HiChevronRight size={18} />}
+        </span>
+      </div>
 
       {/* Sidebar Menu */}
-      <div className="flex flex-col gap-3 mt-6 h-[calc(100vh-164px)] overflow-y-auto">
-        {menuItems.map((menu, i) => {
-          const isSubmenuActive = menu.submenus?.some((submenu) => location.pathname === submenu.link);
+      <div className="menu-bar hide-scrollbar mt-6 px-5 h-[calc(100vh-164px)] overflow-y-auto">
+        {/* Main Menu Section */}
+        <h4 className={`pb-2 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Main Menu</h4>
+        <ul className="flex flex-col gap-3">
+          {mainMenu.map((menu, i) => {
+            const isActive = activeMainMenu === i;
+            return (
+              <li key={i}>
+                {/* Main Menu Item */}
+                <div
+                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                    isActive ? "text-red-500" : "text-white"
+                  } ${isSidebarOpen ? "" : "justify-center"}`}
+                  onClick={() => {
+                    if (menu.isSubmenu) {
+                      toggleMenu(i, "main");
+                    }
+                  }}
+                >
+                  <div>{React.createElement(menu.icon, { size: 16 })}</div>
 
-          return (
-            <div key={i}>
-              <div
-                className={`flex items-center justify-center text-sm gap-3.5 font-medium p-2 w-full rounded-md cursor-pointer transition-all ${
-                  isSubmenuActive || expanded === i ? "bg-gray-700" : "hover:bg-gray-700"
-                }`}
-                onClick={() => toggleDropdown(i)}
-              >
-                <div>{React.createElement(menu.icon, { size: "20" })}</div>
-                {isSidebarOpen && <h2>{menu.name}</h2>}
-                {isSidebarOpen && (
-                  <div className="ml-auto transition-transform duration-300">
-                    {expanded === i ? <HiChevronUp /> : <HiChevronDown />}
-                  </div>
-                )}
-              </div>
-
-              {/* Submenu Items */}
-              <div
-                className={`transition-all duration-500 overflow-hidden ${
-                  expanded === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                {isSidebarOpen &&
-                  menu.submenus.map((submenu, j) => (
+                  {isSidebarOpen && !menu.isSubmenu && (
                     <NavLink
-                      key={j}
-                      to={submenu.link}
-                      className={`flex items-center gap-3 p-2 pl-6 rounded-md transition-colors duration-300`}
+                      to={menu.link}
+                      className={`ml-3 text-base ${
+                        location.pathname === menu.link ? "text-red-500" : "text-white"
+                      }`}
                     >
-                      {location.pathname === submenu.link ? (
-                        <FaCircle size={14} className="text-gray-400" />
-                      ) : (
-                        <FaRegCircle size={14} className="text-gray-400" />
-                      )}
-                      {submenu.name}
+                      {menu.name}
                     </NavLink>
-                  ))}
-              </div>
-            </div>
-          );
-        })}
+                  )}
+
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <h2 className="ml-3 text-base">{menu.name}</h2>
+                  )}
+
+                  {/* Show submenu indicator if the menu has submenus */}
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <div className="ml-auto transition-transform duration-300">
+                      {expandedMainMenu === i ? (
+                        <HiChevronDown className="w-5 h-5" />
+                      ) : (
+                        <HiChevronRight className="w-5 h-5" />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submenu Items */}
+                {menu.isSubmenu && isSidebarOpen && (
+                  <ul
+                    className={`transition-all duration-500 overflow-hidden ${
+                      expandedMainMenu === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    } ml-6 border-l border-gray-500 pl-4`}
+                  >
+                    {menu.submenus?.map((submenu, j) => (
+                      <li key={j}>
+                        {/* Submenu Item */}
+                        <NavLink
+                          to={submenu.link}
+                          className={`block text-gray-400 text-base py-2 transition-all duration-300 hover:text-white ${
+                            location.pathname === submenu.link ? "text-white" : ""
+                          }`}
+                        >
+                          {submenu.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {/* CMS & Blogs Section */}
+        <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>CMS & Blogs</h4>
+        <ul className="flex flex-col gap-3">
+          {cmsBlogs.map((menu, i) => {
+            const isActive = activeCmsMenu === i;
+
+            return (
+              <li key={i}>
+                {/* Main Menu Item */}
+                <div
+                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                    isActive ? "text-red-500" : "text-white"
+                  } ${isSidebarOpen ? "" : "justify-center"}`}
+                  onClick={() => {
+                    if (menu.isSubmenu) {
+                      toggleMenu(i, "cms");
+                    }
+                  }}
+                >
+                  <div>{React.createElement(menu.icon, { size: 16 })}</div>
+                  {isSidebarOpen && !menu.isSubmenu && (
+                    <NavLink
+                      to={menu.link}
+                      className={`ml-3 text-base ${
+                        location.pathname === menu.link ? "text-red-500" : "text-white"
+                      }`}
+                    >
+                      {menu.name}
+                    </NavLink>
+                  )}
+
+                  {/* If the menu has a submenu, display it as a non-linkable h2 */}
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <h2 className={"ml-3 text-base"}>{menu.name}</h2>
+                  )}
+
+                  {/* Show submenu indicator if the menu has submenus */}
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <div className="ml-auto transition-transform duration-300">
+                      {expandedCmsMenu === i ? (
+                        <HiChevronDown className="w-5 h-5" />
+                      ) : (
+                        <HiChevronRight className="w-5 h-5" />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submenu Items */}
+                {menu.isSubmenu && isSidebarOpen && (
+                  <ul
+                    className={`transition-all duration-500 overflow-hidden ${
+                      expandedCmsMenu === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    } ml-6 border-l border-gray-500 pl-4`}
+                  >
+                    {menu.submenus?.map((submenu, j) => (
+                      <li key={j}>
+                        {/* Submenu Item */}
+                        <NavLink
+                          to={submenu.link}
+                          className={`block text-gray-400 text-base py-2 transition-all duration-300 hover:text-white ${
+                            location.pathname === submenu.link ? "text-white" : ""
+                          }`}
+                        >
+                          {submenu.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+       </ul>
+        {/* Settings & Config Section */}
+        <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Settings & Config</h4>
+        <ul className="flex flex-col gap-3">
+          {settingsConfig.map((menu, i) => {
+            const isActive = activeSettingsMenu === i;
+
+            return (
+              <li key={i}>
+                {/* Main Menu Item */}
+                <div
+                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                    isActive ? "text-red-500" : "text-white"
+                  } ${isSidebarOpen ? "" : "justify-center"}`}
+                  onClick={() => toggleMenu(i, "settings")}
+                >
+                  <div>{React.createElement(menu.icon, { size: 16 })}</div>
+
+                  {/* If the menu has no submenu, make it a clickable NavLink */}
+                  {isSidebarOpen && !menu.isSubmenu && (
+                    <NavLink
+                      to={menu.link}
+                      className={`ml-3 text-base ${
+                        location.pathname === menu.link ? "text-red-500" : "text-white"
+                      }`}
+                    >
+                      {menu.name}
+                    </NavLink>
+                  )}
+
+                  {/* If the menu has a submenu, display it as a non-linkable h2 */}
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <h2 className="ml-3 text-base">{menu.name}</h2>
+                  )}
+
+                  {isSidebarOpen && (
+                    <div className="ml-auto transition-transform duration-300">
+                      {menu.isSubmenu && (
+                        expandedSettingsMenu === i ? (
+                          <HiChevronDown className="w-5 h-5" />
+                        ) : (
+                          <HiChevronRight className="w-5 h-5" />
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submenu Items (if needed) */}
+                {menu.isSubmenu && isSidebarOpen && (
+                  <ul
+                    className={`transition-all duration-500 overflow-hidden ${
+                      expandedSettingsMenu === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    } ml-6 border-l border-gray-500 pl-4`}
+                  >
+                    {menu.submenus?.map((submenu, j) => (
+                      <li key={j}>
+                        <NavLink
+                          to={submenu.link}
+                          className={`block text-gray-400 text-base py-2 transition-all duration-300 hover:text-white ${
+                            location.pathname === submenu.link ? "text-white" : ""
+                          }`}
+                        >
+                          {submenu.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+       {/* Others Section */}
+      <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Others</h4>
+      <ul className="flex flex-col gap-3">
+          {others.map((menu, i) => {
+            const isActive = activeOtherMenu === i;
+
+            return (
+              <li key={i}>
+                {/* Main Menu Item */}
+                <div
+                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                    isActive ? "text-red-500" : "text-white"
+                  } ${isSidebarOpen ? "" : "justify-center"}`}
+                  onClick={() => {
+                    // Only toggle if the menu has a submenu
+                    if (menu.isSubmenu) {
+                      toggleMenu(i, "others");
+                    }
+                  }}
+                >
+                  <div>{React.createElement(menu.icon, { size: 16 })}</div>
+
+                  {/* If the menu has no submenu, make it a clickable NavLink */}
+                  {isSidebarOpen && !menu.isSubmenu && (
+                    <NavLink
+                      to={menu.link}
+                      className={`ml-3 text-base ${
+                        location.pathname === menu.link ? "text-red-500" : "text-white"
+                      }`}
+                    >
+                      {menu.name}
+                    </NavLink>
+                  )}
+
+                  {/* If the menu has a submenu, display it as a non-linkable h2 */}
+                  {isSidebarOpen && menu.isSubmenu && (
+                    <h2 className="ml-3 text-base">{menu.name}</h2>
+                  )}
+                </div>
+
+                {/* Submenu Items (if needed) */}
+                {menu.isSubmenu && isSidebarOpen && (
+                  <ul
+                    className={`transition-all duration-500 overflow-hidden ${
+                      expandedOtherMenu === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    } ml-6 border-l border-gray-500 pl-4`}
+                  >
+                    {menu.submenus?.map((submenu, j) => (
+                      <li key={j}>
+                        {/* Submenu Item */}
+                        <NavLink
+                          to={submenu.link}
+                          className={`block text-gray-400 text-base py-2 transition-all duration-300 hover:text-white ${
+                            location.pathname === submenu.link ? "text-white" : ""
+                          }`}
+                        >
+                          {submenu.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+     </ul>
       </div>
     </div>
   );

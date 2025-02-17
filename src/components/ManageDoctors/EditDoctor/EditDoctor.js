@@ -39,9 +39,11 @@ const EditDoctor = () => {
 
   // Which language is chosen in the UI for multi-language fields
   const [selectedLanguage, setSelectedLanguage] = useState("en");
-
+  const [departments, setDepartments] = useState([]);
   // Full doctor data state
   const [doctorData, setDoctorData] = useState({
+    metaTitle: { en: "", bn: "" },
+    metaDescription:{ en: "", bn: "" },
     name: { en: "", bn: "" },
     email: "",
     contactNumber: { en: "", bn: "" },
@@ -80,6 +82,26 @@ const EditDoctor = () => {
 
   // File (profile photo) if you need actual file upload
   const [selectedFile, setSelectedFile] = useState(null);
+   // ----------------------------------------------------------------
+  //  A) Fetch departments list from backend whenever language changes
+  // ----------------------------------------------------------------
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const lang = i18n.language; // "en" or "bn"
+        const response = await axios.get(`http://api.muktihospital.com/api/department?lang=${lang}`, {
+          headers: {
+            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+          },
+        });
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("❌ Error fetching departments:", error);
+      }
+    };
+
+    fetchDepartments();
+  }, [i18n.language]);
 
   // --------------------------------------------------
   // 1. Fetch doctor data when component mounts or when language changes
@@ -89,7 +111,7 @@ const EditDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/doctor/${id}?lang=${selectedLanguage}`,
+          `http://api.muktihospital.com/api/doctor/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key":
@@ -105,6 +127,14 @@ const EditDoctor = () => {
         setDoctorData((prev) => ({
           ...prev,
 
+          metaTitle: {
+            ...prev.metaTitle,
+            [selectedLanguage]: doctor.translations?.metaTitle || "",
+          },
+          metaDescription: {
+            ...prev.metaDescription,
+            [selectedLanguage]: doctor.translations?.metaDescription || "",
+          },
           name: {
             ...prev.name,
             [selectedLanguage]: doctor.translations?.name || "",
@@ -325,6 +355,8 @@ const EditDoctor = () => {
       ...doctorData,
       translations: {
         en: {
+          metaTitle:doctorData.metaTitle.en,
+          metaDescription:doctorData.metaDescription.en,
           name: doctorData.name.en,
           designation: doctorData.designation.en,
           department: doctorData.department.en,
@@ -342,6 +374,8 @@ const EditDoctor = () => {
           academicQualification: doctorData.academicQualification.en,
         },
         bn: {
+          metaTitle:doctorData.metaTitle.bn,
+          metaDescription:doctorData.metaDescription.bn,
           name: doctorData.name.bn,
           designation: doctorData.designation.bn,
           department: doctorData.department.bn,
@@ -369,7 +403,7 @@ const EditDoctor = () => {
 
     try {
       setSubmitting(true);
-      await axios.put(`http://localhost:5000/api/doctor/edit/${id}`, payload, {
+      await axios.put(`http://api.muktihospital.com/api/doctor/edit/${id}`, payload, {
         headers: {
           "x-api-key":
             "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
@@ -446,6 +480,32 @@ const EditDoctor = () => {
         <form className="mt-6" onSubmit={handleSubmit}>
           {/* Basic info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Meta Title */}
+            <div>
+              <label className="label">Meta Title</label>
+              <input
+                type="text"
+                name="metaTitle"
+                className="input-field"
+                placeholder={t("enterDoctorName") || "Enter Meta  Title"}
+                value={doctorData.metaTitle[selectedLanguage] || ""}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
+            {/* Meta Description */}
+            <div>
+              <label className="label">Meta Description</label>
+              <input
+                type="text"
+                name="metaDescription"
+                className="input-field"
+                placeholder={t("enterDoctorName") || "Enter Meta Description"}
+                value={doctorData.metaDescription[selectedLanguage] || ""}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
             {/* Name */}
             <div>
               <label className="label">{t("doctorName")}</label>
@@ -541,22 +601,30 @@ const EditDoctor = () => {
             </div>
 
             {/* Department */}
-            <div>
+           {/* Department */}
+           <div>
               <label className="label">{t("department")}</label>
               <select
                 name="department"
                 className="input-field"
-                value={doctorData.department[selectedLanguage] || ""}
+                value={doctorData.department[i18n.language] || ""}
                 onChange={handleChange}
-                disabled={submitting}
               >
-                <option value="">
-                  {t("selectDepartment") || "Select Department"}
-                </option>
-                <option>Cardiology</option>
-                <option>Neurology</option>
-                <option>Orthopedics</option>
-                <option>Pediatrics</option>
+                <option value="">{t("selectDepartment")}</option>
+                {departments.map((dep) => {
+                  // Suppose each 'dep' has shape: { id, translations: { en: { name: ... }, bn: { name: ... } } }
+                  // So the department name in the current language is dep.translations?.[i18n.language]?.name
+                  const depName =
+                    dep.translations?.[i18n.language]?.name ||
+                    dep.translations?.en?.name ||
+                    "Unnamed Dept";
+
+                  return (
+                    <option key={dep.id} value={depName}>
+                      {depName}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
