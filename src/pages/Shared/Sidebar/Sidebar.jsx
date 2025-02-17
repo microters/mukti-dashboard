@@ -54,7 +54,9 @@ const Sidebar = () => {
       submenus: [
         { name: "All Doctors", link: "/all-doctors" },
         { name: "Add New Doctor", link: "/add-doctor" },
-        { name: "Edit Doctor", link: "/edit-doctor" },
+        { name: "Add Department", link: "/add-department" },
+        { name: "All Department", link: "/all-department" },
+       
       ],
     },
     {
