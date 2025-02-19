@@ -6,6 +6,12 @@ import reportWebVitals from './reportWebVitals';
 import { router } from './Routes/Routes';
 import "./i18n";
 import './App.css';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+
+// Register the service worker
+serviceWorkerRegistration.register();
+
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Suspense fallback={null}>

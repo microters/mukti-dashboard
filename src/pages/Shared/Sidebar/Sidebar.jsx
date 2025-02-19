@@ -67,6 +67,7 @@ const Sidebar = () => {
       submenus: [
         { name: "All Patients", link: "/all-patients" },
         { name: "Add New Patient", link: "/add-patient" },
+        { name: "Add New Review", link: "/add-reviews" },
       ],
     },
     {

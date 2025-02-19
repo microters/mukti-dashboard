@@ -3,40 +3,24 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 
+
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
+import { saveData } from "../../../services/indexDb";
 
 const AddDepartment = () => {
-  // Which language is currently being edited (e.g. "en", "bn", etc.):
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [icon, setIcon] = useState(null); // Stores file
   const [previewIcon, setPreviewIcon] = useState(null); // Stores image preview
-  // All fields are placed inside "translations" by language:
-  // translations.en = { name, description, metaTitle, metaDescription }
-  // translations.bn = { name, description, metaTitle, metaDescription }
   const [departmentData, setDepartmentData] = useState({
     translations: {
-      en: {
-        name: "",
-        description: "",
-        metaTitle: "",
-        metaDescription: "",
-      },
-      bn: {
-        name: "",
-        description: "",
-        metaTitle: "",
-        metaDescription: "",
-      },
+      en: { name: "", description: "", metaTitle: "", metaDescription: "" },
+      bn: { name: "", description: "", metaTitle: "", metaDescription: "" },
     },
   });
 
-  // For showing a loader or disabling form while submitting:
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ---------------------------------------------------------
-  //  Helper to convert Bengali digits to English digits
-  // ---------------------------------------------------------
   function convertBengaliToEnglish(str) {
     const mapDigits = {
       "০": "0",
@@ -53,22 +37,14 @@ const AddDepartment = () => {
     return str.replace(/[০-৯]/g, (digit) => mapDigits[digit]);
   }
 
-  // ---------------------------------------------------------
-  //  Handle language dropdown change
-  // ---------------------------------------------------------
   const handleLanguageChange = (e) => {
     setSelectedLanguage(e.target.value);
   };
 
-  // ---------------------------------------------------------
-  //  Handle input changes for each field in the translations
-  // ---------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // convert digits if you want
     const convertedValue = convertBengaliToEnglish(value);
 
-    // e.g. name could be "name", "description", "metaTitle", or "metaDescription".
     setDepartmentData((prev) => ({
       ...prev,
       translations: {
@@ -80,26 +56,27 @@ const AddDepartment = () => {
       },
     }));
   };
-// ✅ Handle file (icon) selection
-const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  setIcon(file);
 
-  // Preview the selected image
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewIcon(reader.result);
-    reader.readAsDataURL(file);
-  }
-};
-  // ---------------------------------------------------------
-  //  Handle form submission
-  // ---------------------------------------------------------
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setIcon(file);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewIcon(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Save department data to IndexedDB before submitting to the backend
+      await saveData('addDepartment', departmentData);
+
+      // Now submit the data to the server
       const formData = new FormData();
       formData.append("translations", JSON.stringify(departmentData.translations));
       if (icon) {
@@ -133,26 +110,23 @@ const handleFileChange = (e) => {
       setIsSubmitting(false);
     }
   };
-  // ---------------------------------------------------------
-  //  Render form
-  // ---------------------------------------------------------
+
   return (
     <div className="bg-gray-100 min-h-screen p-6">
-      <div className=" bg-white shadow-lg rounded p-6">
-        <div className="flex justify-between">
-          <h2 className="text-xl font-bold mb-4">Add Department</h2>
-          {/* Language dropdown */}
-          <div className="mb-4">
-            <select
-              value={selectedLanguage}
-              onChange={handleLanguageChange}
-              className="border p-2 rounded w-full"
-            >
-              <option value="en">English</option>
-              <option value="bn">Bangla</option>
-              {/* Add more languages if needed */}
-            </select>
-          </div>
+      <div className="max-w-lg mx-auto bg-white shadow-lg rounded p-6">
+        <h2 className="text-xl font-semibold mb-4">Add Department</h2>
+
+        {/* Language dropdown */}
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Language:</label>
+          <select
+            value={selectedLanguage}
+            onChange={handleLanguageChange}
+            className="border p-2 rounded w-full"
+          >
+            <option value="en">English</option>
+            <option value="bn">Bangla</option>
+          </select>
         </div>
         {/* Department Form */}
         <form onSubmit={handleSubmit}>
