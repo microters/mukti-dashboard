@@ -193,16 +193,16 @@ const Sidebar = () => {
     <div className={`h-full bg-gray-900 text-white min-h-screen transition-all duration-300 ${isSidebarOpen ? "w-72" : "w-28"}`}>
       {/* Header Section */}
       <div className="relative">
-      <div className="gap-2 bg-gray-900 p-6 border-b border-[#2a2d3b]">
+      <div className="gap-2 bg-gray-900 px-8 py-4 border-b border-[#2a2d3b] flex">
       {/* Sidebar Profile Section */}
       <Link to="/profile" title="User Profile">
         <div className="flex items-center justify-between">
           {isSidebarOpen ? (
-            <span className="text-white font-bold text-xl">
-              Mukti Hospital
-            </span>
+            <div className="rounded-full ring ring-white ring-offset-base-100 w-14 duration-300 mx-auto">
+              <img src={logo} alt="User Profile" title="User Profile" className="rounded-full" />
+           </div>
           ) : (
-            <div className="rounded-full ring ring-white ring-offset-base-100 w-10 duration-300 mx-auto">
+            <div className="rounded-full ring ring-white ring-offset-base-100 w-14 duration-300 mx-auto">
               <img src={logo} alt="User Profile" title="User Profile" className="rounded-full" />
             </div>
           )}
@@ -221,17 +221,17 @@ const Sidebar = () => {
       </div>
 
       {/* Sidebar Menu */}
-      <div className="menu-bar hide-scrollbar mt-6 px-5 h-[calc(100vh-164px)] overflow-y-auto">
+      <div className="menu-bar hide-scrollbar mt-6 px-8 h-[calc(100vh-164px)] overflow-y-auto">
         {/* Main Menu Section */}
         <h4 className={`pb-2 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Main Menu</h4>
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col">
           {mainMenu.map((menu, i) => {
             const isActive = activeMainMenu === i;
             return (
               <li key={i}>
                 {/* Main Menu Item */}
                 <div
-                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center text-base font-medium py-4 rounded-md cursor-pointer transition-all duration-300 ${
                     isActive ? "text-red-500" : "text-white"
                   } ${isSidebarOpen ? "" : "justify-center"}`}
                   onClick={() => {
@@ -261,9 +261,9 @@ const Sidebar = () => {
                   {isSidebarOpen && menu.isSubmenu && (
                     <div className="ml-auto transition-transform duration-300">
                       {expandedMainMenu === i ? (
-                        <HiChevronDown className="w-5 h-5" />
+                        <HiChevronDown className="w-6 h-6" />
                       ) : (
-                        <HiChevronRight className="w-5 h-5" />
+                        <HiChevronRight className="w-6 h-6" />
                       )}
                     </div>
                   )}
@@ -297,7 +297,7 @@ const Sidebar = () => {
         </ul>
         {/* CMS & Blogs Section */}
         <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>CMS & Blogs</h4>
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col">
           {cmsBlogs.map((menu, i) => {
             const isActive = activeCmsMenu === i;
 
@@ -305,7 +305,7 @@ const Sidebar = () => {
               <li key={i}>
                 {/* Main Menu Item */}
                 <div
-                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center text-base font-medium py-4 rounded-md cursor-pointer transition-all duration-300 ${
                     isActive ? "text-red-500" : "text-white"
                   } ${isSidebarOpen ? "" : "justify-center"}`}
                   onClick={() => {
@@ -335,9 +335,9 @@ const Sidebar = () => {
                   {isSidebarOpen && menu.isSubmenu && (
                     <div className="ml-auto transition-transform duration-300">
                       {expandedCmsMenu === i ? (
-                        <HiChevronDown className="w-5 h-5" />
+                        <HiChevronDown className="w-6 h-6" />
                       ) : (
-                        <HiChevronRight className="w-5 h-5" />
+                        <HiChevronRight className="w-6 h-6" />
                       )}
                     </div>
                   )}
@@ -371,7 +371,7 @@ const Sidebar = () => {
        </ul>
         {/* Settings & Config Section */}
         <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Settings & Config</h4>
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col">
           {settingsConfig.map((menu, i) => {
             const isActive = activeSettingsMenu === i;
 
@@ -379,7 +379,7 @@ const Sidebar = () => {
               <li key={i}>
                 {/* Main Menu Item */}
                 <div
-                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center text-base font-medium py-4 rounded-md cursor-pointer transition-all duration-300 ${
                     isActive ? "text-red-500" : "text-white"
                   } ${isSidebarOpen ? "" : "justify-center"}`}
                   onClick={() => toggleMenu(i, "settings")}
@@ -407,9 +407,9 @@ const Sidebar = () => {
                     <div className="ml-auto transition-transform duration-300">
                       {menu.isSubmenu && (
                         expandedSettingsMenu === i ? (
-                          <HiChevronDown className="w-5 h-5" />
+                          <HiChevronDown className="w-6 h-6" />
                         ) : (
-                          <HiChevronRight className="w-5 h-5" />
+                          <HiChevronRight className="w-6 h-6" />
                         )
                       )}
                     </div>
@@ -443,7 +443,7 @@ const Sidebar = () => {
         </ul>
        {/* Others Section */}
       <h4 className={`pb-2 mt-6 border-b border-[#2a2d3b] text-red-500 ${isSidebarOpen ? "" : "text-center"}`}>Others</h4>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col">
           {others.map((menu, i) => {
             const isActive = activeOtherMenu === i;
 
@@ -451,7 +451,7 @@ const Sidebar = () => {
               <li key={i}>
                 {/* Main Menu Item */}
                 <div
-                  className={`flex items-center text-base font-medium py-3 rounded-md cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center text-base font-medium py-4 rounded-md cursor-pointer transition-all duration-300 ${
                     isActive ? "text-red-500" : "text-white"
                   } ${isSidebarOpen ? "" : "justify-center"}`}
                   onClick={() => {

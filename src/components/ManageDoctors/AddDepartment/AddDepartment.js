@@ -128,7 +128,6 @@ const AddDepartment = () => {
             <option value="bn">Bangla</option>
           </select>
         </div>
-
         {/* Department Form */}
         <form onSubmit={handleSubmit}>
           {/* 1) Department Name */}
@@ -207,7 +206,7 @@ const AddDepartment = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition ${
+              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

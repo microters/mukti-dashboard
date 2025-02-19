@@ -10,7 +10,7 @@ const Dashboard = () => {
     <div className="flex">
       {/* Sidebar */}
       <div
-        className={`fixed lg:relative z-50 transition-transform duration-300 bg-gray-900 text-white min-h-screen p-4 
+        className={`fixed lg:relative z-50 transition-transform duration-300 bg-gray-900 text-white min-h-screen p-0
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
@@ -30,7 +30,7 @@ const Dashboard = () => {
         <TopHeader setIsSidebarOpen={setIsSidebarOpen} />
 
         {/* Main Content */}
-        <div className="p-4 overflow-y-auto flex-grow h-[calc(100vh-72px)]">
+        <div className="p-4 hide-scrollbar overflow-y-auto flex-grow h-[calc(100vh-72px)]">
           <Outlet />
         </div>
       </div>
