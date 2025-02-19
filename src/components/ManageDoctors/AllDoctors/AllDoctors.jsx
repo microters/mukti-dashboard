@@ -65,12 +65,13 @@ const DoctorList = () => {
       try {
         setLoading(true);
 
-        const response = await axios.get("http://api.muktihospital.com/api/doctor", {
+        const response = await axios.get("http://localhost:5000/api/doctor", {
           headers: {
             "x-api-key":
               "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
+        console.log(response)
 
         setDoctors(response.data);
         setFilteredDoctors(response.data); // Initially, all doctors
@@ -141,7 +142,7 @@ const DoctorList = () => {
     setDeleteModalOpen(false);
 
     try {
-      await axios.delete(`http://api.muktihospital.com/api/doctor/delete/${id}`, {
+      await axios.delete(`http://localhost:5000/api/doctor/delete/${id}`, {
         headers: {
           "x-api-key":
             "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
