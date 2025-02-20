@@ -46,6 +46,7 @@ const AddDoctor = () => {
     metaDescription: { en: "", bn: "" },
     name: { en: "", bn: "" },
     email: "",
+    profilePhoto:"",
     contactNumber: { en: "", bn: "" },
     contactNumberSerial: { en: "", bn: "" },
     designation: { en: "", bn: "" },
@@ -124,14 +125,16 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   //  D) Profile photo
   // ----------------------------------------------------------------
-  const handleProfilePhotoChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const fileURL = URL.createObjectURL(file);
-      setProfilePhoto(fileURL);
-      setSelectedFile(file); // We'll pass if we do multi-part form data
-    }
-  };
+// প্রোফাইল ফটো চেঞ্জ হ্যান্ডলার
+const handleProfilePhotoChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const fileURL = URL.createObjectURL(file);
+    setProfilePhoto(fileURL); // ফটো প্রিভিউ দেখানোর জন্য
+    setSelectedFile(file); // ফাইল সেভ করো আপলোডের জন্য
+  }
+};
+
 
   // ----------------------------------------------------------------
   //  E) Dynamic Fields (memberships, awards, treatments, conditions)
@@ -188,90 +191,81 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Convert any numeric Bangla digits to English in relevant fields
-    const finalYearsEn = convertBengaliToEnglish(
-      formData.yearsOfExperience.en || ""
-    );
-    const finalYearsBn = convertBengaliToEnglish(
-      formData.yearsOfExperience.bn || ""
-    );
-    const finalAppFeeEn = convertBengaliToEnglish(
-      formData.appointmentFee.en || ""
-    );
-    const finalAppFeeBn = convertBengaliToEnglish(
-      formData.appointmentFee.bn || ""
-    );
-    // ... do similarly for followUpFee, patientAttended, etc.
-    const finalFollowUpEn = convertBengaliToEnglish(
-      formData.followUpFee.en || ""
-    );
-    const finalFollowUpBn = convertBengaliToEnglish(
-      formData.followUpFee.bn || ""
-    );
-    const finalPatientEn = convertBengaliToEnglish(
-      formData.patientAttended.en || ""
-    );
-    const finalPatientBn = convertBengaliToEnglish(
-      formData.patientAttended.bn || ""
-    );
-    const finalAvgEn = convertBengaliToEnglish(
-      formData.avgConsultationTime.en || ""
-    );
-    const finalAvgBn = convertBengaliToEnglish(
-      formData.avgConsultationTime.bn || ""
-    );
-
-    const payload = {
-      email: formData.email,
-      profilePhoto: profilePhoto || "",
-      translations: {
-        en: {
-          name: formData.name.en,
-          designation: formData.designation.en,
-          department: formData.department.en,
-          shortBio: formData.shortBio.en,
-          yearsOfExperience: finalYearsEn,
-          appointmentFee: finalAppFeeEn,
-          followUpFee: finalFollowUpEn,
-          patientAttended: finalPatientEn,
-          avgConsultationTime: finalAvgEn,
+    setLoading(true);
+  
+    // Convert Bengali digits to English for numeric fields
+    const finalYearsEn = convertBengaliToEnglish(formData.yearsOfExperience.en || "");
+    const finalYearsBn = convertBengaliToEnglish(formData.yearsOfExperience.bn || "");
+    const finalAppFeeEn = convertBengaliToEnglish(formData.appointmentFee.en || "");
+    const finalAppFeeBn = convertBengaliToEnglish(formData.appointmentFee.bn || "");
+    const finalFollowUpEn = convertBengaliToEnglish(formData.followUpFee.en || "");
+    const finalFollowUpBn = convertBengaliToEnglish(formData.followUpFee.bn || "");
+    const finalPatientEn = convertBengaliToEnglish(formData.patientAttended.en || "");
+    const finalPatientBn = convertBengaliToEnglish(formData.patientAttended.bn || "");
+    const finalAvgEn = convertBengaliToEnglish(formData.avgConsultationTime.en || "");
+    const finalAvgBn = convertBengaliToEnglish(formData.avgConsultationTime.bn || "");
+  
+    // 1. Create FormData object
+    const formDataToSend = new FormData();
+  
+    // 2. Append icon if selected
+    if (selectedFile) {
+      formDataToSend.append("profilePhoto", selectedFile);  // Sending `profilePhoto` key but it will be stored as `icon` in backend
+    }
+  
+    // 3. Append other form data
+    formDataToSend.append(
+      "data",
+      JSON.stringify({
+        email: formData.email,
+        translations: {
+          en: {
+            name: formData.name.en,
+            designation: formData.designation.en,
+            department: formData.department.en,
+            shortBio: formData.shortBio.en,
+            yearsOfExperience: finalYearsEn,
+            appointmentFee: finalAppFeeEn,
+            followUpFee: finalFollowUpEn,
+            patientAttended: finalPatientEn,
+            avgConsultationTime: finalAvgEn,
+          },
+          bn: {
+            name: formData.name.bn,
+            designation: formData.designation.bn,
+            department: formData.department.bn,
+            shortBio: formData.shortBio.bn,
+            yearsOfExperience: finalYearsBn,
+            appointmentFee: finalAppFeeBn,
+            followUpFee: finalFollowUpBn,
+            patientAttended: finalPatientBn,
+            avgConsultationTime: finalAvgBn,
+          },
         },
-        bn: {
-          name: formData.name.bn,
-          designation: formData.designation.bn,
-          department: formData.department.bn,
-          shortBio: formData.shortBio.bn,
-          yearsOfExperience: finalYearsBn,
-          appointmentFee: finalAppFeeBn,
-          followUpFee: finalFollowUpBn,
-          patientAttended: finalPatientBn,
-          avgConsultationTime: finalAvgBn,
-        },
-      },
-      memberships,
-      awards,
-      treatments,
-      conditions,
-      schedule: schedules,
-      faqs,
-    };
-
+        memberships,
+        awards,
+        treatments,
+        conditions,
+        schedule: schedules,
+        faqs,
+      })
+    );
+  
     try {
       const response = await axios.post(
         "http://localhost:5000/api/doctor/add",
-        payload,
+        formDataToSend, // Sending FormData with `icon`
         {
           headers: {
-            "Content-Type": "application/json",
-            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+            "Content-Type": "multipart/form-data",  // Set the correct header for file uploads
+            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Your API key
           },
         }
       );
-
+  
       if (response.status === 200 || response.status === 201) {
         toast.success("✅ Doctor added successfully!");  // Show success message
-        handleDiscard();
+        handleDiscard();  // Reset form after submission
       } else {
         toast.error(`❌ Failed to add doctor: ${response.data?.message || "Error"}`);  // Show error message
       }
@@ -279,9 +273,10 @@ const AddDoctor = () => {
       console.error("❌ Error submitting doctor data:", error);
       toast.error("An error occurred while adding the doctor.");  // Show error message
     } finally {
-      setLoading(false);  // Stop loading
+      setLoading(false);  // Stop loading state
     }
   };
+  
 
   // ----------------------------------------------------------------
   //  G) Discard form
@@ -796,11 +791,12 @@ const AddDoctor = () => {
           {/* Profile Photo */}
           <div className="mt-6 flex flex-col">
             <div className="relative w-24 h-24">
-              <img
-                src={profilePhoto}
-                alt="Profile"
-                className="rounded-full border shadow-md"
-              />
+            <img
+  src={formData.icon || "https://placehold.co/100"}  // Ensure 'icon' field is used
+  alt="Profile"
+  className="rounded-full border shadow-md"
+/>
+
               <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer">
                 <FaEdit />
                 <input type="file" className="hidden" onChange={handleProfilePhotoChange} />

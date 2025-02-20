@@ -73,7 +73,11 @@ const DoctorList = () => {
         });
 
         setDoctors(response.data);
+        console.log(response.data);
+        
         setFilteredDoctors(response.data); // Initially, all doctors
+        console.log(filteredDoctors);
+        
       } catch (error) {
         console.error("Error fetching doctors:", error);
         toast.error("Failed to fetch doctor list");

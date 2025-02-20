@@ -247,10 +247,11 @@ const EditDoctor = () => {
     const file = event.target.files[0];
     if (file) {
       const fileURL = URL.createObjectURL(file);
-      setDoctorData((prev) => ({ ...prev, profilePhoto: fileURL }));
+      setDoctorData((prev) => ({ ...prev, icon: fileURL })); // Update icon here
       setSelectedFile(file);
     }
   };
+  
 
   // --------------------------------------------------
   // Dynamic array (memberships, awards, treatments, conditions)
@@ -400,6 +401,9 @@ const EditDoctor = () => {
       schedule: schedules,
       faqs,
     };
+    if (selectedFile) {
+      payload.profilePhoto = selectedFile;  // Send the file for upload as `profilePhoto`
+    }
 
     try {
       setSubmitting(true);
@@ -418,6 +422,7 @@ const EditDoctor = () => {
       setSubmitting(false);
     }
   };
+console.log(doctorData);
 
   // --------------------------------------------------
   // 5. Loading skeleton
@@ -982,11 +987,12 @@ const EditDoctor = () => {
           <div className="mt-6">
             <label className="label">{t("profilePhoto")}</label>
             <div className="relative w-24 h-24">
-              <img
-                src={doctorData.profilePhoto}
-                alt="Profile"
-                className="rounded-full border shadow-md w-24 h-24 object-cover"
-              />
+            <img
+  src={doctorData.icon || "https://placehold.co/100"} // Display icon here
+  alt="Profile"
+  className="rounded-full border shadow-md w-24 h-24 object-cover"
+/>
+
               <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer">
                 <FaEdit />
                 <input
