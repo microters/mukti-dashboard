@@ -44,11 +44,12 @@ export const router = createBrowserRouter([
       {
         path: "/edit-doctor/:id",
         element: (
-        //   <AdminRoute>
-            <EditDoctor/>
-        //   </AdminRoute>
+          // <AdminRoute>
+            <EditDoctor />
+          // </AdminRoute>
         ),
       },
+      
       {
         path: "add-department",
         element: (

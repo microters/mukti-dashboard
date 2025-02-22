@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaEdit, FaPlus, FaTrash, FaUserMd } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
+import slugify from "slugify";  // ✅ Import slugify for generating slugs
 // React Skeleton for loading states
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -34,6 +34,8 @@ function convertBengaliToEnglish(str) {
 
 const EditDoctor = () => {
   const { id } = useParams();
+  console.log(id);
+  
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(["addDoctor"]);
 
@@ -46,6 +48,7 @@ const EditDoctor = () => {
     metaDescription:{ en: "", bn: "" },
     name: { en: "", bn: "" },
     email: "",
+    slug: "",
     contactNumber: { en: "", bn: "" },
     contactNumberSerial: { en: "", bn: "" },
     designation: { en: "", bn: "" },
@@ -106,12 +109,13 @@ const EditDoctor = () => {
   // --------------------------------------------------
   // 1. Fetch doctor data when component mounts or when language changes
   // --------------------------------------------------
+  
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/doctor/${id}?lang=${selectedLanguage}`,
+        `http://localhost:5000/api/doctor/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key":
@@ -122,7 +126,7 @@ const EditDoctor = () => {
 
         const doctor = response.data;
         console.log("Fetched:", doctor);
-
+        const generatedSlug = doctor.slug || slugify(doctor.translations?.en?.name || "doctor", { lower: true, strict: true });
         // fill up the multi-language fields for the selected language
         setDoctorData((prev) => ({
           ...prev,
@@ -140,6 +144,7 @@ const EditDoctor = () => {
             [selectedLanguage]: doctor.translations?.name || "",
           },
           email: doctor.email || "",
+          slug: generatedSlug,
           contactNumber: {
             ...prev.contactNumber,
             [selectedLanguage]: doctor.translations?.contactNumber || "",
@@ -190,7 +195,7 @@ const EditDoctor = () => {
             [selectedLanguage]: doctor.translations?.avgConsultationTime || "",
           },
 
-          profilePhoto: doctor.profilePhoto || prev.profilePhoto,
+          profilePhoto: doctor.icon || prev.icon,
         }));
 
         // also update dynamic arrays
@@ -232,25 +237,27 @@ const EditDoctor = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     const lang = selectedLanguage;
-
-    setDoctorData((prev) => ({
-      ...prev,
-      [name]: {
-        ...prev[name],
-        [lang]: value,
-      },
-    }));
+    if (name === "slug") {
+      setDoctorData((prev) => ({ ...prev, slug: value }));
+    } else {
+      setDoctorData((prev) => ({
+        ...prev,
+        [name]: { ...prev[name], [lang]: value },
+        // Auto-update slug when name changes (always using English)
+        ...(name === "name" && { slug: slugify(value, { lower: true, strict: true }) }),
+      }));
+    }
   };
-
   // Profile photo change
   const handleProfilePhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const fileURL = URL.createObjectURL(file);
-      setDoctorData((prev) => ({ ...prev, profilePhoto: fileURL }));
+      setDoctorData((prev) => ({ ...prev, icon: fileURL })); // Update icon here
       setSelectedFile(file);
     }
   };
+  
 
   // --------------------------------------------------
   // Dynamic array (memberships, awards, treatments, conditions)
@@ -353,6 +360,7 @@ const EditDoctor = () => {
 
     const payload = {
       ...doctorData,
+      slug: doctorData.slug, // Ensure slug is sent even if manually edited
       translations: {
         en: {
           metaTitle:doctorData.metaTitle.en,
@@ -400,6 +408,10 @@ const EditDoctor = () => {
       schedule: schedules,
       faqs,
     };
+    if (selectedFile) {
+      payload.profilePhoto = selectedFile;  // Send the file for upload as `profilePhoto`
+    }
+console.log(payload);
 
     try {
       setSubmitting(true);
@@ -418,6 +430,7 @@ const EditDoctor = () => {
       setSubmitting(false);
     }
   };
+console.log(doctorData);
 
   // --------------------------------------------------
   // 5. Loading skeleton
@@ -519,6 +532,12 @@ const EditDoctor = () => {
                 disabled={submitting}
               />
             </div>
+            {/* Slug Field */}
+            <div>
+              <label className="label">Slug</label>
+              <input type="text" name="slug" className="input-field" placeholder="Enter Slug" value={doctorData.slug} onChange={handleChange} disabled={submitting} />
+            </div>
+
 
             {/* Email */}
             <div>
@@ -982,11 +1001,12 @@ const EditDoctor = () => {
           <div className="mt-6">
             <label className="label">{t("profilePhoto")}</label>
             <div className="relative w-24 h-24">
-              <img
-                src={doctorData.profilePhoto}
-                alt="Profile"
-                className="rounded-full border shadow-md w-24 h-24 object-cover"
-              />
+            <img
+  src={`http://localhost:5000${doctorData.profilePhoto}` || "https://placehold.co/100"} // Display icon here
+  alt="Profile"
+  className="rounded-full border shadow-md w-24 h-24 object-cover"
+/>
+
               <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer">
                 <FaEdit />
                 <input
