@@ -4,7 +4,7 @@ import { FaEdit, FaPlus, FaTrash, FaUserMd } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { toast, ToastContainer } from "react-toastify";
-
+import slugify from "slugify";  // ✅ Import slugify for generating slugs
 // Example utility: Convert Bengali digits (০-৯) to English (0-9)
 function convertBengaliToEnglish(str = "") {
   const map = {
@@ -45,6 +45,7 @@ const AddDoctor = () => {
     metaTitle: { en: "", bn: "" },
     metaDescription: { en: "", bn: "" },
     name: { en: "", bn: "" },
+    slug: "",
     email: "",
     profilePhoto:"",
     contactNumber: { en: "", bn: "" },
@@ -91,6 +92,7 @@ const AddDoctor = () => {
 
     fetchDepartments();
   }, [i18n.language]);
+console.log(departments);
 
   // ----------------------------------------------------------------
   //  B) Language Switch (English <-> Bangla)
@@ -98,7 +100,20 @@ const AddDoctor = () => {
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
   };
+  useEffect(() => {
+    if (formData.name.en) {
+      const generatedSlug = slugify(formData.name.en, { lower: true, strict: true });
+      setFormData((prev) => ({
+        ...prev,
+        slug: generatedSlug,
+      }));
+    }
+  }, [formData.name.en]); // Auto-generate slug when English name is updated
 
+  // ✅ Handle slug change (if user edits manually)
+  const handleSlugChange = (e) => {
+    setFormData((prev) => ({ ...prev, slug: slugify(e.target.value, { lower: true, strict: true }) }));
+  };
   // ----------------------------------------------------------------
   //  C) Handle form input changes
   // ----------------------------------------------------------------
@@ -218,10 +233,16 @@ const handleProfilePhotoChange = (e) => {
       "data",
       JSON.stringify({
         email: formData.email,
+        slug: formData.slug,  // ✅ Sending slug to backend
         translations: {
           en: {
+            metaTitle:formData.metaTitle.en,
+            metaDescription:formData.metaDescription.en,
             name: formData.name.en,
+            contactNumber: formData.contactNumber.en,
+            contactNumberSerial: formData.contactNumberSerial.en,
             designation: formData.designation.en,
+            gender: formData.gender.en,
             department: formData.department.en,
             shortBio: formData.shortBio.en,
             yearsOfExperience: finalYearsEn,
@@ -229,10 +250,17 @@ const handleProfilePhotoChange = (e) => {
             followUpFee: finalFollowUpEn,
             patientAttended: finalPatientEn,
             avgConsultationTime: finalAvgEn,
+            academicQualification: formData.academicQualification.en,
+
           },
           bn: {
+            metaTitle:formData.metaTitle.bn,
+            metaDescription:formData.metaDescription.bn,
             name: formData.name.bn,
+            contactNumber: formData.contactNumber.bn,
+            contactNumberSerial: formData.contactNumberSerial.bn,
             designation: formData.designation.bn,
+            gender:formData.gender.bn,
             department: formData.department.bn,
             shortBio: formData.shortBio.bn,
             yearsOfExperience: finalYearsBn,
@@ -286,6 +314,7 @@ const handleProfilePhotoChange = (e) => {
       metaTitle: { en: "", bn: "" },
       metaDescription: { en: "", bn: "" },
       name: { en: "", bn: "" },
+      slug: "",
       email: "",
       contactNumber: { en: "", bn: "" },
       contactNumberSerial: { en: "", bn: "" },
@@ -381,7 +410,18 @@ const handleProfilePhotoChange = (e) => {
                />
               )}
             </div>
-
+{/* Slug Field */}
+<div>
+            <label className="label">Slug (Editable)</label>
+            <input
+              type="text"
+              name="slug"
+              className="input-field"
+              placeholder="Enter Slug"
+              value={formData.slug}
+              onChange={handleSlugChange}
+            />
+          </div>
             {/* Email */}
             <div>
               <label className="label">{t("email")}</label>

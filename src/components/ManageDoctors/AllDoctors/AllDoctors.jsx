@@ -64,20 +64,18 @@ const DoctorList = () => {
     const fetchDoctors = async () => {
       try {
         setLoading(true);
-
         const response = await axios.get("http://localhost:5000/api/doctor", {
           headers: {
-            "x-api-key":
-              "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
-
-        setDoctors(response.data);
-        console.log(response.data);
-        
-        setFilteredDoctors(response.data); // Initially, all doctors
-        console.log(filteredDoctors);
-        
+        // Check if the data is nested
+        const doctorsData = Array.isArray(response.data)
+          ? response.data
+          : response.data.doctors || [];
+  
+        setDoctors(doctorsData);
+        setFilteredDoctors(doctorsData);
       } catch (error) {
         console.error("Error fetching doctors:", error);
         toast.error("Failed to fetch doctor list");
@@ -85,9 +83,10 @@ const DoctorList = () => {
         setLoading(false);
       }
     };
-
+  
     fetchDoctors();
   }, []);
+  
 
   // ------------------------------
   // 2. Handle Search
