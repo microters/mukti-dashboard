@@ -361,7 +361,7 @@ const handleProfilePhotoChange = (e) => {
               onChange={handleLanguageChange}
               value={i18n.language}
             >
-              <option value="en">English</option>
+              <option value="en">{t('english')}</option>
               <option value="bn">Bangla</option>
             </select>
           </div>
