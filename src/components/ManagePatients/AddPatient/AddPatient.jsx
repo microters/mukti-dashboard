@@ -3,6 +3,7 @@ import { FaUser, FaEdit } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import axios from "axios";
 
 const AddPatient = () => {
     const { i18n } = useTranslation(["addDoctor"]);
@@ -18,6 +19,7 @@ const AddPatient = () => {
         dateOfBirth: "",
         age: "",
         weight: "",
+        image: null,  // store the file here
     });
 
     // Handle Language Change
@@ -35,19 +37,45 @@ const AddPatient = () => {
         const file = event.target.files[0];
         if (file) {
             setProfilePhoto(URL.createObjectURL(file));
-            setFormData((prev) => ({ ...prev, image: file }));
+            setFormData((prev) => ({ ...prev, image: file })); // Add the file to formData
         }
     };
 
     // Form Submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true); // Start loading
 
-        setTimeout(() => {
-            setLoading(false); // Simulate API response time
-            console.log("Submitted Data:", formData);
-        }, 2000);
+        const formDataToSend = new FormData();
+        formDataToSend.append("name", formData.name);
+        formDataToSend.append("phoneNumber", formData.phoneNumber);
+        formDataToSend.append("email", formData.email);
+        formDataToSend.append("gender", formData.gender);
+        formDataToSend.append("bloodGroup", formData.bloodGroup);
+        formDataToSend.append("dateOfBirth", formData.dateOfBirth);
+        formDataToSend.append("age", formData.age);
+        formDataToSend.append("weight", formData.weight);
+        if (formData.image) {
+            formDataToSend.append("image", formData.image);  // Append image file
+        }
+
+        try {
+            // Make POST request to the backend API
+            const response = await axios.post("http://localhost:5000/api/patient/add", formDataToSend, {
+                headers: {
+                    "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+                    "Content-Type": "multipart/form-data",
+                  },
+            });
+
+            console.log(response.data);  // Log the response
+            setLoading(false);  // Stop loading after response
+            alert("Patient added successfully!");
+        } catch (error) {
+            console.error("Error adding patient:", error);
+            setLoading(false);  // Stop loading after error
+            alert("Error adding patient!");
+        }
     };
 
     // Reset Form
@@ -61,6 +89,7 @@ const AddPatient = () => {
             dateOfBirth: "",
             age: "",
             weight: "",
+            image: null,
         });
         setProfilePhoto("https://placehold.co/100");
     };
@@ -75,17 +104,8 @@ const AddPatient = () => {
                         </h2>
                         <p className="text-gray-500 text-sm mt-2">Fill in the details below to register a new patient.</p>
                     </div>
-                    {/* Language switcher */}
-                    <div className="mb-4">
-                        <select
-                            className="p-2 border rounded-md"
-                            onChange={handleLanguageChange}
-                            value={i18n.language}
-                        >
-                            <option value="en">English</option>
-                            <option value="bn">Bangla</option>
-                        </select>
-                    </div>
+                  
+                  
                 </div>
                 <form className="mt-6" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

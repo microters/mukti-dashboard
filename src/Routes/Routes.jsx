@@ -10,6 +10,8 @@ import AddDepartment from "../components/ManageDoctors/AddDepartment/AddDepartme
 import DepartmentList from "../components/ManageDoctors/All Department/All Department";
 import EditDepartment from "../components/ManageDoctors/EditDepartment/EditDepartment";
 import AddReviews from "../components/Reviews/AddReviews";
+import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
+import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 
 // Importing necessary pages
 
@@ -76,21 +78,29 @@ export const router = createBrowserRouter([
       },
 
       /** Manage Patients **/
-      {
-        path: "all-patients",
-        element: (
-        //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <AllPatients />
-        //   </AdminRoute>
-        ),
-      },
+   
       {
         path: "add-patient",
         element: (
         //   <AdminRoute>
             <AddPatient />
         //   </AdminRoute>
+        ),
+      },
+      {
+        path: "all-patients",
+        element: (
+        //   <AdminRoute>
+            <AllPatient />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-patient/:id",
+        element: (
+          // <AdminRoute>
+            <EditPatient />
+          // </AdminRoute>
         ),
       },
       {
