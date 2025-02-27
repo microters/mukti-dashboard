@@ -12,6 +12,7 @@ import EditDepartment from "../components/ManageDoctors/EditDepartment/EditDepar
 import AddReviews from "../components/Reviews/AddReviews";
 import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
+import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
 
 // Importing necessary pages
 
@@ -144,8 +145,7 @@ export const router = createBrowserRouter([
         path: "add-appointment",
         element: (
         //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <AddAppointment />
+            <AddAppointment />
         //   </AdminRoute>
         ),
       },
