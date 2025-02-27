@@ -18,11 +18,11 @@ const DepartmentList = () => {
     const fetchDepartments = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("https://api.muktihospital.com/api/department", {
+        const response = await axios.get("http://localhost:5000/api/department", {
           headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         });
 
-        console.log("✅ API Response:", response.data); // Debugging API Data
+        console.log("✅ API Response:", response.data);
         setDepartments(response.data);
         setFilteredDepartments(response.data);
       } catch (error) {
@@ -64,7 +64,7 @@ const DepartmentList = () => {
     if (!window.confirm("Are you sure you want to delete this department?")) return;
 
     try {
-      await axios.delete(`https://api.muktihospital.com/api/department/${id}`, {
+      await axios.delete(`http://localhost:5000/api/department/${id}`, {
         headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
       });
       setDepartments(departments.filter((dep) => dep.id !== id));
@@ -88,7 +88,13 @@ const DepartmentList = () => {
         </select>
 
         {/* Search Input */}
-        <input type="text" className="p-2 border rounded-md" placeholder="Search by name or meta title" value={searchTerm} onChange={handleSearch} />
+        <input
+          type="text"
+          className="p-2 border rounded-md"
+          placeholder="Search by name or meta title"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
       </div>
 
       {/* Table */}
@@ -103,37 +109,54 @@ const DepartmentList = () => {
             </tr>
           </thead>
           <tbody>
-  {filteredDepartments.map((dep) => {
-    console.log("⏳ Processing Department:", dep); // Debug department object
+            {loading ? (
+              Array(5)
+                .fill()
+                .map((_, index) => (
+                  <tr key={index} className="hover:bg-gray-100">
+                    <td className="border px-4 py-2">
+                      <Skeleton />
+                    </td>
+                    <td className="border px-4 py-2">
+                      <Skeleton />
+                    </td>
+                    <td className="border px-4 py-2">
+                      <Skeleton />
+                    </td>
+                    <td className="border px-4 py-2">
+                      <Skeleton />
+                    </td>
+                  </tr>
+                ))
+            ) : (
+              filteredDepartments.map((dep) => {
+                console.log("⏳ Processing Department:", dep);
+                // ✅ Ensure translations exist
+                const trans =
+                  dep.translations && typeof dep.translations === "object"
+                    ? dep.translations[selectedLanguage] || dep.translations["en"] || {}
+                    : {};
 
-    // ✅ Ensure translations exist
-    const trans = dep.translations && typeof dep.translations === "object"
-      ? dep.translations[selectedLanguage] || dep.translations["en"] || {}
-      : {};
+                console.log("🔍 Translations Data:", trans);
 
-    console.log("🔍 Translations Data:", trans); // Debugging translation data
-
-    return (
-      <tr key={dep.id} className="hover:bg-gray-100">
-        <td className="border px-4 py-2">{dep.id}</td>
-        <td className="border px-4 py-2">{trans.name ? trans.name : "N/A"}</td>
-        <td className="border px-4 py-2">{trans.metaTitle ? trans.metaTitle : "N/A"}</td>
-        <td className="border px-4 py-2 flex gap-3">
-          <button className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
-          <Link to={`/edit-department/${dep.id}`} className="text-blue-500 hover:text-blue-700">
-  <FaEdit /> Edit
-</Link>
-
-          </button>
-          <button onClick={() => handleDelete(dep.id)} className="text-red-500 hover:text-red-700 flex items-center gap-1">
-            <FaTrash /> Delete
-          </button>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
-
+                return (
+                  <tr key={dep.id} className="hover:bg-gray-100">
+                    <td className="border px-4 py-2">{dep.id}</td>
+                    <td className="border px-4 py-2">{trans.name ? trans.name : "N/A"}</td>
+                    <td className="border px-4 py-2">{trans.metaTitle ? trans.metaTitle : "N/A"}</td>
+                    <td className="border px-4 py-2 flex gap-3">
+                      <Link to={`/edit-department/${dep.id}`} className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                        <FaEdit /> Edit
+                      </Link>
+                      <button onClick={() => handleDelete(dep.id)} className="text-red-500 hover:text-red-700 flex items-center gap-1">
+                        <FaTrash /> Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
         </table>
       </div>
     </div>
