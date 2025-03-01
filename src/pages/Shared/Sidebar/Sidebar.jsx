@@ -272,22 +272,22 @@ const Sidebar = () => {
                 )}
 
                 {/* Floating Submenu: Appears Next to Sidebar When Collapsed */}
-                  {menu.isSubmenu && expandedMainMenu === i && !isSidebarOpen && (
-                    <ul
-                      className="absolute left-full top-1/2 transform -translate-y-1/2 w-48 bg-white text-black shadow-lg rounded-md z-50 overflow-hidden"
-                    >
-                      {menu.submenus?.map((submenu, j) => (
-                        <li key={j}>
-                          <NavLink
-                            to={submenu.link}
-                            className="block text-gray-700 text-base py-2 px-4 transition-all duration-300 hover:bg-gray-200"
-                          >
-                            {submenu.name}
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                {menu.isSubmenu && expandedMainMenu === i && !isSidebarOpen && (
+                  <ul
+                    className="absolute left-full top-0 ml-2 w-48 bg-white text-black shadow-lg rounded-md z-50"
+                  >
+                    {menu.submenus?.map((submenu, j) => (
+                      <li key={j}>
+                        <NavLink
+                          to={submenu.link}
+                          className="block text-gray-700 text-base py-2 px-4 transition-all duration-300 hover:bg-gray-200"
+                        >
+                          {submenu.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* Normal Submenu: Only Visible When Sidebar is Expanded */}
                 {menu.isSubmenu && isSidebarOpen && (

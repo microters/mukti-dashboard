@@ -13,7 +13,7 @@ import AddReviews from "../components/Reviews/AddReviews";
 import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
-import HomepageForm from "../components/Manage Page/HomePage";
+import HomepageForm from "../components/Manage Section/HomePage";
 
 // Importing necessary pages
 
