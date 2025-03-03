@@ -140,13 +140,13 @@ console.log(departments);
   // ----------------------------------------------------------------
   //  D) Profile photo
   // ----------------------------------------------------------------
-// প্রোফাইল ফটো চেঞ্জ হ্যান্ডলার
+
 const handleProfilePhotoChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     const fileURL = URL.createObjectURL(file);
-    setProfilePhoto(fileURL); // ফটো প্রিভিউ দেখানোর জন্য
-    setSelectedFile(file); // ফাইল সেভ করো আপলোডের জন্য
+    setProfilePhoto(fileURL); 
+    setSelectedFile(file); 
   }
 };
 

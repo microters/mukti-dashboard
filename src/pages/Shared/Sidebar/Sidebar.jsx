@@ -91,9 +91,10 @@ const Sidebar = () => {
       link: "/manage-blogs",
       isSubmenu: true,
       submenus: [
-        { name: "All Blogs", link: "/all-blogs" },
+        { name: "All Blogs", link: "/all-blog" },
         { name: "Add New Blog", link: "/add-blog" },
-        { name: "Category List", link: "/category-list" },
+        { name: "Add New Category", link: "/add-category" },
+        { name: "All Category", link: "/all-category" },
       ],
     },
     {

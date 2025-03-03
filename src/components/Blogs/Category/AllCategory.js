@@ -7,78 +7,86 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Link } from "react-router-dom";
 
-const DepartmentList = () => {
-  const [departments, setDepartments] = useState([]);
-  const [filteredDepartments, setFilteredDepartments] = useState([]);
+const CategoryList = () => {
+  const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get("https://api.muktihospital.com/api/department", {
-          headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
-        });
+    const fetchCategories = async () => {
+        try {
+          setLoading(true);
+          const response = await axios.get("http://localhost:5000/api/category", {
+            headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
+          });
+      
+          if (!response.data || !Array.isArray(response.data)) {
+            throw new Error("Invalid data format received");
+          }
+      
+          console.log("✅ API Response:", response.data);
+          setCategories(response.data);
+          setFilteredCategories(response.data);
+        } catch (error) {
+          console.error("❌ Error fetching categories:", error);
+          toast.error("Failed to load categories.");
+          setCategories([]); // ✅ Prevents frontend from breaking if API fails
+          setFilteredCategories([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      
 
-        console.log("✅ API Response:", response.data);
-        setDepartments(response.data);
-        setFilteredDepartments(response.data);
-      } catch (error) {
-        console.error("❌ Error fetching departments:", error);
-        toast.error("Failed to load departments.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDepartments();
+    fetchCategories();
   }, []);
 
   // 🔹 Handle search input
   const handleSearch = (event) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
-    filterDepartments(term, selectedLanguage);
+    filterCategories(term, selectedLanguage);
   };
 
   // 🔹 Handle language change
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     setSelectedLanguage(newLang);
-    filterDepartments(searchTerm, newLang);
+    filterCategories(searchTerm, newLang);
   };
 
-  // 🔹 Filter departments based on search & language
-  const filterDepartments = (term, lang) => {
-    const filtered = departments.filter((dep) => {
-      const trans = dep.translations?.[lang] || {};
+  // 🔹 Filter categories based on search & language
+  const filterCategories = (term, lang) => {
+    const filtered = categories.filter((cat) => {
+      const trans = cat.translations?.[lang] || {};
       return trans.name?.toLowerCase().includes(term) || trans.metaTitle?.toLowerCase().includes(term);
     });
-    setFilteredDepartments(filtered);
+    setFilteredCategories(filtered);
   };
 
-  // 🔹 Handle department delete
+  // 🔹 Handle category delete
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this department?")) return;
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
 
     try {
-      await axios.delete(`https://api.muktihospital.com/api/department/${id}`, {
+      await axios.delete(`http://localhost:5000/api/category/${id}`, {
         headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
       });
-      setDepartments(departments.filter((dep) => dep.id !== id));
-      setFilteredDepartments(filteredDepartments.filter((dep) => dep.id !== id));
-      toast.success("Department deleted successfully.");
+      setCategories(categories.filter((cat) => cat.id !== id));
+      setFilteredCategories(filteredCategories.filter((cat) => cat.id !== id));
+      toast.success("Category deleted successfully.");
     } catch (error) {
-      console.error("❌ Error deleting department:", error);
-      toast.error("Failed to delete department.");
+      console.error("❌ Error deleting category:", error);
+      toast.error("Failed to delete category.");
     }
   };
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Department List</h2>
+      <h2 className="text-2xl font-bold mb-4">Category List</h2>
 
       <div className="flex justify-between mb-4">
         {/* Language Selector */}
@@ -103,7 +111,7 @@ const DepartmentList = () => {
           <thead>
             <tr className="bg-gray-200">
               <th className="border px-4 py-2">ID</th>
-              <th className="border px-4 py-2">Department Name</th>
+              <th className="border px-4 py-2">Category Name</th>
               <th className="border px-4 py-2">Meta Title</th>
               <th className="border px-4 py-2">Actions</th>
             </tr>
@@ -129,26 +137,26 @@ const DepartmentList = () => {
                   </tr>
                 ))
             ) : (
-              filteredDepartments.map((dep) => {
-                console.log("⏳ Processing Department:", dep);
+              filteredCategories.map((cat) => {
+                console.log("⏳ Processing Category:", cat);
                 // ✅ Ensure translations exist
                 const trans =
-                  dep.translations && typeof dep.translations === "object"
-                    ? dep.translations[selectedLanguage] || dep.translations["en"] || {}
+                  cat.translations && typeof cat.translations === "object"
+                    ? cat.translations[selectedLanguage] || cat.translations["en"] || {}
                     : {};
 
                 console.log("🔍 Translations Data:", trans);
 
                 return (
-                  <tr key={dep.id} className="hover:bg-gray-100">
-                    <td className="border px-4 py-2">{dep.id}</td>
+                  <tr key={cat.id} className="hover:bg-gray-100">
+                    <td className="border px-4 py-2">{cat.id}</td>
                     <td className="border px-4 py-2">{trans.name ? trans.name : "N/A"}</td>
                     <td className="border px-4 py-2">{trans.metaTitle ? trans.metaTitle : "N/A"}</td>
                     <td className="border px-4 py-2 flex gap-3">
-                      <Link to={`/edit-department/${dep.id}`} className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                      <Link to={`/edit-category/${cat.id}`} className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
                         <FaEdit /> Edit
                       </Link>
-                      <button onClick={() => handleDelete(dep.id)} className="text-red-500 hover:text-red-700 flex items-center gap-1">
+                      <button onClick={() => handleDelete(cat.id)} className="text-red-500 hover:text-red-700 flex items-center gap-1">
                         <FaTrash /> Delete
                       </button>
                     </td>
@@ -163,4 +171,4 @@ const DepartmentList = () => {
   );
 };
 
-export default DepartmentList;
+export default CategoryList;

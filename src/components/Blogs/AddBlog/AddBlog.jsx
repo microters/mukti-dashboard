@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import JoditEditor from "jodit-react";
 import Skeleton from "react-loading-skeleton";
-import 'react-loading-skeleton/dist/skeleton.css';
+import "react-loading-skeleton/dist/skeleton.css";
+import { toast } from "react-toastify";
 
+// AddBlog Component
 const AddBlog = () => {
   const editor = useRef(null);
-
-  // All text fields + image
   const [formData, setFormData] = useState({
     metaTitle: "",
     metaDescription: "",
@@ -14,114 +15,148 @@ const AddBlog = () => {
     slug: "",
     description: "",
     content: "",
-    categories: "",
+    categories: [], // This should hold the category ID(s)
     image: null,
   });
 
-  // Language selection: "en" or "bn"
   const [language, setLanguage] = useState("en");
-
-  // UI states
   const [isSlugEditable, setIsSlugEditable] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null); // Success message
-  const [error, setError] = useState(null);     // Error message
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Example category list
-  const categoriesList = ["Technology", "Health", "Business", "Lifestyle", "Education"];
+  // Categories from the API
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Handle changes for normal text inputs
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await axios.get("http://localhost:5000/api/category", {
+          headers: {
+            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+          },
+        });
+        setCategoriesList(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories.");
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
-  // Handle file input
-  const handleImageChange = (e) => {
-    setFormData(prev => ({ ...prev, image: e.target.files[0] }));
-  };
-
-  // Handle WYSIWYG content
-  const handleContentChange = (newContent) => {
-    // Example: remove <p> tags from the string
-    const strippedContent = newContent.replace(/<\/?p>/g, "");
-    setFormData(prev => ({ ...prev, content: strippedContent }));
-  };
-
-  // Handle category selection
-  const handleCategoryChange = (e) => {
-    setFormData(prev => ({ ...prev, categories: e.target.value }));
-  };
-
-  // Handle slug changes
-  const handleSlugChange = (e) => {
-    setFormData(prev => ({ ...prev, slug: e.target.value }));
-  };
-
-  // Toggle whether the slug is read-only
-  const handleSlugEditToggle = () => {
-    setIsSlugEditable(prev => !prev);
-  };
-
-  // Handle language selection
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
-  };
-
-  // Automatically generate slug from title (unless user manually edits it)
+  // Auto-generate slug from title
   useEffect(() => {
     if (formData.title && !formData.slug) {
       const generatedSlug = formData.title
         .toLowerCase()
         .replace(/\s+/g, "-")
         .replace(/[^\w\-]+/g, "");
-      setFormData(prev => ({ ...prev, slug: generatedSlug }));
+      setFormData((prev) => ({ ...prev, slug: generatedSlug }));
     }
   }, [formData.title]);
 
-  // Submit form data (with language, image, etc.) to the backend
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle slug change manually
+  const handleSlugChange = (e) => {
+    setFormData((prev) => ({ ...prev, slug: e.target.value }));
+  };
+
+  // Toggle slug edit mode
+  const handleSlugEditToggle = () => {
+    setIsSlugEditable((prev) => !prev);
+  };
+
+  // Handle content change (editor)
+  const handleContentChange = (newContent) => {
+    const strippedContent = newContent.replace(/<\/?p>/g, "");
+    setFormData((prev) => ({ ...prev, content: strippedContent }));
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (e) => {
+    const selectedCategoryId = e.target.value; // category ID
+    setFormData((prev) => ({ ...prev, categories: [selectedCategoryId] }));
+  };
+
+  // Handle image file change
+  const handleImageChange = (e) => {
+    setFormData((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  // Handle language change
+  const handleLanguageChange = (e) => {
+    const selectedLang = e.target.value === "bn" ? "bn" : "en";
+    setLanguage(selectedLang);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
     setError(null);
-
+  
+    // Prepare translations for both languages
+    const emptyTranslation = {
+      metaTitle: "",
+      metaDescription: "",
+      title: "",
+      description: "",
+      content: "",
+    };
+  
+    const translations = {
+      en: language === "en" ? {
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        title: formData.title,
+        description: formData.description,
+        content: formData.content,
+      } : { ...emptyTranslation },
+      bn: language === "bn" ? {
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        title: formData.title,
+        description: formData.description,
+        content: formData.content,
+      } : { ...emptyTranslation },
+    };
+  
+    console.log("Translations object being sent: ", translations);  // Add this log
+  
+    // Prepare FormData for submission
+    const data = new FormData();
+    data.append("translations", JSON.stringify(translations));  // Serialize translations
+    data.append("categories", JSON.stringify(formData.categories)); // Pass category IDs as array
+    if (formData.image) {
+      data.append("image", formData.image);
+    }
+  
     try {
-      // Build FormData to send file + fields
-      const data = new FormData();
-      data.append("language", language);  // e.g., "en" or "bn"
-      data.append("metaTitle", formData.metaTitle);
-      data.append("metaDescription", formData.metaDescription);
-      data.append("title", formData.title);
-      data.append("slug", formData.slug);
-      data.append("description", formData.description);
-      data.append("content", formData.content);
-
-      // Example: send categories as a JSON array (adjust to your backend’s expectation)
-      data.append("categories", JSON.stringify([formData.categories]));
-
-      if (formData.image) {
-        data.append("image", formData.image);
-      }
-
-      // Make the POST request to your backend
       const response = await fetch("http://localhost:5000/api/blogs/add", {
         method: "POST",
         headers: {
-          // API key if needed
           "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
         body: data,
       });
-
+  
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || "Failed to submit blog");
       }
-
+  
       setMessage(result.message);
-
-      // Optionally reset the form
       setFormData({
         metaTitle: "",
         metaDescription: "",
@@ -129,7 +164,7 @@ const AddBlog = () => {
         slug: "",
         description: "",
         content: "",
-        categories: "",
+        categories: [], // Reset categories to empty array
         image: null,
       });
     } catch (err) {
@@ -139,23 +174,19 @@ const AddBlog = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6">Add New Blog</h1>
 
-      {/* Success or error messages */}
       {message && <p className="mb-4 text-green-600">{message}</p>}
       {error && <p className="mb-4 text-red-600">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Language Switcher */}
         <div className="mb-4">
-          <select
-            value={language}
-            onChange={handleLanguageChange}
-            className="p-2 border rounded-md"
-          >
+          <select value={language} onChange={handleLanguageChange} className="p-2 border rounded-md">
             <option value="en">English</option>
             <option value="bn">Bangla</option>
           </select>
@@ -163,12 +194,8 @@ const AddBlog = () => {
 
         {/* Meta Title */}
         <div>
-          <label htmlFor="metaTitle" className="block text-sm font-medium text-gray-700">
-            Meta Title
-          </label>
-          {loading ? (
-            <Skeleton height={40} />
-          ) : (
+          <label htmlFor="metaTitle" className="block text-sm font-medium text-gray-700">Meta Title</label>
+          {loading ? <Skeleton height={40} /> : (
             <input
               type="text"
               id="metaTitle"
@@ -183,12 +210,8 @@ const AddBlog = () => {
 
         {/* Meta Description */}
         <div>
-          <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700">
-            Meta Description
-          </label>
-          {loading ? (
-            <Skeleton height={80} />
-          ) : (
+          <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700">Meta Description</label>
+          {loading ? <Skeleton height={80} /> : (
             <textarea
               id="metaDescription"
               name="metaDescription"
@@ -202,12 +225,8 @@ const AddBlog = () => {
 
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Title
-          </label>
-          {loading ? (
-            <Skeleton height={40} />
-          ) : (
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+          {loading ? <Skeleton height={40} /> : (
             <input
               type="text"
               id="title"
@@ -222,46 +241,32 @@ const AddBlog = () => {
 
         {/* Slug */}
         <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-            Slug
-          </label>
-          {loading ? (
-            <Skeleton height={40} />
-          ) : (
-            <>
-              <input
-                type="text"
-                id="slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleSlugChange}
-                className={`mt-1 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${
-                  isSlugEditable ? "focus:ring-blue-500" : "bg-gray-100"
-                }`}
-                required
-                readOnly={!isSlugEditable}
-              />
-              <button
-                type="button"
-                onClick={handleSlugEditToggle}
-                className={`mt-3 py-2 px-4 rounded-md text-white font-medium shadow ${
-                  isSlugEditable ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                }`}
-              >
-                {isSlugEditable ? "Save" : "Edit"}
-              </button>
-            </>
+          <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+          {loading ? <Skeleton height={40} /> : (
+            <input
+              type="text"
+              id="slug"
+              name="slug"
+              value={formData.slug}
+              onChange={handleSlugChange}
+              className={`mt-1 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${isSlugEditable ? "focus:ring-blue-500" : "bg-gray-100"}`}
+              required
+              readOnly={!isSlugEditable}
+            />
           )}
+          <button
+            type="button"
+            onClick={handleSlugEditToggle}
+            className={`mt-3 py-2 px-4 rounded-md text-white font-medium shadow ${isSlugEditable ? "bg-green-500" : "bg-blue-500"}`}
+          >
+            {isSlugEditable ? "Save" : "Edit"}
+          </button>
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          {loading ? (
-            <Skeleton height={80} />
-          ) : (
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+          {loading ? <Skeleton height={80} /> : (
             <textarea
               id="description"
               name="description"
@@ -273,14 +278,10 @@ const AddBlog = () => {
           )}
         </div>
 
-        {/* Content (JoditEditor) */}
+        {/* Content */}
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-            Content
-          </label>
-          {loading ? (
-            <Skeleton height={300} />
-          ) : (
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700">Content</label>
+          {loading ? <Skeleton height={300} /> : (
             <JoditEditor
               ref={editor}
               value={formData.content}
@@ -296,12 +297,8 @@ const AddBlog = () => {
 
         {/* Categories Dropdown */}
         <div>
-          <label htmlFor="categories" className="block text-sm font-medium text-gray-700">
-            Categories
-          </label>
-          {loading ? (
-            <Skeleton height={40} />
-          ) : (
+          <label htmlFor="categories" className="block text-sm font-medium text-gray-700">Categories</label>
+          {loadingCategories ? <Skeleton height={40} /> : (
             <select
               id="categories"
               name="categories"
@@ -311,9 +308,9 @@ const AddBlog = () => {
               required
             >
               <option value="">Select Category</option>
-              {categoriesList.map((category, index) => (
-                <option key={index} value={category}>
-                  {category}
+              {categoriesList.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.translations[language]?.name || category.name}
                 </option>
               ))}
             </select>
@@ -322,19 +319,14 @@ const AddBlog = () => {
 
         {/* Image Upload */}
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            Image
-          </label>
-          {loading ? (
-            <Skeleton height={40} />
-          ) : (
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
+          {loading ? <Skeleton height={40} /> : (
             <input
               type="file"
               id="image"
               name="image"
               onChange={handleImageChange}
               className="mt-1 p-3 w-full border border-gray-300 rounded-md"
-              required
             />
           )}
         </div>

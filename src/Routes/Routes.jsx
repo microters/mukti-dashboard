@@ -14,6 +14,11 @@ import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
 import HomepageForm from "../components/Manage Page/HomePage";
+import BlogList from "../components/Blogs/AllBlog/AllBlog";
+import EditBlog from "../components/Blogs/EditBlog/EditBlog";
+import AddCategory from "../components/Blogs/Category/AddCategory";
+import CategoryList from "../components/Blogs/Category/AllCategory";
+import EditCategory from "../components/Blogs/Category/EditCategory";
 
 // Importing necessary pages
 
@@ -153,11 +158,10 @@ export const router = createBrowserRouter([
 
       /** CMS & Blogs **/
       {
-        path: "all-blogs",
+        path: "all-blog",
         element: (
         //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <AllBlogs />
+            <BlogList />
         //   </AdminRoute>
         ),
       },
@@ -170,14 +174,39 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "category-list",
+        path: "add-category",
         element: (
         //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <CategoryList />
+            <AddCategory />
         //   </AdminRoute>
         ),
       },
+      {
+        path: "all-category",
+        element: (
+        //   <AdminRoute>
+            <CategoryList />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-category/:id",
+        element: (
+          // <AdminRoute>
+            <EditCategory />
+          // </AdminRoute>
+        ),
+      },
+     
+      {
+        path: "/edit-blog/:id",
+        element: (
+          // <AdminRoute>
+            <EditBlog />
+          // </AdminRoute>
+        ),
+      },
+     
 
       /** Website Setup **/
       {
