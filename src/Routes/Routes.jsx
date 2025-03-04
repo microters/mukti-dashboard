@@ -14,11 +14,6 @@ import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
 import HomepageForm from "../components/Manage Page/HomePage";
-import BlogList from "../components/Blogs/AllBlog/AllBlog";
-import EditBlog from "../components/Blogs/EditBlog/EditBlog";
-import AddCategory from "../components/Blogs/Category/AddCategory";
-import CategoryList from "../components/Blogs/Category/AllCategory";
-import EditCategory from "../components/Blogs/Category/EditCategory";
 
 // Importing necessary pages
 

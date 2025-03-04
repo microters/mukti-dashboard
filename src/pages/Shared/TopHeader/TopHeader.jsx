@@ -1,27 +1,34 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaBell, FaHome, FaSearch, FaUserCircle, FaCog, FaSignOutAlt, FaBars } from "react-icons/fa";
-import { HiChevronDown, HiChevronUp } from "react-icons/hi";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FaBell, FaHome, FaSearch, FaUserCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { HiChevronLeft, HiChevronRight, HiChevronDown, HiChevronUp } from "react-icons/hi";
 import logo from "../../../assets/logo/MH-icon.png";
 
 const TopHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-  const handleLogout = () => {
-    alert("Logging out...");
-    navigate("/login");
-  };
+  // Update `isMobile` state on window resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div className="bg-white text-gray-800 px-8 py-5 flex justify-between items-center shadow-md">
-      <div className="flex gap-3">
-        {/* Left Section - Hamburger Icon (For Mobile) */}
-        <button className="lg:hidden text-gray-600 hover:text-gray-800" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-          <FaBars size={24} />
-        </button>
+    <div className="bg-white text-gray-800 px-6 py-4 flex justify-between items-center shadow-md relative">
+      {/* Left Section: Show Arrow Button ONLY on Mobile */}
+      <div className="flex items-center gap-3">
+        {isMobile && (
+          <button
+            className="text-white transition-all p-2 bg-orange-500 rounded-md"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            {isSidebarOpen ? <HiChevronLeft size={24} /> : <HiChevronRight size={24} />}
+          </button>
+        )}
 
-        {/* Search Box */}
+        {/* Search Box (Hidden in Mobile) */}
         <div className="relative w-72 md:flex hidden">
           <input
             type="text"
@@ -32,7 +39,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
         </div>
       </div>
 
-      {/* Right Section - Icons & Profile */}
+      {/* Right Section: Icons & Profile */}
       <div className="flex items-center gap-3 lg:gap-6">
         {/* Notifications */}
         <Link to="/notifications" className="relative text-gray-600 hover:text-gray-800">
@@ -62,7 +69,10 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
               <Link to="/settings" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-200 transition-all">
                 <FaCog /> Settings
               </Link>
-              <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:bg-red-100 hover:text-red-600 transition-all">
+              <button
+                onClick={() => alert("Logging out...")}
+                className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:bg-red-100 hover:text-red-600 transition-all"
+              >
                 <FaSignOutAlt /> Logout
               </button>
             </div>
@@ -74,3 +84,4 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
 };
 
 export default TopHeader;
+
