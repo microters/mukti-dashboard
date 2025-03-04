@@ -114,7 +114,7 @@ const Sidebar = () => {
       link: "/manage-appointments",
       isSubmenu: true,
       submenus: [
-        { name: "Homepage Section", link: "/all-appointments" },
+        { name: "Homepage Section", link: "/home-page" },
         { name: "About us", link: "/upcoming-appointments" },
         { name: "Contact Us", link: "/todays-appointments" },
       ],

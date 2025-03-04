@@ -13,7 +13,12 @@ import AddReviews from "../components/Reviews/AddReviews";
 import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
-import HomepageForm from "../components/Manage Page/HomePage";
+import BlogList from "../components/Blogs/AllBlog/AllBlog";
+import AddCategory from "../components/Blogs/Category/AddCategory";
+import CategoryList from "../components/Blogs/Category/AllCategory";
+import EditCategory from "../components/Blogs/Category/EditCategory";
+import EditBlog from "../components/Blogs/EditBlog/EditBlog";
+import HomepageForm from "../components/Manage Section/HomePage";
 
 // Importing necessary pages
 
