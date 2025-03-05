@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 
-
+import JoditEditor from "jodit-react";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import { saveData } from "../../../services/indexDb";
 
 const AddDepartment = () => {
+  const editor = useRef(null);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [icon, setIcon] = useState(null); // Stores file
   const [previewIcon, setPreviewIcon] = useState(null); // Stores image preview
@@ -21,6 +22,7 @@ const AddDepartment = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Function to convert Bengali digits to English
   function convertBengaliToEnglish(str) {
     const mapDigits = {
       "০": "0",
@@ -37,10 +39,12 @@ const AddDepartment = () => {
     return str.replace(/[০-৯]/g, (digit) => mapDigits[digit]);
   }
 
+  // Handle language selection
   const handleLanguageChange = (e) => {
     setSelectedLanguage(e.target.value);
   };
 
+  // Handle text input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     const convertedValue = convertBengaliToEnglish(value);
@@ -57,6 +61,21 @@ const AddDepartment = () => {
     }));
   };
 
+  // Handle JoditEditor content changes
+  const handleContentChange = (newContent) => {
+    setDepartmentData((prev) => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        [selectedLanguage]: {
+          ...prev.translations[selectedLanguage],
+          description: newContent, // Fix: updating description field correctly
+        },
+      },
+    }));
+  };
+
+  // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setIcon(file);
@@ -68,15 +87,16 @@ const AddDepartment = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       // Save department data to IndexedDB before submitting to the backend
-      await saveData('addDepartment', departmentData);
+      await saveData("addDepartment", departmentData);
 
-      // Now submit the data to the server
+      // Prepare form data for API submission
       const formData = new FormData();
       formData.append("translations", JSON.stringify(departmentData.translations));
       if (icon) {
@@ -112,8 +132,8 @@ const AddDepartment = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen p-6">
-      <div className="max-w-lg mx-auto bg-white shadow-lg rounded p-6">
+    <div className="bg-gray-100  p-6">
+      <div className="max-w-10xl  bg-white shadow-lg rounded p-6">
         <h2 className="text-xl font-semibold mb-4">Add Department</h2>
 
         {/* Language dropdown */}
@@ -128,9 +148,10 @@ const AddDepartment = () => {
             <option value="bn">Bangla</option>
           </select>
         </div>
+
         {/* Department Form */}
         <form onSubmit={handleSubmit}>
-          {/* 1) Department Name */}
+          {/* Department Name */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Department Name</label>
             {isSubmitting ? (
@@ -147,24 +168,21 @@ const AddDepartment = () => {
             )}
           </div>
 
-          {/* 2) Department Description */}
+          {/* Department Description */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Department Description</label>
             {isSubmitting ? (
               <Skeleton height={35} />
             ) : (
-              <input
-                type="text"
-                name="description"
-                placeholder="Enter Department Description"
-                className="border p-2 rounded w-full"
+              <JoditEditor
+                ref={editor}
                 value={departmentData.translations[selectedLanguage].description}
-                onChange={handleChange}
+                onChange={handleContentChange}
               />
             )}
           </div>
 
-          {/* 3) Meta Title */}
+          {/* Meta Title */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Meta Title</label>
             {isSubmitting ? (
@@ -181,7 +199,7 @@ const AddDepartment = () => {
             )}
           </div>
 
-          {/* 4) Meta Description */}
+          {/* Meta Description */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Meta Description</label>
             {isSubmitting ? (
@@ -196,11 +214,14 @@ const AddDepartment = () => {
               />
             )}
           </div>
+
+          {/* File Upload */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Upload Icon</label>
             <input type="file" accept="image/*" onChange={handleFileChange} className="border p-2 rounded w-full" />
             {previewIcon && <img src={previewIcon} alt="Icon Preview" className="mt-2 w-24 h-24 rounded-lg shadow" />}
           </div>
+
           {/* Submit Button */}
           <div className="mt-6">
             <button

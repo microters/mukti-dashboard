@@ -19,6 +19,9 @@ import CategoryList from "../components/Blogs/Category/AllCategory";
 import EditCategory from "../components/Blogs/Category/EditCategory";
 import EditBlog from "../components/Blogs/EditBlog/EditBlog";
 import HomepageForm from "../components/Manage Section/HomePage";
+import AddPage from "../components/Manage Page/Add Page/AddPage";
+import AllPages from "../components/Manage Page/AllPages/AllPages";
+import EditPage from "../components/Manage Page/EditPage/EditPage";
 
 // Importing necessary pages
 
@@ -266,6 +269,30 @@ export const router = createBrowserRouter([
         ),
       },
        
+       {
+        path: "add-page",
+        element: (
+        //   <AdminRoute>
+            <AddPage/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "all-page",
+        element: (
+        //   <AdminRoute>
+            <AllPages/>
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-page/:id",
+        element: (
+          // <AdminRoute>
+            <EditPage />
+          // </AdminRoute>
+        ),
+      },
       /** Others **/
       {
         path: "cache-clear",

@@ -101,11 +101,11 @@ const Sidebar = () => {
     {
       name: "Manage Pages",
       icon: FaUserInjured,
-      link: "/manage-patients",
+      link: "/manage-page",
       isSubmenu: true,
       submenus: [
-        { name: "All Pages", link: "/all-patients" },
-        { name: "Add New Page", link: "/add-patient" },
+        { name: "All Pages", link: "/all-page" },
+        { name: "Add New Page", link: "/add-page" },
       ],
     },
     {
