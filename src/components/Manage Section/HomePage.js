@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { FaPlus, FaTrash } from "react-icons/fa";
 
 const HomepageForm = () => {
   // Language Selection (default: English)
@@ -10,37 +11,13 @@ const HomepageForm = () => {
 
   // Text data for each section (for specific language)
   const [heroData, setHeroData] = useState({ prefix: "", title: "" });
-  const [featuresData, setFeaturesData] = useState({
-    subtitle: "",
-    title: "",
-    icon: "",
-  });
-  const [aboutData, setAboutData] = useState({
-    title: "",
-    subtitle: "",
-    description: "",
-    experience: "",
-    serviceTitle: "",
-    serviceIcon: "",
-  });
-  const [whyChooseData, setWhyChooseData] = useState({
-    title: "",
-    subtitle: "",
-    description: "",
-    serviceTitle: "",
-    serviceDescription: "",
-    serviceIcon: "",
-  });
-  const [downloadAppData, setDownloadAppData] = useState({
-    title: "",
-    subtitle: "",
-    description: "",
-  });
-  const [appointmentProcessData, setAppointmentProcessData] = useState({
-    icon: "",
-    title: "",
-  });
-  const [appointmentData, setAppointmentData] = useState({}); // Only for file handling (not used in PUT)
+  const [featuresList, setFeaturesList] = useState([{ subtitle: "", title: "", icon: null }]);
+  const [aboutData, setAboutData] = useState({ title: "", subtitle: "", description: "", experience: "", serviceTitle: "", serviceIcon: "" });
+  const [servicesList, setServicesList] = useState([{ serviceTitle: "", serviceIcon: "" }]);
+  const [whyChooseData, setWhyChooseData] = useState({ title: "", subtitle: "", description: "", services: [{ serviceTitle: "", serviceDescription: "", serviceIcon: "" }] });
+  const [downloadAppData, setDownloadAppData] = useState({ title: "", subtitle: "", description: "" });
+  const [appointmentProcessData, setAppointmentProcessData] = useState([{ icon: "", title: "" }]); 
+  const [appointmentData, setAppointmentData] = useState({});
 
   // File data (for POST requests)
   const [heroFile, setHeroFile] = useState(null);
@@ -48,6 +25,87 @@ const HomepageForm = () => {
   const [appointmentFile, setAppointmentFile] = useState(null);
   const [downloadAppFile, setDownloadAppFile] = useState(null);
   const [whyChooseFile, setWhyChooseFile] = useState(null);
+
+   // Function to handle input change
+   const handleFeatureChange = (index, field, value) => {
+    const updatedFeatures = [...featuresList];
+    updatedFeatures[index][field] = value;
+    setFeaturesList(updatedFeatures);
+  };
+
+   // Handle service field changes
+   const handleServiceChange = (index, field, value) => {
+    const updatedServices = [...servicesList];
+    updatedServices[index][field] = value;
+    setServicesList(updatedServices);
+  };
+
+ // Handle service field changes
+ const handleWhyChooseChange = (index, field, value) => {
+  const updatedServices = [...whyChooseData.services];
+  updatedServices[index][field] = value;
+  setWhyChooseData({ ...whyChooseData, services: updatedServices });
+};
+
+// Handle input changes for appointment process
+const handleAppointmentProcessChange = (index, field, value) => {
+  const updatedProcesses = [...appointmentProcessData];
+  updatedProcesses[index][field] = value;
+  setAppointmentProcessData(updatedProcesses);
+};
+
+  // Handle file upload
+  const handleIconUpload = (index, file) => {
+    const updatedFeatures = [...featuresList];
+    updatedFeatures[index].icon = file;
+    setFeaturesList(updatedFeatures);
+  };
+
+  // Function to add a new feature section
+  const addFeature = () => {
+    setFeaturesList([...featuresList, { subtitle: "", title: "", icon: "" }]);
+  };
+
+  // Function to remove a feature section
+  const removeFeature = (index) => {
+    const updatedFeatures = featuresList.filter((_, i) => i !== index);
+    setFeaturesList(updatedFeatures);
+  };
+
+  // Add a new service
+  const addService = () => {
+    setServicesList([...servicesList, { serviceTitle: "", serviceIcon: "" }]);
+  };
+
+  // Remove a service
+  const removeService = (index) => {
+    setServicesList(servicesList.filter((_, i) => i !== index));
+  };
+
+   // Add why choose service
+   const addChooseService = () => {
+    setWhyChooseData((prevData) => ({
+      ...prevData,
+      services: [...prevData.services, { serviceTitle: "", serviceDescription: "", serviceIcon: "" }],
+    }));
+  };
+
+   // Remove why choose service
+   const removeChooseService = (index) => {
+    const updatedServices = whyChooseData.services.filter((_, i) => i !== index);
+    setWhyChooseData({ ...whyChooseData, services: updatedServices });
+  };
+
+    // Add a new Appointment Process
+    const addAppointmentProcess = () => {
+      setAppointmentProcessData([...appointmentProcessData, { icon: "", title: "" }]);
+    };
+  
+    // Remove an Appointment Process
+    const removeAppointmentProcess = (index) => {
+      setAppointmentProcessData(appointmentProcessData.filter((_, i) => i !== index));
+    };
+  
 
   // GET: Load homepage data
   useEffect(() => {
@@ -60,6 +118,7 @@ const HomepageForm = () => {
           const {
             heroSection,
             featuresSection,
+            servicesSection,
             aboutSection,
             appointmentSection,
             whyChooseUsSection,
@@ -71,9 +130,8 @@ const HomepageForm = () => {
           if (heroSection?.translations[language]) {
             setHeroData(heroSection.translations[language]);
           }
-          if (featuresSection?.translations[language]) {
-            setFeaturesData(featuresSection.translations[language]);
-          }
+          if (featuresSection?.translations[language]) setFeaturesList(featuresSection.translations[language]);
+          if (servicesSection?.translations[language]) setServicesList(servicesSection.translations[language]);
           if (aboutSection?.translations[language]) {
             setAboutData(aboutSection.translations[language]);
           }
@@ -114,7 +172,23 @@ const HomepageForm = () => {
         "heroSection",
         JSON.stringify({ ...heroData, backgroundImage: "" })
       );
+      const featuresData = featuresList.map((feature) => ({
+        subtitle: feature.subtitle,
+        title: feature.title,
+        icon: feature.icon ? "" : feature.icon,
+      }));
       formData.append("featuresSection", JSON.stringify(featuresData));
+      const servicesData = servicesList.map((service) => ({
+        subtitle: service.subtitle,
+        serviceIcon: service.serviceIcon ? "" : service.serviceIcon,
+      }));
+      formData.append("servicesSection", JSON.stringify(servicesData));
+      const whyServicesData = whyChooseData.services.map((service) => ({
+        serviceTitle: service.serviceTitle,
+        serviceDescription: service.serviceDescription,
+        serviceIcon: service.serviceIcon,
+      }));
+      formData.append("whyChooseUsSection", JSON.stringify(whyServicesData));
       formData.append(
         "aboutSection",
         JSON.stringify({ ...aboutData, images: [] })
@@ -128,9 +202,13 @@ const HomepageForm = () => {
         "downloadAppSection",
         JSON.stringify({ ...downloadAppData, image: "" })
       );
+      const appointmentData = appointmentProcessData.map((appointment) => ({
+        icon: appointment.icon,
+        title: appointment.title ? "" : appointment.title,
+      }));
       formData.append(
         "appointmentProcess",
-        JSON.stringify(appointmentProcessData)
+        JSON.stringify(appointmentData)
       );
 
       if (heroFile) formData.append("heroBackgroundImage", heroFile);
@@ -139,6 +217,13 @@ const HomepageForm = () => {
       if (appointmentFile) formData.append("appointmentImage", appointmentFile);
       if (downloadAppFile) formData.append("downloadAppImage", downloadAppFile);
       if (whyChooseFile) formData.append("whyChooseUsImage", whyChooseFile);
+
+       // Upload feature icons
+    featuresList.forEach((feature, index) => {
+      if (feature.icon instanceof File) {
+        formData.append(`featureIcon_${index}`, feature.icon);
+      }
+    });
 
       try {
         const res = await axios.post(
@@ -159,7 +244,7 @@ const HomepageForm = () => {
       // PUT: Update - based on selected language (excluding images)
       const sections = [
         { name: "heroSection", data: heroData },
-        { name: "featuresSection", data: featuresData },
+        { name: "featuresSection", data: featuresList },
         { name: "aboutSection", data: aboutData },
         { name: "appointmentSection", data: appointmentData },
         { name: "whyChooseUsSection", data: whyChooseData },
@@ -266,108 +351,136 @@ const HomepageForm = () => {
           </div>
 
           {/* Background Image Upload */}
-          <div className="mb-4">
-            <label
+          <div className="mb-6">
+          <label
               className="block text-sm font-medium text-gray-700 mb-2"
               htmlFor="heroImage"
             >
               Background Image
             </label>
-            <div className="flex items-center">
-              <input
-                type="file"
-                id="heroImage"
-                onChange={(e) => setHeroFile(e.target.files[0])}
-                className="hidden"
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            id="appointmentImage"
+            onChange={(e) => setHeroFile(e.target.files[0])}
+            className="hidden"
+          />
+          <label
+            htmlFor="appointmentImage"
+            className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-md shadow-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="currentColor"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 5v14m7-7H5"
               />
-              <label
-                htmlFor="heroImage"
-                className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"
-              >
-                Choose Image
-              </label>
-              {heroFile && (
-                <span className="ml-4 text-sm text-gray-500">
-                  {heroFile.name}
-                </span>
-              )}
-            </div>
-            {heroFile && (
-              <div className="mt-4">
-                <img
-                  src={URL.createObjectURL(heroFile)}
-                  alt="Preview"
-                  className="max-w-xs rounded-md border"
-                />
-              </div>
-            )}
+            </svg>
+            <span>Choose Image</span>
+          </label>
+          {heroFile && (
+            <span className="text-sm text-gray-500">
+              {heroFile.name}
+            </span>
+          )}
+        </div>
+
+        {heroFile && (
+          <div className="mt-4 flex justify-left">
+            <img
+              src={URL.createObjectURL(heroFile)}
+              alt="Why Choose Us Preview"
+              className="max-w-full max-h-48 object-cover rounded-lg shadow-xl border-2 border-gray-200"
+            />
+          </div>
+        )}
           </div>
         </fieldset>
         {/* Features Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
-          <legend className="text-xl font-semibold mb-4 text-gray-700">
-            Features Section
-          </legend>
+            <legend className="text-xl font-semibold mb-4 text-gray-700">
+              Features Section
+            </legend>
+            {featuresList.map((feature, index) => (
+                <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
+                      {/* Subtitle Input */}
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Subtitle
+                        </label>
+                        <input
+                          className="w-full p-2 border rounded-md"
+                          type="text"
+                          placeholder="Enter subtitle"
+                          value={feature.subtitle}
+                          onChange={(e) => handleFeatureChange(index, "subtitle", e.target.value)}
+                        />
+                      </div>
+                      {/* Title Input */}
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Title
+                        </label>
+                        <input
+                          className="w-full p-2 border rounded-md"
+                          type="text"
+                          placeholder="Enter title"
+                          value={feature.title}
+                          onChange={(e) => handleFeatureChange(index, "title", e.target.value)}
+                        />
+                      </div>
 
-          {/* Subtitle Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="subtitle"
-            >
-              Subtitle
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="subtitle"
-              placeholder="Enter subtitle"
-              value={featuresData.subtitle}
-              onChange={(e) =>
-                setFeaturesData({ ...featuresData, subtitle: e.target.value })
-              }
-            />
-          </div>
+                      {/* Icon Upload */}
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Upload Icon
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="w-full p-2 border rounded-md"
+                          onChange={(e) => handleIconUpload(index, e.target.files[0])}
+                        />
+                      </div>
 
-          {/* Title Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="title"
-            >
-              Title
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="title"
-              placeholder="Enter title"
-              value={featuresData.title}
-              onChange={(e) =>
-                setFeaturesData({ ...featuresData, title: e.target.value })
-              }
-            />
-          </div>
+                      {/* Preview Uploaded Icon */}
+                      {feature.icon && (
+                        <div className="mt-2">
+                          <img
+                            src={URL.createObjectURL(feature.icon)}
+                            alt="Icon Preview"
+                            className="max-w-16 max-h-16 rounded-md border"
+                          />
+                        </div>
+                      )}
+                      {/* Remove Button */}
+                      {featuresList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeFeature(index)}
+                          className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+                        >
+                          <FaTrash/>
+                        </button>
+                      )}
+                </div>
+              ))}
 
-          {/* Icon Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="icon"
-            >
-              Icon
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="icon"
-              placeholder="Enter icon class or URL"
-              value={featuresData.icon}
-              onChange={(e) =>
-                setFeaturesData({ ...featuresData, icon: e.target.value })
-              }
-            />
-          </div>
+          {/* Add New Feature Button */}
+          <button
+            type="button"
+            onClick={addFeature}
+            className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1"
+          >
+            <FaPlus /> Add Feature
+          </button>
         </fieldset>
         {/* About Section with multiple images */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
@@ -430,13 +543,13 @@ const HomepageForm = () => {
               }
             />
           </div>
-          {/* Select up to 4 images */}
+          {/* Select 4 images */}
           <div className="mb-4">
             <label
               className="block text-sm font-medium text-gray-700 mb-2"
               htmlFor="images"
             >
-              Select up to 4 images:
+              Select 4 images:
             </label>
             <input
               type="file"
@@ -445,22 +558,10 @@ const HomepageForm = () => {
               onChange={(e) => handleFileChange(e, setAboutFiles)}
               className="w-full p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
             />
-            {aboutFiles.length > 0 && (
-              <ul className="list-disc pl-5 mt-2">
-                {aboutFiles.map((file, index) => (
-                  <li key={index} className="text-sm text-gray-600">
-                    {file.name}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
           {/* Image Preview */}
           {aboutFiles.length > 0 && (
             <div className="mt-4">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Image Previews:
-              </h3>
               <div className="flex space-x-4">
                 {aboutFiles.slice(0, 4).map((file, index) => (
                   <div
@@ -496,44 +597,53 @@ const HomepageForm = () => {
               }
             />
           </div>
-          {/* Service Title Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="serviceTitle"
-            >
-              Service Title
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="serviceTitle"
-              placeholder="Enter service title"
-              value={aboutData.serviceTitle}
-              onChange={(e) =>
-                setAboutData({ ...aboutData, serviceTitle: e.target.value })
-              }
-            />
+          {servicesList.map((service, index) => (
+          <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
+            {/* Service Title Input */}
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Service Title</label>
+              <input
+                className="w-full p-2 border rounded-md"
+                type="text"
+                placeholder="Enter service title"
+                value={service.serviceTitle}
+                onChange={(e) => handleServiceChange(index, "serviceTitle", e.target.value)}
+              />
+            </div>
+
+            {/* Service Icon Upload */}
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Upload Service Icon</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+
+            {/* Preview Uploaded Icon */}
+            {service.serviceIcon && (
+              <div className="mt-2">
+                <img
+                  src={URL.createObjectURL(service.serviceIcon)}
+                  alt="Service Icon Preview"
+                  className="max-w-16 max-h-16 rounded-md border"
+                />
+              </div>
+            )}
+
+            {/* Remove Service Button */}
+            {servicesList.length > 1 && (
+              <button type="button" onClick={() => removeService(index)} className="absolute top-2 right-2 text-red-600 hover:text-red-800">
+                <FaTrash />
+              </button>
+            )}
           </div>
-          {/* Service Icon Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="serviceIcon"
-            >
-              Service Icon
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="serviceIcon"
-              placeholder="Enter service icon"
-              value={aboutData.serviceIcon}
-              onChange={(e) =>
-                setAboutData({ ...aboutData, serviceIcon: e.target.value })
-              }
-            />
-          </div>
+        ))}
+           {/* Add New Service Button */}
+        <button type="button" onClick={addService} className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1">
+          <FaPlus /> Add Service
+        </button>
         </fieldset>
 
         {/* Appointment Section */}
@@ -543,41 +653,50 @@ const HomepageForm = () => {
           </legend>
 
           {/* Image Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="appointmentImage"
+          <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            id="appointmentImage"
+            onChange={(e) => setAppointmentFile(e.target.files[0])}
+            className="hidden"
+          />
+          <label
+            htmlFor="appointmentImage"
+            className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-md shadow-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="currentColor"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
             >
-              Image
-            </label>
-            <div className="flex items-center">
-              <input
-                type="file"
-                id="appointmentImage"
-                onChange={(e) => setAppointmentFile(e.target.files[0])}
-                className="hidden"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 5v14m7-7H5"
               />
-              <label
-                htmlFor="appointmentImage"
-                className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"
-              >
-                Choose Image
-              </label>
-              {appointmentFile && (
-                <span className="ml-4 text-sm text-gray-500">
-                  {appointmentFile.name}
-                </span>
-              )}
-            </div>
-            {appointmentFile && (
-              <div className="mt-4">
-                <img
-                  src={URL.createObjectURL(appointmentFile)}
-                  alt="Appointment Preview"
-                  className="max-w-xs rounded-md border"
-                />
-              </div>
-            )}
+            </svg>
+            <span>Choose Image</span>
+          </label>
+          {appointmentFile && (
+            <span className="text-sm text-gray-500">
+              {appointmentFile.name}
+            </span>
+          )}
+        </div>
+
+        {appointmentFile && (
+          <div className="mt-4 flex justify-center">
+            <img
+              src={URL.createObjectURL(appointmentFile)}
+              alt="Why Choose Us Preview"
+              className="max-w-full max-h-48 object-cover rounded-lg shadow-xl border-2 border-gray-200"
+            />
+          </div>
+        )}
           </div>
         </fieldset>
         {/* Why Choose Us Section */}
@@ -647,112 +766,107 @@ const HomepageForm = () => {
               }
             />
           </div>
-
-          {/* Service Title Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="serviceTitle"
+             {/* Image Input */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            id="whyChooseImage"
+            onChange={(e) => setWhyChooseFile(e.target.files[0])}
+            className="hidden"
+          />
+          <label
+            htmlFor="whyChooseImage"
+            className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-md shadow-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="currentColor"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
             >
-              Service Title
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="serviceTitle"
-              placeholder="Enter service title"
-              value={whyChooseData.serviceTitle}
-              onChange={(e) =>
-                setWhyChooseData({
-                  ...whyChooseData,
-                  serviceTitle: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* Service Description Textarea */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="serviceDescription"
-            >
-              Service Description
-            </label>
-            <textarea
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              id="serviceDescription"
-              placeholder="Enter service description"
-              value={whyChooseData.serviceDescription}
-              onChange={(e) =>
-                setWhyChooseData({
-                  ...whyChooseData,
-                  serviceDescription: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* Service Icon Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="serviceIcon"
-            >
-              Service Icon
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="serviceIcon"
-              placeholder="Enter service icon"
-              value={whyChooseData.serviceIcon}
-              onChange={(e) =>
-                setWhyChooseData({
-                  ...whyChooseData,
-                  serviceIcon: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* Image Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="whyChooseImage"
-            >
-              Image
-            </label>
-            <div className="flex items-center">
-              <input
-                type="file"
-                id="whyChooseImage"
-                onChange={(e) => setWhyChooseFile(e.target.files[0])}
-                className="hidden"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 5v14m7-7H5"
               />
-              <label
-                htmlFor="whyChooseImage"
-                className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"
-              >
-                Choose Image
-              </label>
-              {whyChooseFile && (
-                <span className="ml-4 text-sm text-gray-500">
-                  {whyChooseFile.name}
-                </span>
-              )}
-            </div>
-            {whyChooseFile && (
-              <div className="mt-4">
-                <img
-                  src={URL.createObjectURL(whyChooseFile)}
-                  alt="Why Choose Us Preview"
-                  className="max-w-xs rounded-md border"
-                />
-              </div>
-            )}
+            </svg>
+            <span>Choose Image</span>
+          </label>
+          {whyChooseFile && (
+            <span className="text-sm text-gray-500">
+              {whyChooseFile.name}
+            </span>
+          )}
+        </div>
+
+        {whyChooseFile && (
+          <div className="mt-4 flex justify-left">
+            <img
+              src={URL.createObjectURL(whyChooseFile)}
+              alt="Why Choose Us Preview"
+              className="max-w-full max-h-48 object-cover rounded-lg shadow-xl border-2 border-gray-200"
+            />
           </div>
+        )}
+      </div>
+
+          {/* Services Fields */}
+        {whyChooseData.services.map((service, index) => (
+          <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Service Title</label>
+              <input
+                className="w-full p-2 border rounded-md"
+                type="text"
+                placeholder="Enter service title"
+                value={service.serviceTitle}
+                onChange={(e) => handleWhyChooseChange(index, "serviceTitle", e.target.value)}
+              />
+            </div>
+
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Service Description</label>
+              <textarea
+                className="w-full p-2 border rounded-md"
+                placeholder="Enter service description"
+                value={service.serviceDescription}
+                onChange={(e) => handleWhyChooseChange(index, "serviceDescription", e.target.value)}
+              />
+            </div>
+
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Service Icon</label>
+              <input
+                className="w-full p-2 border rounded-md"
+                type="text"
+                placeholder="Enter service icon"
+                value={service.serviceIcon}
+                onChange={(e) => handleWhyChooseChange(index, "serviceIcon", e.target.value)}
+              />
+            </div>
+
+            {/* Remove Service Button */}
+            <button
+              type="button"
+              onClick={() => removeChooseService(index)}
+              className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+            >
+              <FaTrash />
+            </button>
+          </div>
+        ))}
+        {/* Add Service Button */}
+        <button
+          type="button"
+          onClick={addChooseService}
+          className="mt-2 text-blue-500 hover:text-blue-700 flex items-center gap-1"
+        >
+          <FaPlus /> Add Service
+        </button>
+
         </fieldset>
         {/* Download App Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
@@ -829,95 +943,122 @@ const HomepageForm = () => {
           </div>
 
           {/* Image Upload */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="downloadAppImage"
+          <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            id="downloadAppImage"
+            onChange={(e) => setDownloadAppFile(e.target.files[0])}
+            className="hidden"
+          />
+          <label
+            htmlFor="downloadAppImage"
+            className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-md shadow-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="currentColor"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
             >
-              Image
-            </label>
-            <div className="flex items-center">
-              <input
-                type="file"
-                id="downloadAppImage"
-                onChange={(e) => setDownloadAppFile(e.target.files[0])}
-                className="hidden"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 5v14m7-7H5"
               />
-              <label
-                htmlFor="downloadAppImage"
-                className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"
-              >
-                Choose Image
-              </label>
-              {downloadAppFile && (
-                <span className="ml-4 text-sm text-gray-500">
-                  {downloadAppFile.name}
-                </span>
-              )}
-            </div>
-            {downloadAppFile && (
-              <div className="mt-4">
-                <img
-                  src={URL.createObjectURL(downloadAppFile)}
-                  alt="Download App Preview"
-                  className="max-w-xs rounded-md border"
-                />
-              </div>
-            )}
+            </svg>
+            <span>Choose Image</span>
+          </label>
+          {downloadAppFile && (
+            <span className="text-sm text-gray-500">
+              {downloadAppFile.name}
+            </span>
+          )}
+        </div>
+
+        {downloadAppFile && (
+          <div className="mt-4 flex justify-left">
+            <img
+              src={URL.createObjectURL(downloadAppFile)}
+              alt="Why Choose Us Preview"
+              className="max-w-full max-h-48 object-cover rounded-lg shadow-xl border-2 border-gray-200"
+            />
           </div>
+        )}
+      </div>
         </fieldset>
         {/* Appointment Process Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
-          <legend className="text-xl font-semibold mb-4 text-gray-700">
-            Appointment Process Section
-          </legend>
+            <legend className="text-xl font-semibold mb-4 text-gray-700">
+              Appointment Process Section
+            </legend>
 
-          {/* Icon Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="icon"
-            >
-              Icon
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="icon"
-              placeholder="Enter icon"
-              value={appointmentProcessData.icon}
-              onChange={(e) =>
-                setAppointmentProcessData({
-                  ...appointmentProcessData,
-                  icon: e.target.value,
-                })
-              }
-            />
-          </div>
+            {appointmentProcessData.map((process, index) => (
+              <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
+                {/* Icon Input */}
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                    htmlFor={`icon_${index}`}
+                  >
+                    Icon
+                  </label>
+                  <input
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    id={`icon_${index}`}
+                    placeholder="Enter icon"
+                    value={process.icon}
+                    onChange={(e) =>
+                      handleAppointmentProcessChange(index, "icon", e.target.value)
+                    }
+                  />
+                </div>
 
-          {/* Title Input */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-2"
-              htmlFor="title"
+                {/* Title Input */}
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                    htmlFor={`title_${index}`}
+                  >
+                    Title
+                  </label>
+                  <input
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    id={`title_${index}`}
+                    placeholder="Enter title"
+                    value={process.title}
+                    onChange={(e) =>
+                      handleAppointmentProcessChange(index, "title", e.target.value)
+                    }
+                  />
+                </div>
+
+                {/* Remove Button */}
+                {appointmentProcessData.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeAppointmentProcess(index)}
+                    className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+                  >
+                    <FaTrash />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* Add New Appointment Process Button */}
+            <button
+              type="button"
+              onClick={addAppointmentProcess}
+              className="mt-4 text-blue-500 hover:text-blue-700 flex items-center gap-1"
             >
-              Title
-            </label>
-            <input
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="title"
-              placeholder="Enter title"
-              value={appointmentProcessData.title}
-              onChange={(e) =>
-                setAppointmentProcessData({
-                  ...appointmentProcessData,
-                  title: e.target.value,
-                })
-              }
-            />
-          </div>
-        </fieldset>
+              <FaPlus /> Add Appointment Process
+            </button>
+         </fieldset>
 
         <button
           type="submit"
