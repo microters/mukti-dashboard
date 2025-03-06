@@ -13,7 +13,15 @@ import AddReviews from "../components/Reviews/AddReviews";
 import AllPatient from "../components/ManagePatients/AllPatient/AllPatient";
 import EditPatient from "../components/ManagePatients/EditDepartment/EditPatient";
 import AddAppointment from "../components/Appointment/AddAppointment/AddAppointment";
+import BlogList from "../components/Blogs/AllBlog/AllBlog";
+import AddCategory from "../components/Blogs/Category/AddCategory";
+import CategoryList from "../components/Blogs/Category/AllCategory";
+import EditCategory from "../components/Blogs/Category/EditCategory";
+import EditBlog from "../components/Blogs/EditBlog/EditBlog";
 import HomepageForm from "../components/Manage Section/HomePage";
+import AddPage from "../components/Manage Page/Add Page/AddPage";
+import AllPages from "../components/Manage Page/AllPages/AllPages";
+import EditPage from "../components/Manage Page/EditPage/EditPage";
 
 // Importing necessary pages
 
@@ -153,11 +161,10 @@ export const router = createBrowserRouter([
 
       /** CMS & Blogs **/
       {
-        path: "all-blogs",
+        path: "all-blog",
         element: (
         //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <AllBlogs />
+            <BlogList />
         //   </AdminRoute>
         ),
       },
@@ -170,14 +177,39 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "category-list",
+        path: "add-category",
         element: (
         //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <CategoryList />
+            <AddCategory />
         //   </AdminRoute>
         ),
       },
+      {
+        path: "all-category",
+        element: (
+        //   <AdminRoute>
+            <CategoryList />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-category/:id",
+        element: (
+          // <AdminRoute>
+            <EditCategory />
+          // </AdminRoute>
+        ),
+      },
+     
+      {
+        path: "/edit-blog/:id",
+        element: (
+          // <AdminRoute>
+            <EditBlog />
+          // </AdminRoute>
+        ),
+      },
+     
 
       /** Website Setup **/
       {
@@ -237,6 +269,30 @@ export const router = createBrowserRouter([
         ),
       },
        
+       {
+        path: "add-page",
+        element: (
+        //   <AdminRoute>
+            <AddPage/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "all-page",
+        element: (
+        //   <AdminRoute>
+            <AllPages/>
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "/edit-page/:id",
+        element: (
+          // <AdminRoute>
+            <EditPage />
+          // </AdminRoute>
+        ),
+      },
       /** Others **/
       {
         path: "cache-clear",

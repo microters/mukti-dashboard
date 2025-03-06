@@ -92,19 +92,20 @@ const Sidebar = () => {
       link: "/manage-blogs",
       isSubmenu: true,
       submenus: [
-        { name: "All Blogs", link: "/all-blogs" },
+        { name: "All Blogs", link: "/all-blog" },
         { name: "Add New Blog", link: "/add-blog" },
-        { name: "Category List", link: "/category-list" },
+        { name: "Add New Category", link: "/add-category" },
+        { name: "All Category", link: "/all-category" },
       ],
     },
     {
       name: "Manage Pages",
       icon: FaUserInjured,
-      link: "/manage-patients",
+      link: "/manage-page",
       isSubmenu: true,
       submenus: [
-        { name: "All Pages", link: "/all-patients" },
-        { name: "Add New Page", link: "/add-patient" },
+        { name: "All Pages", link: "/all-page" },
+        { name: "Add New Page", link: "/add-page" },
       ],
     },
     {
@@ -113,7 +114,7 @@ const Sidebar = () => {
       link: "/manage-appointments",
       isSubmenu: true,
       submenus: [
-        { name: "Homepage Section", link: "/all-appointments" },
+        { name: "Homepage Section", link: "/home-page" },
         { name: "About us", link: "/upcoming-appointments" },
         { name: "Contact Us", link: "/todays-appointments" },
       ],

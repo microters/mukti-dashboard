@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
-
+import JoditEditor from "jodit-react";
 /**
  * Example of converting Bengali digits to English digits
  * if you have numeric fields typed in Bangla.
@@ -29,7 +29,7 @@ function convertBengaliToEnglish(str) {
 const EditDepartment = () => {
   const { id } = useParams(); // department id from URL
   const navigate = useNavigate();
-
+  const editor = useRef(null);
   // Language selection for translations
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
@@ -197,6 +197,18 @@ const EditDepartment = () => {
       setIsSubmitting(false);
     }
   };
+  const handleContentChange = (newContent) => {
+    setDepartmentData((prev) => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        [selectedLanguage]: {
+          ...prev.translations[selectedLanguage],
+          description: newContent
+        }
+      }
+    }));
+  };
 
   // ─────────────────────────────────────────────────────────────────────────────
   // If loading
@@ -213,8 +225,8 @@ const EditDepartment = () => {
   // Render form in 2 columns (full width) with Tailwind
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="bg-gray-100 min-h-screen p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded p-6">
+    <div className="bg-gray-100 p-6">
+      <div className="max-w-10xl  bg-white shadow-lg rounded p-6">
         <h2 className="text-xl font-semibold mb-4">Edit Department</h2>
 
         {/* Language dropdown */}
@@ -233,7 +245,7 @@ const EditDepartment = () => {
 
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           {/* We'll use a responsive grid: 2 columns on md+ screens, 1 column on mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             {/* Column 1: Department Name */}
             <div>
               <label className="block mb-1 font-medium">Department Name</label>
@@ -263,12 +275,10 @@ const EditDepartment = () => {
             {/* Next row: Department Description */}
             <div>
               <label className="block mb-1 font-medium">Department Description</label>
-              <textarea
-                name="description"
-                className="border p-2 rounded w-full h-20"
-                disabled={isSubmitting}
+              <JoditEditor
+                ref={editor}
                 value={departmentData.translations[selectedLanguage]?.description || ""}
-                onChange={handleInputChange}
+                onChange={handleContentChange}
               />
             </div>
 

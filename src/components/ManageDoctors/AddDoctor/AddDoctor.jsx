@@ -84,6 +84,8 @@ const AddDoctor = () => {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
+        console.log(response.data);
+        
         setDepartments(response.data);
       } catch (error) {
         console.error("❌ Error fetching departments:", error);
@@ -140,13 +142,13 @@ console.log(departments);
   // ----------------------------------------------------------------
   //  D) Profile photo
   // ----------------------------------------------------------------
-// প্রোফাইল ফটো চেঞ্জ হ্যান্ডলার
+
 const handleProfilePhotoChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     const fileURL = URL.createObjectURL(file);
-    setProfilePhoto(fileURL); // ফটো প্রিভিউ দেখানোর জন্য
-    setSelectedFile(file); // ফাইল সেভ করো আপলোডের জন্য
+    setProfilePhoto(fileURL); 
+    setSelectedFile(file); 
   }
 };
 
