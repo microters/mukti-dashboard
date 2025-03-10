@@ -40,7 +40,7 @@ const EditBlog = () => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const response = await fetch("http://localhost:5000/api/category", {
+        const response = await fetch("https://api.muktihospital.com/api/category", {
           headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         });
         const data = await response.json();
@@ -61,7 +61,7 @@ const EditBlog = () => {
     const fetchBlog = async () => {
       setFetching(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/blogs/${id}`, {
+        const res = await fetch(`https://api.muktihospital.com/api/blogs/${id}`, {
           headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         });
         const data = await res.json();
@@ -89,7 +89,7 @@ const EditBlog = () => {
         });
   
         if (data.image) {
-          setPreviewImage(`http://localhost:5000/uploads/${data.image}`);
+          setPreviewImage(`https://api.muktihospital.com/uploads/${data.image}`);
         }
         
       } catch (err) {
@@ -212,7 +212,7 @@ const EditBlog = () => {
       data.append("translations", JSON.stringify(updatedTranslations));
       if (formData.image) data.append("image", formData.image);
   
-      const response = await fetch(`http://localhost:5000/api/blogs/edit/${id}`, {
+      const response = await fetch(`https://api.muktihospital.com/api/blogs/edit/${id}`, {
         method: "PUT",
         headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         body: data,

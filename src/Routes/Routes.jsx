@@ -22,6 +22,9 @@ import HomepageForm from "../components/Manage Section/HomePage";
 import AddPage from "../components/Manage Page/Add Page/AddPage";
 import AllPages from "../components/Manage Page/AllPages/AllPages";
 import EditPage from "../components/Manage Page/EditPage/EditPage";
+import ProfilePage from "../components/ProfilePage";
+
+
 
 // Importing necessary pages
 
@@ -29,9 +32,11 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-    //   <PrivateRoute>
-        <Dashboard />
-    //   </PrivateRoute>
+   
+ <Dashboard />
+    
+       
+
     ),
     errorElement: <ErrorPage />,
     children: [
@@ -299,6 +304,15 @@ export const router = createBrowserRouter([
         element: (
         //   <AdminRoute>
         <h1>Add doctor</h1>
+            // <CacheClear />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+        //   <AdminRoute>
+       <ProfilePage/>
             // <CacheClear />
         //   </AdminRoute>
         ),

@@ -31,7 +31,7 @@ const AddBlog = () => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const response = await axios.get("http://localhost:5000/api/category", {
+        const response = await axios.get("https://api.muktihospital.com/api/category", {
           headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         });
         setCategoriesList(response.data);
@@ -108,7 +108,7 @@ const AddBlog = () => {
     if (formData.image) data.append("image", formData.image);
 
     try {
-      const response = await fetch("http://localhost:5000/api/blogs/add", {
+      const response = await fetch("https://api.muktihospital.com/api/blogs/add", {
         method: "POST",
         headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         body: data,

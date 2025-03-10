@@ -84,7 +84,7 @@ const AddDoctor = () => {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
-        console.log(response.data);
+        
         
         setDepartments(response.data);
       } catch (error) {

@@ -92,7 +92,7 @@ const EditDoctor = () => {
     const fetchDepartments = async () => {
       try {
         const lang = i18n.language; // "en" or "bn"
-        const response = await axios.get(`http://localhost:5000/api/department?lang=${lang}`, {
+        const response = await axios.get(`https://api.muktihospital.com/api/department?lang=${lang}`, {
           headers: {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
@@ -115,7 +115,7 @@ const EditDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-        `http://localhost:5000/api/doctor/${id}?lang=${selectedLanguage}`,
+        `https://api.muktihospital.com/api/doctor/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key":
@@ -415,7 +415,7 @@ console.log(payload);
 
     try {
       setSubmitting(true);
-      await axios.put(`http://localhost:5000/api/doctor/edit/${id}`, payload, {
+      await axios.put(`https://api.muktihospital.com/api/doctor/edit/${id}`, payload, {
         headers: {
           "x-api-key":
             "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",

@@ -77,7 +77,7 @@ const AddPage = () => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/page/add", {
+      const response = await fetch("https://api.muktihospital.com/api/page/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

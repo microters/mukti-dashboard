@@ -1,19 +1,70 @@
 import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "../pages/Shared/Sidebar/Sidebar";
 import TopHeader from "../pages/Shared/TopHeader/TopHeader";
 import { HiChevronLeft } from "react-icons/hi";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+console.log(user);
 
-  // Handle window resize to update `isMobile`
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const verifyUser = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get("token");
+
+      if (urlToken) {
+        localStorage.setItem("authToken", urlToken);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        window.location.href = "http://localhost:3000/signin";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/profile", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.error) {
+          console.warn("Server error:", data.error);
+        } else {
+          setUser(data);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyUser();
+  }, [navigate]);
+
+  if (loading) return <p>Loading dashboard...</p>;
 
   return (
     <div className="flex">
@@ -47,7 +98,7 @@ const Dashboard = () => {
       {/* Right Side Content */}
       <div className="flex flex-col w-full">
         {/* Top Header */}
-        <TopHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+        <TopHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}  user={user} />
 
         {/* Main Content */}
         <div className="p-4 hide-scrollbar overflow-y-auto flex-grow h-[calc(100vh-72px)]">

@@ -18,7 +18,7 @@ const DepartmentList = () => {
     const fetchDepartments = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/department", {
+        const response = await axios.get("https://api.muktihospital.com/api/department", {
           headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
         });
 
@@ -64,7 +64,7 @@ const DepartmentList = () => {
     if (!window.confirm("Are you sure you want to delete this department?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/department/${id}`, {
+      await axios.delete(`https://api.muktihospital.com/api/department/${id}`, {
         headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
       });
       setDepartments(departments.filter((dep) => dep.id !== id));

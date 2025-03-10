@@ -89,7 +89,7 @@ const AddAppointment = () => {
   // API Key & Base URL (adjust as needed)
   const API_KEY =
     "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";
-  const BASE_URL = "http://localhost:5000/api";
+  const BASE_URL = "https://api.muktihospital.com/api";
 
   // Fetch Doctors (assumed to include schedule info)
   useEffect(() => {

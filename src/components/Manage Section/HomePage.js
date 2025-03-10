@@ -53,7 +53,7 @@ const HomepageForm = () => {
   useEffect(() => {
     const fetchHomepage = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/home");
+        const res = await axios.get("https://api.muktihospital.com/api/home");
         console.log(res.data);
         if (res.data) {
           setHomepageExists(true);
@@ -142,7 +142,7 @@ const HomepageForm = () => {
 
       try {
         const res = await axios.post(
-          "http://localhost:5000/api/home",
+          "https://api.muktihospital.com/api/home",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -174,7 +174,7 @@ const HomepageForm = () => {
             delete updatedData.backgroundImage;
             delete updatedData.image;
             delete updatedData.images;
-            return axios.put(`http://localhost:5000/api/home/${name}`, {
+            return axios.put(`https://api.muktihospital.com/api/home/${name}`, {
               language,
               translations: updatedData,
             });
