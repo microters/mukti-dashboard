@@ -20,7 +20,7 @@ const ProfilePage = () => {
     // Fetch user profile information
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/auth/profile", {
+        const response = await axios.get("https://api.muktihospital.com/api/auth/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = response.data;
@@ -52,7 +52,7 @@ const ProfilePage = () => {
     if (profilePhoto) formData.append("profilePhoto", profilePhoto);
 
     try {
-      const response = await axios.put("http://localhost:5000/api/user/update-profile", formData, {
+      const response = await axios.put("https://api.muktihospital.com/api/user/update-profile", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
