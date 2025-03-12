@@ -31,7 +31,7 @@ console.log(user);
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        window.location.href = "http://localhost:3000/signin";
+        window.location.href = "https://mukti-frontend.vercel.app/signin";
         return;
       }
 
