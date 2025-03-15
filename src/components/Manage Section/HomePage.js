@@ -108,13 +108,49 @@ const handleAppointmentProcessChange = (index, field, value) => {
   
 
   // GET: Load homepage data
+  const parseData = (data) => {
+    if (typeof data === "string") {
+      try {
+        return JSON.parse(data);
+      } catch (error) {
+        console.error("JSON parsing error:", error);
+        // parse করতে ব্যর্থ হলে মূল string টাকেই ফেরত দিচ্ছি
+        return data;
+      }
+    }
+    return data;
+  };
+  const flattenData = (data) => {
+    if (Array.isArray(data)) {
+      return data.map(item => flattenData(item));  // Recursively flatten array items
+    }
+  
+    if (typeof data === 'object' && data !== null) {
+      return Object.keys(data).reduce((acc, key) => {
+        if (typeof data[key] === 'object') {
+          const flattenedObject = flattenData(data[key]);  // Recursively flatten nested object
+          Object.keys(flattenedObject).forEach(innerKey => {
+            acc[`${key}_${innerKey}`] = flattenedObject[innerKey];  // Flatten inner object keys
+          });
+        } else {
+          acc[key] = data[key];
+        }
+        return acc;
+      }, {});
+    }
+  
+    return data;
+  };
+  
   useEffect(() => {
     const fetchHomepage = async () => {
       try {
-        const res = await axios.get("https://api.muktihospital.com/api/home");
-        console.log(res.data);
+        const res = await axios.get("http://localhost:5000/api/home");
+        console.log("API Response:", res.data);
+  
         if (res.data) {
           setHomepageExists(true);
+  
           const {
             heroSection,
             featuresSection,
@@ -125,29 +161,54 @@ const handleAppointmentProcessChange = (index, field, value) => {
             downloadAppSection,
             appointmentProcess,
           } = res.data;
-
-          // Set data based on selected language
+  
+          // 1. Hero Section
           if (heroSection?.translations[language]) {
-            setHeroData(heroSection.translations[language]);
+            let data = parseData(heroSection.translations[language]);
+            setHeroData(data);
           }
-          if (featuresSection?.translations[language]) setFeaturesList(featuresSection.translations[language]);
-          if (servicesSection?.translations[language]) setServicesList(servicesSection.translations[language]);
+  
+          // 2. Features Section
+          if (featuresSection?.translations[language]) {
+            let data = parseData(featuresSection.translations[language]);
+            // Flatten the data here and set it as an array
+            setFeaturesList(Array.isArray(data) ? data : [data]);
+          }
+  
+          // 3. Services Section
+          if (servicesSection?.translations[language]) {
+            let data = parseData(servicesSection.translations[language]);
+            setServicesList(data);
+          }
+  
+          // 4. About Section
           if (aboutSection?.translations[language]) {
-            setAboutData(aboutSection.translations[language]);
+            let data = parseData(aboutSection.translations[language]);
+            setAboutData(data);
           }
+  
+          // 5. Appointment Section
           if (appointmentSection?.translations[language]) {
-            setAppointmentData(appointmentSection.translations[language]);
+            let data = parseData(appointmentSection.translations[language]);
+            setAppointmentData(data);
           }
+  
+          // 6. Why Choose Us Section
           if (whyChooseUsSection?.translations[language]) {
-            setWhyChooseData(whyChooseUsSection.translations[language]);
+            let data = parseData(whyChooseUsSection.translations[language]);
+            setWhyChooseData(data);
           }
+  
+          // 7. Download App Section
           if (downloadAppSection?.translations[language]) {
-            setDownloadAppData(downloadAppSection.translations[language]);
+            let data = parseData(downloadAppSection.translations[language]);
+            setDownloadAppData(data);
           }
+  
+          // 8. Appointment Process
           if (appointmentProcess?.translations[language]) {
-            setAppointmentProcessData(
-              appointmentProcess.translations[language]
-            );
+            let data = parseData(appointmentProcess.translations[language]);
+            setAppointmentProcessData(Array.isArray(data) ? data : [data]);
           }
         } else {
           setHomepageExists(false);
@@ -156,39 +217,47 @@ const handleAppointmentProcessChange = (index, field, value) => {
         console.error("Error fetching homepage:", error);
       }
     };
-
+  
     fetchHomepage();
   }, [language]);
+  
+  
 
   // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!homepageExists) {
       // POST: Create new homepage (default language: English)
       const formData = new FormData();
-      // Data will be stored under "en" key by default
       formData.append(
         "heroSection",
         JSON.stringify({ ...heroData, backgroundImage: "" })
       );
+  
+      // Flatten and send Features Section data
       const featuresData = featuresList.map((feature) => ({
         subtitle: feature.subtitle,
         title: feature.title,
         icon: feature.icon ? "" : feature.icon,
       }));
       formData.append("featuresSection", JSON.stringify(featuresData));
+  
+      // Flatten and send Services Section data
       const servicesData = servicesList.map((service) => ({
         subtitle: service.subtitle,
         serviceIcon: service.serviceIcon ? "" : service.serviceIcon,
       }));
       formData.append("servicesSection", JSON.stringify(servicesData));
+  
+      // Flatten and send Why Choose Us Section data
       const whyServicesData = whyChooseData.services.map((service) => ({
         serviceTitle: service.serviceTitle,
         serviceDescription: service.serviceDescription,
         serviceIcon: service.serviceIcon,
       }));
       formData.append("whyChooseUsSection", JSON.stringify(whyServicesData));
+  
       formData.append(
         "aboutSection",
         JSON.stringify({ ...aboutData, images: [] })
@@ -202,32 +271,30 @@ const handleAppointmentProcessChange = (index, field, value) => {
         "downloadAppSection",
         JSON.stringify({ ...downloadAppData, image: "" })
       );
-      const appointmentData = appointmentProcessData.map((appointment) => ({
+  
+      const appointmentProcessConverted = appointmentProcessData.map((appointment) => ({
         icon: appointment.icon,
         title: appointment.title ? "" : appointment.title,
       }));
-      formData.append(
-        "appointmentProcess",
-        JSON.stringify(appointmentData)
-      );
-
+      formData.append("appointmentProcess", JSON.stringify(appointmentProcessConverted));
+  
       if (heroFile) formData.append("heroBackgroundImage", heroFile);
       if (aboutFiles.length > 0)
         aboutFiles.forEach((file) => formData.append("aboutImages", file));
       if (appointmentFile) formData.append("appointmentImage", appointmentFile);
       if (downloadAppFile) formData.append("downloadAppImage", downloadAppFile);
       if (whyChooseFile) formData.append("whyChooseUsImage", whyChooseFile);
-
-       // Upload feature icons
-    featuresList.forEach((feature, index) => {
-      if (feature.icon instanceof File) {
-        formData.append(`featureIcon_${index}`, feature.icon);
-      }
-    });
-
+  
+      // Upload feature icons
+      featuresList.forEach((feature, index) => {
+        if (feature.icon instanceof File) {
+          formData.append(`featureIcon_${index}`, feature.icon);
+        }
+      });
+  
       try {
         const res = await axios.post(
-          "https://api.muktihospital.com/api/home",
+          "http://localhost:5000/api/home",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -251,7 +318,7 @@ const handleAppointmentProcessChange = (index, field, value) => {
         { name: "downloadAppSection", data: downloadAppData },
         { name: "appointmentProcess", data: appointmentProcessData },
       ];
-
+  
       try {
         await Promise.all(
           sections.map(({ name, data }) => {
@@ -259,7 +326,7 @@ const handleAppointmentProcessChange = (index, field, value) => {
             delete updatedData.backgroundImage;
             delete updatedData.image;
             delete updatedData.images;
-            return axios.put(`https://api.muktihospital.com/api/home/${name}`, {
+            return axios.put(`http://localhost:5000/api/home/${name}`, {
               language,
               translations: updatedData,
             });
@@ -272,7 +339,8 @@ const handleAppointmentProcessChange = (index, field, value) => {
       }
     }
   };
-
+  
+  
   const handleFileChange = (e, setState, maxFiles = 4) => {
     const files = Array.from(e.target.files);
     if (files.length + setState.length <= maxFiles) {
@@ -281,7 +349,16 @@ const handleAppointmentProcessChange = (index, field, value) => {
       alert(`You can only select up to ${maxFiles} files.`);
     }
   };
-
+  const getImageUrl = (image) => {
+    if (!image) return "";
+    if (typeof image === "string") {
+      // যদি ইতিমধ্যেই "http" দিয়ে শুরু না হয়, তাহলে প্রিফিক্স যোগ করুন
+      return image.startsWith("http") ? image : `http://localhost:5000/${image}`;
+    }
+    // যদি এটি একটি File অবজেক্ট হয়, তাহলে createObjectURL ব্যবহার করুন
+    return URL.createObjectURL(image);
+  };
+  
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Create / Update Homepage</h1>
@@ -409,69 +486,77 @@ const handleAppointmentProcessChange = (index, field, value) => {
               Features Section
             </legend>
             {featuresList.map((feature, index) => (
-                <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
-                      {/* Subtitle Input */}
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Subtitle
-                        </label>
-                        <input
-                          className="w-full p-2 border rounded-md"
-                          type="text"
-                          placeholder="Enter subtitle"
-                          value={feature.subtitle}
-                          onChange={(e) => handleFeatureChange(index, "subtitle", e.target.value)}
-                        />
-                      </div>
-                      {/* Title Input */}
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Title
-                        </label>
-                        <input
-                          className="w-full p-2 border rounded-md"
-                          type="text"
-                          placeholder="Enter title"
-                          value={feature.title}
-                          onChange={(e) => handleFeatureChange(index, "title", e.target.value)}
-                        />
-                      </div>
+  <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
+    {/* Subtitle Input */}
+    <div className="mb-2">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Subtitle
+      </label>
+      <input
+        className="w-full p-2 border rounded-md"
+        type="text"
+        placeholder="Enter subtitle"
+        value={feature.subtitle}
+        onChange={(e) => handleFeatureChange(index, "subtitle", e.target.value)}
+      />
+    </div>
+    {/* Title Input */}
+    <div className="mb-2">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Title
+      </label>
+      <input
+        className="w-full p-2 border rounded-md"
+        type="text"
+        placeholder="Enter title"
+        value={feature.title}
+        onChange={(e) => handleFeatureChange(index, "title", e.target.value)}
+      />
+    </div>
+    {/* Icon Upload */}
+    <div className="mb-2">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Upload Icon
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        className="w-full p-2 border rounded-md"
+        onChange={(e) => handleIconUpload(index, e.target.files[0])}
+      />
+    </div>
+    {/* Preview Uploaded Icon */}
+    {feature.icon && (
+      <div className="mt-2">
+        {typeof feature.icon === "string" ? (
+          <img
+          src={getImageUrl(feature.icon)}
+            alt="Icon Preview"
+            className="max-w-16 max-h-16 rounded-md border"
+          />
+        ) : feature.icon instanceof File ? (
+          <img
+            src={URL.createObjectURL(feature.icon)}
+            alt="Icon Preview"
+            className="max-w-16 max-h-16 rounded-md border"
+          />
+        ) : null}
+      </div>
+    )}
+    {/* Remove Button */}
+    {featuresList.length > 1 && (
+      <button
+        type="button"
+        onClick={() => removeFeature(index)}
+        className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+      >
+        <FaTrash />
+      </button>
+    )}
+  </div>
+))}
 
-                      {/* Icon Upload */}
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Upload Icon
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="w-full p-2 border rounded-md"
-                          onChange={(e) => handleIconUpload(index, e.target.files[0])}
-                        />
-                      </div>
 
-                      {/* Preview Uploaded Icon */}
-                      {feature.icon && (
-                        <div className="mt-2">
-                          <img
-                            src={URL.createObjectURL(feature.icon)}
-                            alt="Icon Preview"
-                            className="max-w-16 max-h-16 rounded-md border"
-                          />
-                        </div>
-                      )}
-                      {/* Remove Button */}
-                      {featuresList.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeFeature(index)}
-                          className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-                        >
-                          <FaTrash/>
-                        </button>
-                      )}
-                </div>
-              ))}
 
           {/* Add New Feature Button */}
           <button
@@ -1072,3 +1157,4 @@ const handleAppointmentProcessChange = (index, field, value) => {
 };
 
 export default HomepageForm;
+

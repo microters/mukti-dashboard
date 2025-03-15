@@ -252,12 +252,12 @@ const EditDoctor = () => {
   const handleProfilePhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const fileURL = URL.createObjectURL(file);
-      setDoctorData((prev) => ({ ...prev, icon: fileURL })); // Update icon here
-      setSelectedFile(file);
+        const fileURL = URL.createObjectURL(file);
+        setDoctorData((prev) => ({ ...prev, icon: fileURL })); 
+        setSelectedFile(file); // Storing file for upload
     }
-  };
-  
+};
+
 
   // --------------------------------------------------
   // Dynamic array (memberships, awards, treatments, conditions)
@@ -323,113 +323,96 @@ const EditDoctor = () => {
   // --------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
-    // We convert any Bengali digits for numeric fields
-    // For instance, yearsOfExperience, appointmentFee, etc.
-    // So that "১২" -> "12" before sending
-    const finalYearsOfExpEn = convertBengaliToEnglish(
-      doctorData.yearsOfExperience.en || ""
-    );
-    const finalYearsOfExpBn = convertBengaliToEnglish(
-      doctorData.yearsOfExperience.bn || ""
-    );
-    const finalAppointmentFeeEn = convertBengaliToEnglish(
-      doctorData.appointmentFee.en || ""
-    );
-    const finalAppointmentFeeBn = convertBengaliToEnglish(
-      doctorData.appointmentFee.bn || ""
-    );
-    const finalFollowUpFeeEn = convertBengaliToEnglish(
-      doctorData.followUpFee.en || ""
-    );
-    const finalFollowUpFeeBn = convertBengaliToEnglish(
-      doctorData.followUpFee.bn || ""
-    );
-    const finalPatientAttendedEn = convertBengaliToEnglish(
-      doctorData.patientAttended.en || ""
-    );
-    const finalPatientAttendedBn = convertBengaliToEnglish(
-      doctorData.patientAttended.bn || ""
-    );
-    const finalAvgTimeEn = convertBengaliToEnglish(
-      doctorData.avgConsultationTime.en || ""
-    );
-    const finalAvgTimeBn = convertBengaliToEnglish(
-      doctorData.avgConsultationTime.bn || ""
-    );
+    // Convert Bengali digits to English for numeric fields
+    const finalYearsOfExpEn = convertBengaliToEnglish(doctorData.yearsOfExperience.en || "");
+    const finalYearsOfExpBn = convertBengaliToEnglish(doctorData.yearsOfExperience.bn || "");
+    const finalAppointmentFeeEn = convertBengaliToEnglish(doctorData.appointmentFee.en || "");
+    const finalAppointmentFeeBn = convertBengaliToEnglish(doctorData.appointmentFee.bn || "");
+    const finalFollowUpFeeEn = convertBengaliToEnglish(doctorData.followUpFee.en || "");
+    const finalFollowUpFeeBn = convertBengaliToEnglish(doctorData.followUpFee.bn || "");
+    const finalPatientAttendedEn = convertBengaliToEnglish(doctorData.patientAttended.en || "");
+    const finalPatientAttendedBn = convertBengaliToEnglish(doctorData.patientAttended.bn || "");
+    const finalAvgTimeEn = convertBengaliToEnglish(doctorData.avgConsultationTime.en || "");
+    const finalAvgTimeBn = convertBengaliToEnglish(doctorData.avgConsultationTime.bn || "");
 
+    // Prepare JSON payload
     const payload = {
-      ...doctorData,
-      slug: doctorData.slug, // Ensure slug is sent even if manually edited
-      translations: {
-        en: {
-          metaTitle:doctorData.metaTitle.en,
-          metaDescription:doctorData.metaDescription.en,
-          name: doctorData.name.en,
-          designation: doctorData.designation.en,
-          department: doctorData.department.en,
-          shortBio: doctorData.shortBio.en,
-          contactNumber: doctorData.contactNumber.en,
-          contactNumberSerial: doctorData.contactNumberSerial.en,
-          gender: doctorData.gender.en,
-          // numeric
-          yearsOfExperience: finalYearsOfExpEn,
-          appointmentFee: finalAppointmentFeeEn,
-          followUpFee: finalFollowUpFeeEn,
-          patientAttended: finalPatientAttendedEn,
-          avgConsultationTime: finalAvgTimeEn,
-
-          academicQualification: doctorData.academicQualification.en,
+        ...doctorData,
+        slug: doctorData.slug,  // Ensure slug remains in the update
+        translations: {
+            en: {
+                metaTitle: doctorData.metaTitle.en,
+                metaDescription: doctorData.metaDescription.en,
+                name: doctorData.name.en,
+                designation: doctorData.designation.en,
+                department: doctorData.department.en,
+                shortBio: doctorData.shortBio.en,
+                contactNumber: doctorData.contactNumber.en,
+                contactNumberSerial: doctorData.contactNumberSerial.en,
+                gender: doctorData.gender.en,
+                yearsOfExperience: finalYearsOfExpEn,
+                appointmentFee: finalAppointmentFeeEn,
+                followUpFee: finalFollowUpFeeEn,
+                patientAttended: finalPatientAttendedEn,
+                avgConsultationTime: finalAvgTimeEn,
+                academicQualification: doctorData.academicQualification.en,
+            },
+            bn: {
+                metaTitle: doctorData.metaTitle.bn,
+                metaDescription: doctorData.metaDescription.bn,
+                name: doctorData.name.bn,
+                designation: doctorData.designation.bn,
+                department: doctorData.department.bn,
+                shortBio: doctorData.shortBio.bn,
+                contactNumber: doctorData.contactNumber.bn,
+                contactNumberSerial: doctorData.contactNumberSerial.bn,
+                gender: doctorData.gender.bn,
+                yearsOfExperience: finalYearsOfExpBn,
+                appointmentFee: finalAppointmentFeeBn,
+                followUpFee: finalFollowUpFeeBn,
+                patientAttended: finalPatientAttendedBn,
+                avgConsultationTime: finalAvgTimeBn,
+                academicQualification: doctorData.academicQualification.bn,
+            },
         },
-        bn: {
-          metaTitle:doctorData.metaTitle.bn,
-          metaDescription:doctorData.metaDescription.bn,
-          name: doctorData.name.bn,
-          designation: doctorData.designation.bn,
-          department: doctorData.department.bn,
-          shortBio: doctorData.shortBio.bn,
-          contactNumber: doctorData.contactNumber.bn,
-          contactNumberSerial: doctorData.contactNumberSerial.bn,
-          gender: doctorData.gender.bn,
-          // numeric
-          yearsOfExperience: finalYearsOfExpBn,
-          appointmentFee: finalAppointmentFeeBn,
-          followUpFee: finalFollowUpFeeBn,
-          patientAttended: finalPatientAttendedBn,
-          avgConsultationTime: finalAvgTimeBn,
-
-          academicQualification: doctorData.academicQualification.bn,
-        },
-      },
-      memberships,
-      awards,
-      treatments,
-      conditions,
-      schedule: schedules,
-      faqs,
+        memberships,
+        awards,
+        treatments,
+        conditions,
+        schedule: schedules,
+        faqs,
     };
+
+    // Create FormData for sending JSON and file together
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payload));  // Attach JSON data
     if (selectedFile) {
-      payload.profilePhoto = selectedFile;  // Send the file for upload as `profilePhoto`
+        formData.append("profilePhoto", selectedFile);  // Attach file if exists
     }
-console.log(payload);
+
+    console.log("Submitting Payload:", payload);
 
     try {
-      setSubmitting(true);
-      await axios.put(`https://api.muktihospital.com/api/doctor/edit/${id}`, payload, {
-        headers: {
-          "x-api-key":
-            "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
-        },
-      });
-      toast.success("Doctor updated successfully!");
-      navigate("/all-doctors");
+        const response = await axios.put(`https://api.muktihospital.com/api/doctor/edit/${id}`, formData, {
+            headers: {
+                "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        console.log("Update Response:", response.data);
+        toast.success("Doctor updated successfully!");
+        navigate("/all-doctors");
     } catch (error) {
-      console.error("Error updating doctor data:", error);
-      toast.error("Failed to update doctor.");
+        console.error("Error updating doctor data:", error);
+        toast.error("Failed to update doctor.");
     } finally {
-      setSubmitting(false);
+        setSubmitting(false);
     }
-  };
+};
+
 console.log(doctorData);
 
   // --------------------------------------------------
@@ -1002,7 +985,7 @@ console.log(doctorData);
             <label className="label">{t("profilePhoto")}</label>
             <div className="relative w-24 h-24">
             <img
-  src={`http://localhost:5000${doctorData.profilePhoto}` || "https://placehold.co/100"} // Display icon here
+  src={`https://api.muktihospital.com${doctorData.profilePhoto}` || "https://placehold.co/100"} // Display icon here
   alt="Profile"
   className="rounded-full border shadow-md w-24 h-24 object-cover"
 />
