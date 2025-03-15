@@ -602,7 +602,7 @@ console.log(doctorData);
               </select>
             </div>
 
-            {/* Department */}
+            
            {/* Department */}
            <div>
               <label className="label">{t("department")}</label>
