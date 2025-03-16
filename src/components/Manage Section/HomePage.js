@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { FaPlus, FaTrash, FaSpinner, FaLanguage, FaCopy } from "react-icons/fa";
+import { FaPlus, FaTrash, FaSpinner, FaCopy } from "react-icons/fa";
 
 // confiq & constent
 const API = "http://localhost:5000/api/home";
@@ -280,15 +280,18 @@ const HomepageForm = () => {
   const removeAppointmentProcess = (index) => removeItem(appointmentProcessData, 
     setAppointmentProcessData, index, appointmentProcessIconFiles, setAppointmentProcessIconFiles);
 
-  // file change handelar
-  const handleFileChange = (e, setState, maxFiles = 4) => {
-    const files = Array.from(e.target.files);
-    if (files.length + (setState.length || 0) <= maxFiles) {
-      setState(files);
-    } else {
-      alert(`You can only select up to ${maxFiles} files.`);
-    }
-  };
+    const handleFileChange = (e, setState, maxFiles = 4) => {
+      const files = Array.from(e.target.files);
+      
+      if (files.length > 0) {
+        if (files.length <= maxFiles) {
+          setState(files);
+          console.log(`Selected ${files.length} files:`, files.map(f => f.name));
+        } else {
+          alert(`You can only select up to ${maxFiles} files.`);
+        }
+      }
+    };
 
   // section data process handelar
   const processSection = useCallback((section, setter, transformer = (data) => data) => {
@@ -338,6 +341,7 @@ const HomepageForm = () => {
     try {
       // langugae parameter add
       const res = await axios.get(`${API}?language=${language}`);
+      console.log(res.data);
       
       if (res.data) {
         setHomepageExists(true);
@@ -584,6 +588,7 @@ const HomepageForm = () => {
           });
         };
         
+        
         const imagePromises = [
           uploadFiles(featureIconFiles, "uploadFeatureIcons", "featureIcon"),
           uploadFiles(serviceIconFiles, "uploadServiceIcons", "serviceIcon"),
@@ -593,7 +598,7 @@ const HomepageForm = () => {
           uploadFile(appointmentFile, "uploadAppointmentImage", "appointmentImage"),
           uploadFile(whyChooseFile, "uploadWhyChooseImage", "whyChooseUsImage"),
           uploadFile(downloadAppFile, "uploadDownloadAppImage", "downloadAppImage"),
-          uploadMultiple(aboutFiles, "uploadAboutImages", "aboutImages")
+          uploadMultiple(aboutFiles, "uploadAboutImages", "aboutImages") // This line is important
         ].filter(Boolean);
         
         if (imagePromises.length > 0) {
@@ -605,7 +610,7 @@ const HomepageForm = () => {
       
       showSuccessMessage(`Homepage updated successfully for ${language} language!`);
       
-      // ফাইল সিলেকশন রিসেট
+      // Reset file selections
       setHeroFile(null);
       setAppointmentFile(null);
       setWhyChooseFile(null);
@@ -616,7 +621,7 @@ const HomepageForm = () => {
       setWhyChooseServiceIconFiles(new Array(whyChooseData.services.length).fill(null));
       setAppointmentProcessIconFiles(new Array(appointmentProcessData.length).fill(null));
       
-      // ডেটা রিফ্রেশ - পুনরায় আপডেটেড ডেটা লোড করা
+      // Refresh data
       await fetchHomepage();
     } catch (err) {
       console.error("Error updating homepage:", err);
@@ -897,49 +902,63 @@ const HomepageForm = () => {
             value={aboutData.description}
             onChange={(e) => setAboutData({ ...aboutData, description: e.target.value })}
           />
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="images">
-              Select About Images (up to 4):
-            </label>
-            <input
-              type="file" id="images" multiple
-              onChange={(e) => handleFileChange(e, setAboutFiles, 4)}
-              className="w-full p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+        {/* About Images Section */}
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="images">
+    Select About Images (up to 4):
+  </label>
+  <input
+    type="file" id="images" multiple
+    onChange={(e) => handleFileChange(e, setAboutFiles, 4)}
+    className="w-full p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+  />
+  
+  {/* Show selected file names */}
+  {aboutFiles.length > 0 && (
+    <div className="mt-2 text-sm text-gray-500">
+      Selected files: {aboutFiles.map(file => file.name).join(', ')}
+    </div>
+  )}
+
+  {/* Preview for newly selected images */}
+  {aboutFiles.length > 0 && (
+    <div className="mt-4">
+      <p className="text-sm font-medium text-gray-700 mb-2">New Images Preview:</p>
+      <div className="flex flex-wrap gap-4">
+        {aboutFiles.map((file, index) => (
+          <div key={index} className="w-32 h-32 overflow-hidden rounded-md border">
+            <img
+              src={URL.createObjectURL(file)}
+              alt={`preview-${index}`}
+              className="w-full h-full object-cover"
             />
           </div>
-          {aboutFiles.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">New Images Preview:</p>
-              <div className="flex space-x-4">
-                {aboutFiles.slice(0, 4).map((file, index) => (
-                  <div key={index} className="w-24 h-24 overflow-hidden rounded-md border">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`preview-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        ))}
+      </div>
+    </div>
+  )}
+  
+  {/* Preview for existing images */}
+  {!aboutFiles.length && aboutData.images && aboutData.images.length > 0 && (
+    <div className="mt-4">
+      <p className="text-sm font-medium text-gray-700 mb-2">Current Images:</p>
+      <div className="flex flex-wrap gap-4">
+        {aboutData.images.map((image, index) => (
+          <div key={index} className="w-32 h-32 overflow-hidden rounded-md border">
+            <img
+              src={getImageUrl(image)}
+              alt={`about-image-${index}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
           
-          {!aboutFiles.length && aboutData.images && aboutData.images.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Current Images:</p>
-              <div className="flex space-x-4">
-                {aboutData.images.map((image, index) => (
-                  <div key={index} className="w-24 h-24 overflow-hidden rounded-md border">
-                    <img
-                      src={getImageUrl(image)}
-                      alt={`about-image-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          
+         
           
           <FormInput
             label="Experience" id="experience"
