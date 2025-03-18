@@ -34,9 +34,6 @@ export const router = createBrowserRouter([
     element: (
    
  <Dashboard />
-    
-       
-
     ),
     errorElement: <ErrorPage />,
     children: [
@@ -267,6 +264,14 @@ export const router = createBrowserRouter([
        /** Manage Page **/
        {
         path: "home-page",
+        element: (
+        //   <AdminRoute>
+            <HomepageForm/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "about-page",
         element: (
         //   <AdminRoute>
             <HomepageForm/>
