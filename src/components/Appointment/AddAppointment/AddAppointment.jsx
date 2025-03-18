@@ -2,12 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Select from "react-select";
 import {
-  FaUserMd,
-  FaUser,
-  FaMoneyBillWave,
-  FaStethoscope,
+  FaUserMd, FaUser, FaMoneyBillWave, FaStethoscope
 } from "react-icons/fa";
-import { MdFormatListNumbered, MdPayment, MdPersonSearch } from "react-icons/md";
+import { MdFormatListNumbered, MdPayment } from "react-icons/md";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -38,12 +35,12 @@ const AddAppointment = () => {
     scheduleId: "",
     mobileNumber: "",
     weight: "",
-    age: "", 
+    age: "",
     isManualPatient: false,
   });
 
-  const API_KEY = "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";
-  const BASE_URL = "https://api.muktihospital.com/api";
+  const API_KEY = "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";  // Change to your API key
+  const BASE_URL = "https://api.muktihospital.com/api";  // Change to your backend API URL
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -60,7 +57,6 @@ const AddAppointment = () => {
     };
     fetchDoctors();
   }, []);
-
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -81,7 +77,6 @@ const AddAppointment = () => {
     };
     fetchPatients();
   }, []);
-
   const handleDoctorChange = (selectedOption) => {
     setSelectedDoctor(selectedOption);
     setFormData({ ...formData, doctor: selectedOption?.value || "" });
@@ -166,34 +161,53 @@ const AddAppointment = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let cleanedValue = value.trim();
+  
+    // Clean the mobile number if it's entered with an extra '88' (or other unwanted characters)
+    if (name === 'mobileNumber') {
+      // Remove leading '88' or any country code if already added
+      if (cleanedValue.startsWith('88')) {
+        cleanedValue = cleanedValue.substring(2);
+      }
+    }
+  
+    setFormData({ ...formData, [name]: cleanedValue });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
   
+    let cleanedMobileNumber = formData.mobileNumber.trim();
+  
+    // Add '88' as the country code if it doesn't already have it
+    if (!cleanedMobileNumber.startsWith('88')) {
+      cleanedMobileNumber = '88' + cleanedMobileNumber;  // Prepend '88' country code
+    }
+  
     const payload = {
-      doctorId: formData.doctor,
-      patientId: formData.patient,
+      doctorId: selectedDoctor ? selectedDoctor.value : "",
+      doctorName: selectedDoctor ? selectedDoctor.label : "",
+      patientId: selectedPatient && !selectedPatient.value.startsWith("new-") ? selectedPatient.value : null,
+      patientName: selectedPatient ? selectedPatient.label : "",
       scheduleId: formData.scheduleId || null,
       consultationFee: parseFloat(formData.consultationFee),
       paymentMethod: formData.paymentMethod,
-      reference: formData.reference || null,
       serialNumber: formData.serialNumber || null,
-      mobileNumber: formData.mobileNumber || null,
+      mobileNumber: cleanedMobileNumber,  // Use mobile number with '88' prepended
       weight: formData.weight || null,
-      age: formData.age || null, 
+      age: formData.age || null,
+      reference: formData.reference || null,
       bloodGroup: formData.bloodGroup || null,
       reason: formData.reason || "",
       address: formData.address || "",
+      isNewPatient: selectedPatient && selectedPatient.value.startsWith("new-") ? true : false,
     };
   
     try {
       const response = await axios.post(`${BASE_URL}/appointment/add`, payload, {
         headers: { "x-api-key": API_KEY },
       });
-  
       alert(response.data.message || "Appointment booked successfully!");
     } catch (error) {
       console.error("Error booking appointment:", error);
@@ -210,13 +224,9 @@ const AddAppointment = () => {
         <h2 className="text-2xl font-bold text-gray-700 flex items-center gap-2">
           <FaStethoscope /> Add New Appointment
         </h2>
-        <p className="text-gray-500 text-sm mt-2">
-          Fill out the form below to book an appointment.
-        </p>
-
         <form className="mt-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Doctor Selection with React-Select */}
+            {/* Doctor Selection */}
             <div>
               <label className="label flex items-center gap-2">
                 <FaUserMd /> Select Doctor
@@ -238,9 +248,8 @@ const AddAppointment = () => {
                 />
               )}
             </div>
-
-            {/* Schedule Selection with React-Select */}
-            {formData.doctor && (
+            {/* Schedule Selection */}
+            {selectedDoctor && (
               <div>
                 <label className="label flex items-center gap-2">
                   Doctor's Schedule
@@ -257,8 +266,6 @@ const AddAppointment = () => {
                     onChange={handleScheduleChange}
                     placeholder="Choose a Schedule"
                     isClearable
-                    className="react-select-container"
-                    classNamePrefix="react-select"
                   />
                 ) : (
                   <p className="text-red-500">No schedule available</p>
@@ -266,7 +273,7 @@ const AddAppointment = () => {
               </div>
             )}
 
-            {/* Patient Selection with Injection Feature */}
+            {/* Patient Selection */}
             <div>
               <label className="label flex items-center gap-2">
                 <FaUser /> Select Patient
@@ -285,7 +292,8 @@ const AddAppointment = () => {
                 />
               )}
             </div>
-            {/* Payment Method Selection */}
+
+            {/* Payment Method */}
             <div>
               <label className="label flex items-center gap-2">
                 <MdPayment /> Payment Method
@@ -302,12 +310,11 @@ const AddAppointment = () => {
                 onChange={handlePaymentMethodChange}
                 placeholder="Choose Payment Method"
                 isClearable
-                className="react-select-container"
-                classNamePrefix="react-select"
               />
             </div>
-              {/* Fee Selection - Shows Only Numeric Value After Selection */}
-              <div>
+
+            {/* Fee Selection */}
+            <div>
               <label className="label flex items-center gap-2">
                 <FaMoneyBillWave /> Fee
               </label>
@@ -317,11 +324,10 @@ const AddAppointment = () => {
                 onChange={handleFeeChange}
                 placeholder="Select Fee"
                 isClearable
-                className="react-select-container"
-                classNamePrefix="react-select"
               />
             </div>
-             {/* Serial Number */}
+
+            {/* Serial Number */}
             <div>
               <label className="label flex items-center gap-2">
                 <MdFormatListNumbered /> Serial Number
@@ -335,7 +341,8 @@ const AddAppointment = () => {
                 placeholder="Enter Serial Number"
               />
             </div>
-              {/* Mobile Number - Auto-filled & Editable for New Patients */}
+
+            {/* Mobile Number */}
             <div>
               <label className="label">Mobile Number</label>
               <input
@@ -347,26 +354,28 @@ const AddAppointment = () => {
                 disabled={formData.isManualPatient ? false : !!selectedPatient}
               />
             </div>
-              {/* Blood Group */}
-              <div>
+
+            {/* Blood Group */}
+            <div>
               <label className="label">Blood Group</label>
-                <Select
-                  options={[
-                    { value: "A+", label: "A+" },
-                    { value: "A-", label: "A-" },
-                    { value: "B+", label: "B+" },
-                    { value: "B-", label: "B-" },
-                    { value: "O+", label: "O+" },
-                    { value: "O-", label: "O-" },
-                    { value: "AB+", label: "AB+" },
-                    { value: "AB-", label: "AB-" },
-                  ]}
-                  value={selectedBloodGroup}
-                  onChange={handleBloodGroupChange}
-                  placeholder="Select Blood Group"
-                  isClearable
-                />
+              <Select
+                options={[
+                  { value: "A+", label: "A+" },
+                  { value: "A-", label: "A-" },
+                  { value: "B+", label: "B+" },
+                  { value: "B-", label: "B-" },
+                  { value: "O+", label: "O+" },
+                  { value: "O-", label: "O-" },
+                  { value: "AB+", label: "AB+" },
+                  { value: "AB-", label: "AB-" },
+                ]}
+                value={selectedBloodGroup}
+                onChange={handleBloodGroupChange}
+                placeholder="Select Blood Group"
+                isClearable
+              />
             </div>
+
             {/* Weight Field */}
             <div>
               <label className="label flex items-center gap-2">
@@ -396,23 +405,18 @@ const AddAppointment = () => {
                 placeholder="Enter age in years"
               />
             </div>
-
-            {/* Reference Field */}
+             {/* Reference Field */}
             <div>
-              <label className="label flex items-center gap-2">
-                <MdPersonSearch /> Reference
-              </label>
+              <label className="label">Address</label>
               <input
                 type="text"
                 name="reference"
                 className="input-field"
                 value={formData.reference}
                 onChange={handleChange}
-                placeholder="Enter Reference Name or ID"
               />
             </div>
-
-           {/* Reason */}
+            {/* Reason */}
             <div>
               <label className="text-sm font-medium text-gray-700">Reason</label>
               <textarea
@@ -423,10 +427,17 @@ const AddAppointment = () => {
                 placeholder="Enter the reason for the appointment"
               />
             </div>
-             {/* Address */}
-             <div>
+
+            {/* Address */}
+            <div>
               <label className="label">Address</label>
-              <input type="text" name="address" className="input-field" value={formData.address} onChange={handleChange} />
+              <input
+                type="text"
+                name="address"
+                className="input-field"
+                value={formData.address}
+                onChange={handleChange}
+              />
             </div>
           </div>
 
@@ -453,7 +464,3 @@ const AddAppointment = () => {
 };
 
 export default AddAppointment;
-
-
-
-

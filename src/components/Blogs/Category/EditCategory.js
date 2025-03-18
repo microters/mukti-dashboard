@@ -62,7 +62,7 @@ const EditCategory = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/category/${id}?lang=${selectedLanguage}`,
+          `https://api.muktihospital.com/api/category/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
@@ -141,7 +141,7 @@ const EditCategory = () => {
       console.log("🔹 Sending Data:", JSON.stringify(dataToSend, null, 2));
   
       const response = await axios.put(
-        `http://localhost:5000/api/category/${id}`,
+        `https://api.muktihospital.com/api/category/${id}`,
         dataToSend, // ✅ JSON হিসেবে পাঠাচ্ছি
         {
           headers: {

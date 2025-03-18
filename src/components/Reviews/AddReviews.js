@@ -29,7 +29,7 @@ const AddReviews = () => {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/reviews", {
+      const response = await axios.get("https://api.muktihospital.com/api/reviews", {
         headers: { "x-api-key": API_KEY },
       });
       setReviews(response.data);
@@ -58,12 +58,12 @@ const AddReviews = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/reviews/${editingId}`, formData, {
+        await axios.put(`https://api.muktihospital.com/api/reviews/${editingId}`, formData, {
           headers: { "x-api-key": API_KEY },
         });
         toast.success("Review updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/reviews", formData, {
+        await axios.post("https://api.muktihospital.com/api/reviews", formData, {
           headers: { "x-api-key": API_KEY },
         });
         toast.success("Review added successfully!");
@@ -93,7 +93,7 @@ const AddReviews = () => {
     setShowDeleteModal(false);
 
     try {
-      await axios.delete(`http://localhost:5000/api/reviews/${deleteId}`, {
+      await axios.delete(`https://api.muktihospital.com/api/reviews/${deleteId}`, {
         headers: { "x-api-key": API_KEY },
       });
       toast.success("Review deleted successfully!");

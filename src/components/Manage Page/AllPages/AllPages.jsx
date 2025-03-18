@@ -14,7 +14,7 @@ const AllPages = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
 
-  const API_URL = "http://localhost:5000/api/page";
+  const API_URL = "https://api.muktihospital.com/api/page";
 
   // ✅ Fetch all pages
   useEffect(() => {

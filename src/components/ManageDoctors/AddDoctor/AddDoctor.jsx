@@ -79,7 +79,7 @@ const AddDoctor = () => {
     const fetchDepartments = async () => {
       try {
         const lang = i18n.language; // "en" or "bn"
-        const response = await axios.get(`http://localhost:5000/api/department?lang=${lang}`, {
+        const response = await axios.get(`https://api.muktihospital.com/api/department?lang=${lang}`, {
           headers: {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
@@ -283,7 +283,7 @@ const handleProfilePhotoChange = (e) => {
   
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/doctor/add",
+        "https://api.muktihospital.com/api/doctor/add",
         formDataToSend, // Sending FormData with `icon`
         {
           headers: {

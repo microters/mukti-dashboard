@@ -97,7 +97,7 @@ const getImageUrl = (image) => {
   if (!image) return "";
   if (typeof image === "string") {
     if (image === "icon-selected") return "";
-    return image.startsWith("http") ? image : `http://localhost:5000/${image}`;
+    return image.startsWith("http") ? image : `https://api.muktihospital.com/${image}`;
   }
   return URL.createObjectURL(image);
 };

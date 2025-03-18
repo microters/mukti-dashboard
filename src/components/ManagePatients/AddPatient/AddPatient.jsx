@@ -36,7 +36,7 @@ const AddPatient = () => {
                     return;
                 }
 
-                const response = await axios.get('http://localhost:5000/api/auth/profile', {
+                const response = await axios.get('https://api.muktihospital.com/api/auth/profile', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -126,11 +126,10 @@ const handleChange = (e) => {
             const token = localStorage.getItem('authToken');
             
             // Make POST request to the backend API
-            const response = await axios.post("http://localhost:5000/api/patient/add", formDataToSend, {
+            const response = await axios.post("https://api.muktihospital.com/api/patient/add", formDataToSend, {
                 headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
+                    "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+                  },
             });
 
             console.log(response.data);
