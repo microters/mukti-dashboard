@@ -115,7 +115,7 @@ const Sidebar = () => {
       isSubmenu: true,
       submenus: [
         { name: "Homepage Section", link: "/home-page" },
-        { name: "About us", link: "/upcoming-appointments" },
+        { name: "About us", link: "/about-page" },
         { name: "Contact Us", link: "/todays-appointments" },
       ],
     },

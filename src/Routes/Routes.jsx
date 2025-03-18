@@ -23,6 +23,7 @@ import AddPage from "../components/Manage Page/Add Page/AddPage";
 import AllPages from "../components/Manage Page/AllPages/AllPages";
 import EditPage from "../components/Manage Page/EditPage/EditPage";
 import ProfilePage from "../components/ProfilePage";
+import AboutPage from "../components/Manage Section/AboutPage";
 
 
 
@@ -274,7 +275,7 @@ export const router = createBrowserRouter([
         path: "about-page",
         element: (
         //   <AdminRoute>
-            <HomepageForm/>
+            <AboutPage/>
         //   </AdminRoute>
         ),
       },
