@@ -72,7 +72,7 @@ const EditPatient = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `https://api.muktihospital.com/api/patient/${id}`,
+          `http://localhost:5000/api/patient/${id}`,
           {
             headers: {
               "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Set your API key here
@@ -167,7 +167,7 @@ const EditPatient = () => {
       }
 
       const response = await axios.put(
-        `https://api.muktihospital.com/api/patient/edit/${id}`,
+        `http://localhost:5000/api/patient/edit/${id}`,
         formData,
         {
           headers: {
@@ -298,7 +298,7 @@ console.log(patientData.image);
   <div className="relative w-24 h-24">
     {isLoading ? <Skeleton circle height={100} width={100} /> : 
       <img
-        src={patientData.image ? `https://api.muktihospital.com/${patientData.image}` : '/default-image.jpg'} // Default image if none exists
+        src={patientData.image ? `http://localhost:5000/${patientData.image}` : '/default-image.jpg'} // Default image if none exists
         alt="Patient Image"
         className="w-20 h-20 object-cover rounded"
       />

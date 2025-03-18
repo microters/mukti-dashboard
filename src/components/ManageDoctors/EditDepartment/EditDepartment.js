@@ -68,7 +68,7 @@ const EditDepartment = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `https://api.muktihospital.com/api/department/${id}?lang=${selectedLanguage}`,
+          `http://localhost:5000/api/department/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
@@ -174,7 +174,7 @@ const EditDepartment = () => {
       }
 
       const response = await axios.put(
-        `https://api.muktihospital.com/api/department/${id}`,
+        `http://localhost:5000/api/department/${id}`,
         formData,
         {
           headers: {

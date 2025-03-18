@@ -103,7 +103,7 @@ const AddDepartment = () => {
         formData.append("icon", icon); // Append file if selected
       }
 
-      const response = await axios.post("https://api.muktihospital.com/api/department", formData, {
+      const response = await axios.post("http://localhost:5000/api/department", formData, {
         headers: {
           "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           "Content-Type": "multipart/form-data",

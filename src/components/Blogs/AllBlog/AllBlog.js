@@ -56,7 +56,7 @@ const BlogList = () => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("https://api.muktihospital.com/api/blogs", {
+        const response = await axios.get("http://localhost:5000/api/blogs", {
           headers: {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
@@ -117,7 +117,7 @@ const BlogList = () => {
   const handleConfirmDelete = async (id) => {
     setDeleteModalOpen(false);
     try {
-      await axios.delete(`https://api.muktihospital.com/api/blogs/delete/${id}`, {
+      await axios.delete(`http://localhost:5000/api/blogs/delete/${id}`, {
         headers: {
           "x-api-key":
             "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",

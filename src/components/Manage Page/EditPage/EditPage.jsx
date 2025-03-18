@@ -5,7 +5,7 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.muktihospital.com/api/page";
+const API_URL = "http://localhost:5000/api/page";
 
 const EditPage = () => {
   const { id } = useParams(); // Get the page ID from URL

@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser, FaEdit, FaAsterisk } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AddPatient = () => {
+    const navigate = useNavigate();
     const { i18n } = useTranslation(["addDoctor"]);
     const [profilePhoto, setProfilePhoto] = useState("https://placehold.co/100");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [user, setUser] = useState(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -23,15 +26,53 @@ const AddPatient = () => {
         image: null,
     });
 
-    // Handle Language Change
-    const handleLanguageChange = (e) => {
-        i18n.changeLanguage(e.target.value);
-    };
+    // Fetch user profile on component mount
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    navigate('/login');
+                    return;
+                }
+
+                const response = await axios.get('http://localhost:5000/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                setUser(response.data);
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+                navigate('/login');
+            }
+        };
+
+        fetchUserProfile();
+    }, [navigate]);
 
     // Handle input changes
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+   // Handle input changes
+const handleChange = (e) => {
+    let { name, value } = e.target;
+
+    // Special handling for phone number
+    if (name === 'phoneNumber') {
+        // Remove any non-numeric characters
+        value = value.replace(/\D/g, '');
+
+        // If the number doesn't start with 88, prepend it
+        if (!value.startsWith('88')) {
+            value = '88' + value;
+        }
+
+        // Limit to 13 characters (88 + 11 digit number)
+        value = value.slice(0, 13);
+    }
+
+    setFormData({ ...formData, [name]: value });
+};
 
     // Handle Profile Photo Upload
     const handleProfilePhotoChange = (event) => {
@@ -81,10 +122,13 @@ const AddPatient = () => {
         if (formData.image) formDataToSend.append("image", formData.image);
 
         try {
+            // Get authentication token
+            const token = localStorage.getItem('authToken');
+            
             // Make POST request to the backend API
-            const response = await axios.post("https://api.muktihospital.com/api/patient/add", formDataToSend, {
+            const response = await axios.post("http://localhost:5000/api/patient/add", formDataToSend, {
                 headers: {
-                    "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
@@ -92,12 +136,31 @@ const AddPatient = () => {
             console.log(response.data);
             setLoading(false);
             alert("Patient added successfully!");
+            
             // Reset form after successful submission
             handleDiscard();
+            
+            // Navigate to patients list or patient details
+            navigate('/patients');
         } catch (error) {
             console.error("Error adding patient:", error);
             setLoading(false);
-            setError(error.response?.data?.error || "Error adding patient. Please try again.");
+            
+            // Handle specific error scenarios
+            if (error.response) {
+                if (error.response.status === 400) {
+                    setError(error.response.data.error || "Invalid patient data");
+                } else if (error.response.status === 401) {
+                    setError("Authentication failed. Please log in again.");
+                    navigate('/login');
+                } else {
+                    setError(error.response.data.error || "Error adding patient. Please try again.");
+                }
+            } else if (error.request) {
+                setError("No response from server. Please check your internet connection.");
+            } else {
+                setError("Error preparing patient data. Please try again.");
+            }
         }
     };
 
@@ -124,6 +187,15 @@ const AddPatient = () => {
             {text} <FaAsterisk className="ml-1 text-red-500 text-xs" />
         </label>
     );
+
+    // If user is not loaded, show loading
+    if (!user) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div>Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-gray-100 min-h-screen p-6">

@@ -57,7 +57,7 @@ const AddCategory = () => {
     setIsSubmitting(true);
   
     try {
-      const response = await axios.post("https://api.muktihospital.com/api/category", 
+      const response = await axios.post("http://localhost:5000/api/category", 
         { translations: categoryData.translations }, // Send JSON directly
         {
           headers: {
