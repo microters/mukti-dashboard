@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { FaPlus, FaTrash, FaSpinner, FaLanguage, FaCopy } from "react-icons/fa";
+import { FaPlus, FaTrash, FaSpinner, FaCopy } from "react-icons/fa";
 
 // confiq & constent
-const API = "http://localhost:5000/api/home";
+const API = "http://api.muktihospital.com/api/home";
 const DEFAULT_FEATURE = { subtitle: "", title: "", icon: "" };
 const DEFAULT_SERVICE = { serviceTitle: "", serviceIcon: "" };
 const DEFAULT_WHY_CHOOSE_SERVICE = { serviceTitle: "", serviceDescription: "", serviceIcon: "" };
@@ -97,7 +97,7 @@ const getImageUrl = (image) => {
   if (!image) return "";
   if (typeof image === "string") {
     if (image === "icon-selected") return "";
-    return image.startsWith("http") ? image : `http://localhost:5000/${image}`;
+    return image.startsWith("http") ? image : `https://api.muktihospital.com/${image}`;
   }
   return URL.createObjectURL(image);
 };
@@ -280,35 +280,38 @@ const HomepageForm = () => {
   const removeAppointmentProcess = (index) => removeItem(appointmentProcessData, 
     setAppointmentProcessData, index, appointmentProcessIconFiles, setAppointmentProcessIconFiles);
 
-  // file change handelar
-  const handleFileChange = (e, setState, maxFiles = 4) => {
-    const files = Array.from(e.target.files);
-    if (files.length + (setState.length || 0) <= maxFiles) {
-      setState(files);
-    } else {
-      alert(`You can only select up to ${maxFiles} files.`);
-    }
-  };
+    const handleFileChange = (e, setState, maxFiles = 4) => {
+      const files = Array.from(e.target.files);
+      
+      if (files.length > 0) {
+        if (files.length <= maxFiles) {
+          setState(files);
+          console.log(`Selected ${files.length} files:`, files.map(f => f.name));
+        } else {
+          alert(`You can only select up to ${maxFiles} files.`);
+        }
+      }
+    };
 
   // section data process handelar
   const processSection = useCallback((section, setter, transformer = (data) => data) => {
     if (section?.translations && section.translations[language]) {
-      // নির্দিষ্ট ভাষায় ডেটা পাওয়া গেছে
+      // speciofic language data
       const data = parseData(section.translations[language]);
       setter(transformer(data));
     } else if (section?.translations?.en) {
-      // নির্দিষ্ট ভাষায় ডেটা না পেলে ইংরেজি ডেটা দেখানো
+      //speciofic language data not found
       console.log(`No data found for language: ${language}, showing English data instead`);
       const data = parseData(section.translations.en);
       setter(transformer(data));
     } else {
-      // কোন ডেটাই না পাওয়া গেলে ডিফল্ট ডেটা দেখানো
+      // no data found for any language
       console.log(`No data found for any language in section`);
       setter(transformer({}));
     }
   }, [language]);
 
-  // একটি ভাষার ডেটা থেকে অন্য ভাষায় কপি করার ফাংশন
+  // copy translation handelar
   const copyTranslations = async (sourceLanguage, targetLanguage) => {
     try {
       setIsCopying(true);
@@ -320,7 +323,7 @@ const HomepageForm = () => {
       console.log("Copy response:", response.data);
       showSuccessMessage(`Content copied from ${sourceLanguage} to ${targetLanguage}`);
       
-      // কপি করার পর রিলোড করে নতুন ডেটা দেখানো
+      // copy success then load data
       await fetchHomepage();
     } catch (error) {
       console.error("Error copying translations:", error);
@@ -336,8 +339,9 @@ const HomepageForm = () => {
     setError(null);
     
     try {
-      // ভাষা প্যারামিটার এরিয়ায় যোগ করে API কল
+      // langugae parameter add
       const res = await axios.get(`${API}?language=${language}`);
+      console.log(res.data);
       
       if (res.data) {
         setHomepageExists(true);
@@ -403,7 +407,7 @@ const HomepageForm = () => {
     }
   }, [language, processSection]);
 
-  // ভাষা পরিবর্তন হলে ডেটা পুনরায় লোড করা
+  // change language handelar
   useEffect(() => {
     fetchHomepage();
   }, [language, fetchHomepage]);
@@ -413,7 +417,7 @@ const HomepageForm = () => {
     try {
       const formData = new FormData();
       
-      // ভাষা প্যারামিটার যোগ করা
+      // langugae parameter add
       formData.append("language", language);
       
       // HERO SECTION
@@ -481,7 +485,7 @@ const HomepageForm = () => {
         if (file) formData.append(`appointmentProcessIcon_${index}`, file);
       });
 
-      // ভাষা প্যারামিটার URL এ যোগ করা
+      // language parameter add
       await axios.post(`${API}?language=${language}`, formData, { 
         headers: { "Content-Type": "multipart/form-data" } 
       });
@@ -584,6 +588,7 @@ const HomepageForm = () => {
           });
         };
         
+        
         const imagePromises = [
           uploadFiles(featureIconFiles, "uploadFeatureIcons", "featureIcon"),
           uploadFiles(serviceIconFiles, "uploadServiceIcons", "serviceIcon"),
@@ -593,7 +598,7 @@ const HomepageForm = () => {
           uploadFile(appointmentFile, "uploadAppointmentImage", "appointmentImage"),
           uploadFile(whyChooseFile, "uploadWhyChooseImage", "whyChooseUsImage"),
           uploadFile(downloadAppFile, "uploadDownloadAppImage", "downloadAppImage"),
-          uploadMultiple(aboutFiles, "uploadAboutImages", "aboutImages")
+          uploadMultiple(aboutFiles, "uploadAboutImages", "aboutImages") // This line is important
         ].filter(Boolean);
         
         if (imagePromises.length > 0) {
@@ -605,7 +610,7 @@ const HomepageForm = () => {
       
       showSuccessMessage(`Homepage updated successfully for ${language} language!`);
       
-      // ফাইল সিলেকশন রিসেট
+      // Reset file selections
       setHeroFile(null);
       setAppointmentFile(null);
       setWhyChooseFile(null);
@@ -616,7 +621,7 @@ const HomepageForm = () => {
       setWhyChooseServiceIconFiles(new Array(whyChooseData.services.length).fill(null));
       setAppointmentProcessIconFiles(new Array(appointmentProcessData.length).fill(null));
       
-      // ডেটা রিফ্রেশ - পুনরায় আপডেটেড ডেটা লোড করা
+      // Refresh data
       await fetchHomepage();
     } catch (err) {
       console.error("Error updating homepage:", err);
@@ -624,7 +629,7 @@ const HomepageForm = () => {
     }
   };
   
-  // ফর্ম সাবমিট হ্যান্ডলার
+  //form submit handelar
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -641,7 +646,7 @@ const HomepageForm = () => {
     }
   };
 
-  // রিটার্ন লোডিং স্টেট
+  // return loading state
   if (isLoading) {
     return (
       <div className="p-6 flex justify-center items-center min-h-screen">
@@ -653,7 +658,7 @@ const HomepageForm = () => {
     );
   }
   
-  // আইটেম কম্পোনেন্ট
+  // item component render function
   const renderFeature = (feature, index) => (
     <div key={index} className="mb-4 border p-4 rounded-lg bg-white relative">
       <h3 className="font-medium mb-2">Feature #{index + 1}</h3>
@@ -772,12 +777,12 @@ const HomepageForm = () => {
     </div>
   );
   
-  // রেন্ডার মূল কম্পোনেন্ট
+  // render main component
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Create / Update Homepage</h1>
       
-      {/* মেসেজ দেখানো */}
+      {/* successMessage */}
       {successMessage && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {successMessage}
@@ -790,7 +795,7 @@ const HomepageForm = () => {
         </div>
       )}
       
-      {/* ভাষা সিলেক্ট এবং কপি বাটন */}
+      {/* language select and copy button */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <label className="block mb-2 font-medium">
@@ -806,7 +811,7 @@ const HomepageForm = () => {
           </label>
         </div>
         
-        {/* কন্টেন্ট কপি করার বাটন */}
+        {/*content copy button */}
         {homepageExists && (
           <div className="flex items-center gap-4">
             <button
@@ -841,7 +846,7 @@ const HomepageForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-        {/* হিরো সেকশন */}
+        {/* hero section */}
         <fieldset className="border p-4 rounded bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Hero Section</legend>
           <FormInput
@@ -863,7 +868,7 @@ const HomepageForm = () => {
           />
         </fieldset>
         
-        {/* ফিচার সেকশন */}
+        {/*feature section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Features Section</legend>
           <div className="mb-4">
@@ -879,7 +884,7 @@ const HomepageForm = () => {
           </button>
         </fieldset>
         
-        {/* অ্যাবাউট সেকশন */}
+        {/* About Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">About Section</legend>
           <FormInput
@@ -897,49 +902,63 @@ const HomepageForm = () => {
             value={aboutData.description}
             onChange={(e) => setAboutData({ ...aboutData, description: e.target.value })}
           />
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="images">
-              Select About Images (up to 4):
-            </label>
-            <input
-              type="file" id="images" multiple
-              onChange={(e) => handleFileChange(e, setAboutFiles, 4)}
-              className="w-full p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+        {/* About Images Section */}
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="images">
+    Select About Images (up to 4):
+  </label>
+  <input
+    type="file" id="images" multiple
+    onChange={(e) => handleFileChange(e, setAboutFiles, 4)}
+    className="w-full p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+  />
+  
+  {/* Show selected file names */}
+  {aboutFiles.length > 0 && (
+    <div className="mt-2 text-sm text-gray-500">
+      Selected files: {aboutFiles.map(file => file.name).join(', ')}
+    </div>
+  )}
+
+  {/* Preview for newly selected images */}
+  {aboutFiles.length > 0 && (
+    <div className="mt-4">
+      <p className="text-sm font-medium text-gray-700 mb-2">New Images Preview:</p>
+      <div className="flex flex-wrap gap-4">
+        {aboutFiles.map((file, index) => (
+          <div key={index} className="w-32 h-32 overflow-hidden rounded-md border">
+            <img
+              src={URL.createObjectURL(file)}
+              alt={`preview-${index}`}
+              className="w-full h-full object-cover"
             />
           </div>
-          {aboutFiles.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">New Images Preview:</p>
-              <div className="flex space-x-4">
-                {aboutFiles.slice(0, 4).map((file, index) => (
-                  <div key={index} className="w-24 h-24 overflow-hidden rounded-md border">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`preview-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        ))}
+      </div>
+    </div>
+  )}
+  
+  {/* Preview for existing images */}
+  {!aboutFiles.length && aboutData.images && aboutData.images.length > 0 && (
+    <div className="mt-4">
+      <p className="text-sm font-medium text-gray-700 mb-2">Current Images:</p>
+      <div className="flex flex-wrap gap-4">
+        {aboutData.images.map((image, index) => (
+          <div key={index} className="w-32 h-32 overflow-hidden rounded-md border">
+            <img
+              src={getImageUrl(image)}
+              alt={`about-image-${index}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
           
-          {!aboutFiles.length && aboutData.images && aboutData.images.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Current Images:</p>
-              <div className="flex space-x-4">
-                {aboutData.images.map((image, index) => (
-                  <div key={index} className="w-24 h-24 overflow-hidden rounded-md border">
-                    <img
-                      src={getImageUrl(image)}
-                      alt={`about-image-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          
+         
           
           <FormInput
             label="Experience" id="experience"
@@ -947,7 +966,7 @@ const HomepageForm = () => {
             onChange={(e) => setAboutData({ ...aboutData, experience: e.target.value })}
           />
           
-          {/* সার্ভিস */}
+          {/* Service */}
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-2">Services</h3>
             <div className="mb-2">
@@ -964,7 +983,7 @@ const HomepageForm = () => {
           </div>
         </fieldset>
         
-        {/* অ্যাপয়েন্টমেন্ট সেকশন */}
+        {/* Appoinment Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Appointment Section</legend>
           <ImageUpload
@@ -976,7 +995,7 @@ const HomepageForm = () => {
           />
         </fieldset>
         
-        {/* হোয়াই চুজ আস সেকশন */}
+        {/* why choose us section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Why Choose Us Section</legend>
           <FormInput
@@ -1002,7 +1021,7 @@ const HomepageForm = () => {
             currentImage={whyChooseData.image}
           />
           
-          {/* সার্ভিস */}
+          {/* Service */}
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2">Why Choose Us Services</h3>
             <div className="mb-2">
@@ -1019,7 +1038,7 @@ const HomepageForm = () => {
           </div>
         </fieldset>
         
-        {/* ডাউনলোড অ্যাপ সেকশন */}
+        {/* download app section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Download App Section</legend>
           <FormInput
@@ -1046,7 +1065,7 @@ const HomepageForm = () => {
           />
         </fieldset>
         
-        {/* অ্যাপয়েন্টমেন্ট প্রসেস সেকশন */}
+        {/* Appoinment Process Section */}
         <fieldset className="border p-6 rounded-lg bg-gray-50">
           <legend className="text-xl font-semibold mb-4 text-gray-700">Appointment Process Section</legend>
           <div className="mb-2">
@@ -1062,7 +1081,7 @@ const HomepageForm = () => {
           </button>
         </fieldset>
         
-        {/* সাবমিট বাটন */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
