@@ -407,7 +407,7 @@ const AddAppointment = () => {
             </div>
              {/* Reference Field */}
             <div>
-              <label className="label">Address</label>
+              <label className="label">Reference</label>
               <input
                 type="text"
                 name="reference"
