@@ -70,10 +70,11 @@ export const usePrintAppointment = () => {
         <body>
           <div class="header">
             <h1>Mukti Hospital</h1>
-            <p>123 Medical Center Road, Dhaka, Bangladesh</p>
-            <p>Phone: 01XXXXXXXXX | Email: info@muktihospital.com</p>
+            <p>Race Course, Comilla, Bangladesh</p>
+            <p>Phone: 01834220141 | Email: muktihospitalpvtlimited@gmail.com</p>
             <h2>Appointment Confirmation</h2>
             <p>Date: ${appointment.createdAt ? new Date(appointment.createdAt).toLocaleDateString() : 'N/A'}</p>
+            <h2>Your Serial Number is: ${appointment.serialNumber}</h2>
           </div>
           
           <div class="grid">
