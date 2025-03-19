@@ -24,6 +24,8 @@ import AllPages from "../components/Manage Page/AllPages/AllPages";
 import EditPage from "../components/Manage Page/EditPage/EditPage";
 import ProfilePage from "../components/ProfilePage";
 import AboutPage from "../components/Manage Section/AboutPage";
+import Footer from "../components/Manage Section/Footer";
+import Header from "../components/Manage Section/Header";
 
 
 
@@ -276,6 +278,22 @@ export const router = createBrowserRouter([
         element: (
         //   <AdminRoute>
             <AboutPage/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "header",
+        element: (
+        //   <AdminRoute>
+            <Header/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "footer",
+        element: (
+        //   <AdminRoute>
+            <Footer/>
         //   </AdminRoute>
         ),
       },
