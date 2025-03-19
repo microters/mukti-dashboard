@@ -281,6 +281,22 @@ export const router = createBrowserRouter([
         //   </AdminRoute>
         ),
       },
+       {
+        path: "header",
+        element: (
+        //   <AdminRoute>
+            <Header/>
+        //   </AdminRoute>
+        ),
+      },
+       {
+        path: "footer",
+        element: (
+        //   <AdminRoute>
+            <Footer/>
+        //   </AdminRoute>
+        ),
+      },
        
        {
         path: "add-page",

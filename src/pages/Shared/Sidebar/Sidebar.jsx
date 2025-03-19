@@ -116,7 +116,8 @@ const Sidebar = () => {
       submenus: [
         { name: "Homepage Section", link: "/home-page" },
         { name: "About us", link: "/about-page" },
-        { name: "Contact Us", link: "/todays-appointments" },
+        { name: "Header", link: "/header" },
+        { name: "Footer", link: "/footer" },
       ],
     },
     {
