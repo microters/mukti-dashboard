@@ -7,16 +7,18 @@ import {
 import { MdFormatListNumbered, MdPayment } from "react-icons/md";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import useDoctors from "../../../hook/useDoctors";
+
 
 const AddAppointment = () => {
   const [loading, setLoading] = useState(false);
-  const [doctorLoading, setDoctorLoading] = useState(true);
   const [patientLoading, setPatientLoading] = useState(true);
   const [scheduleLoading, setScheduleLoading] = useState(false);
 
-  const [doctors, setDoctors] = useState([]);
+  const { doctors, loading: doctorLoading, fetchDoctors } = useDoctors();
   const [patients, setPatients] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [availableSchedules, setAvailableSchedules] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
@@ -25,6 +27,7 @@ const AddAppointment = () => {
   const [feeOptions, setFeeOptions] = useState([]);
   const [selectedBloodGroup, setSelectedBloodGroup] = useState(null);
   const [newPatientInput, setNewPatientInput] = useState("");
+  const [hasScheduleForToday, setHasScheduleForToday] = useState(false);
 
   const [formData, setFormData] = useState({
     doctor: "",
@@ -43,20 +46,10 @@ const AddAppointment = () => {
   const BASE_URL = "https://api.muktihospital.com/api";  // Change to your backend API URL
 
   useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/doctor`, {
-          headers: { "x-api-key": API_KEY },
-        });
-        setDoctors(response.data);
-      } catch (error) {
-        console.error("Error loading doctors:", error);
-      } finally {
-        setDoctorLoading(false);
-      }
-    };
+    // Fetch doctors using the useDoctors hook
     fetchDoctors();
-  }, []);
+  }, [fetchDoctors]);
+  
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -77,22 +70,42 @@ const AddAppointment = () => {
     };
     fetchPatients();
   }, []);
+  
   const handleDoctorChange = (selectedOption) => {
     setSelectedDoctor(selectedOption);
     setFormData({ ...formData, doctor: selectedOption?.value || "" });
 
     if (!selectedOption) {
       setSchedules([]);
+      setAvailableSchedules([]);
       setSelectedSchedule(null);
       setFeeOptions([]);
       setSelectedFee(null);
+      setHasScheduleForToday(false);
       return;
     }
 
+    setScheduleLoading(true);
     const doctor = doctors.find((doc) => doc.id === selectedOption.value);
-    setSchedules(doctor?.schedule || []);
-
+    
     if (doctor) {
+      // Get current day of the week (Sunday, Monday, etc.)
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const today = new Date();
+      const currentDayName = daysOfWeek[today.getDay()];
+      
+      // Store all schedules
+      setSchedules(doctor?.schedule || []);
+      
+      // Filter schedules for today
+      const todaySchedules = doctor?.schedule?.filter(sch => 
+        sch.day === currentDayName
+      ) || [];
+      
+      setAvailableSchedules(todaySchedules);
+      setHasScheduleForToday(todaySchedules.length > 0);
+
+      // Set fee options
       const appointmentFee = doctor.translations?.en?.appointmentFee;
       const followUpFee = doctor.translations?.en?.followUpFee;
       setFeeOptions([
@@ -101,6 +114,7 @@ const AddAppointment = () => {
       ]);
       setSelectedFee(null);
     }
+    setScheduleLoading(false);
   };
 
   const handleFeeChange = (selectedOption) => {
@@ -162,18 +176,21 @@ const AddAppointment = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    let cleanedValue = value.trim();
-  
-    // Clean the mobile number if it's entered with an extra '88' (or other unwanted characters)
+    
+    // Special handling only for mobile number
     if (name === 'mobileNumber') {
+      let cleanedValue = value.trim();
       // Remove leading '88' or any country code if already added
       if (cleanedValue.startsWith('88')) {
         cleanedValue = cleanedValue.substring(2);
       }
+      setFormData({ ...formData, [name]: cleanedValue });
+    } else {
+      // For all other fields including "reason", preserve spaces
+      setFormData({ ...formData, [name]: value });
     }
-  
-    setFormData({ ...formData, [name]: cleanedValue });
   };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -199,7 +216,7 @@ const AddAppointment = () => {
       age: formData.age || null,
       reference: formData.reference || null,
       bloodGroup: formData.bloodGroup || null,
-      reason: formData.reason || "",
+      reason: formData.reason || "",  // Preserve spaces in reason
       address: formData.address || "",
       isNewPatient: selectedPatient && selectedPatient.value.startsWith("new-") ? true : false,
     };
@@ -256,9 +273,9 @@ const AddAppointment = () => {
                 </label>
                 {scheduleLoading ? (
                   <Skeleton height={40} />
-                ) : schedules.length > 0 ? (
+                ) : hasScheduleForToday ? (
                   <Select
-                    options={schedules.map((sch) => ({
+                    options={availableSchedules.map((sch) => ({
                       value: sch.id,
                       label: `${sch.day} (${sch.startTime} - ${sch.endTime})`,
                     }))}
@@ -268,7 +285,9 @@ const AddAppointment = () => {
                     isClearable
                   />
                 ) : (
-                  <p className="text-red-500">No schedule available</p>
+                  <div className="text-red-500 py-2 px-3 bg-red-50 rounded border border-red-200">
+                    Schedule Not Found. Doctor is not available today.
+                  </div>
                 )}
               </div>
             )}
@@ -422,8 +441,14 @@ const AddAppointment = () => {
               <textarea
                 name="reason"
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.reason}
+                value={formData.reason || ''}
                 onChange={handleChange}
+                onKeyDown={(e) => {
+                  // Prevent any special handling of space key
+                  if (e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
                 placeholder="Enter the reason for the appointment"
               />
             </div>

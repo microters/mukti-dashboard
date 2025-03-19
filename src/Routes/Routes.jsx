@@ -24,6 +24,8 @@ import AllPages from "../components/Manage Page/AllPages/AllPages";
 import EditPage from "../components/Manage Page/EditPage/EditPage";
 import ProfilePage from "../components/ProfilePage";
 import AboutPage from "../components/Manage Section/AboutPage";
+import AppointmentList from "../components/Appointment/AppoinmentList/AllAppoinment";
+import TodayAppointments from "../components/Appointment/AppoinmentList/TodayAppointments";
 
 
 
@@ -126,15 +128,7 @@ export const router = createBrowserRouter([
       },
 
       /** Manage Appointments **/
-      {
-        path: "all-appointments",
-        element: (
-        //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <AllAppointments />
-        //   </AdminRoute>
-        ),
-      },
+      
       {
         path: "upcoming-appointments",
         element: (
@@ -144,20 +138,28 @@ export const router = createBrowserRouter([
         //   </AdminRoute>
         ),
       },
-      {
-        path: "todays-appointments",
-        element: (
-        //   <AdminRoute>
-        <h1>Add doctor</h1>
-            // <TodaysAppointments />
-        //   </AdminRoute>
-        ),
-      },
+      
       {
         path: "add-appointment",
         element: (
         //   <AdminRoute>
             <AddAppointment />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "all-appointments",
+        element: (
+        //   <AdminRoute>
+            <AppointmentList />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "todays-appointments",
+        element: (
+        //   <AdminRoute>
+            <TodayAppointments />
         //   </AdminRoute>
         ),
       },
