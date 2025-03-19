@@ -6,6 +6,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import JoditEditor from "jodit-react";
+import slugify from "slugify"; // Importing slugify
+
 /**
  * Example of converting Bengali digits to English digits
  * if you have numeric fields typed in Bangla.
@@ -50,6 +52,7 @@ const EditDepartment = () => {
       },
     },
     icon: null, // existing icon path from DB
+    slug: "", // Add slug to department data
   });
 
   // Loading states
@@ -68,7 +71,7 @@ const EditDepartment = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `https://api.muktihospital.com/api/department/${id}?lang=${selectedLanguage}`,
+          `http://localhost:5000/api/department/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
@@ -91,6 +94,7 @@ const EditDepartment = () => {
               },
             },
             icon: dep.icon || null,
+            slug: dep.slug || "", // Set slug from response
           }));
         } else {
           toast.error("Failed to load department details.");
@@ -131,10 +135,30 @@ const EditDepartment = () => {
         },
       },
     }));
+
+    // Auto-generate slug if the English department name is modified
+    if (selectedLanguage === "en" && name === "name") {
+      const generatedSlug = slugify(convertedValue, { lower: true, strict: true });
+      setDepartmentData((prev) => ({
+        ...prev,
+        slug: prev.slug || generatedSlug, // Only generate slug if it's empty
+      }));
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 4) File input change
+  // 4) Slug manual change
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleSlugChange = (e) => {
+    const slugValue = e.target.value;
+    setDepartmentData((prev) => ({
+      ...prev,
+      slug: slugify(slugValue, { lower: true, strict: true }), // Slug will be formatted correctly
+    }));
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 5) File input change
   // ─────────────────────────────────────────────────────────────────────────────
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -149,7 +173,7 @@ const EditDepartment = () => {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 5) Submit form
+  // 6) Submit form
   // ─────────────────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -173,8 +197,10 @@ const EditDepartment = () => {
         formData.append("icon", iconFile); // "icon" must match your backend field
       }
 
+      formData.append("slug", departmentData.slug); // Append slug field
+
       const response = await axios.put(
-        `https://api.muktihospital.com/api/department/${id}`,
+        `http://localhost:5000/api/department/${id}`,
         formData,
         {
           headers: {
@@ -197,6 +223,7 @@ const EditDepartment = () => {
       setIsSubmitting(false);
     }
   };
+
   const handleContentChange = (newContent) => {
     setDepartmentData((prev) => ({
       ...prev,
@@ -222,11 +249,11 @@ const EditDepartment = () => {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Render form in 2 columns (full width) with Tailwind
+  // Render form
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="bg-gray-100 p-6">
-      <div className="max-w-10xl  bg-white shadow-lg rounded p-6">
+      <div className="max-w-10xl bg-white shadow-lg rounded p-6">
         <h2 className="text-xl font-semibold mb-4">Edit Department</h2>
 
         {/* Language dropdown */}
@@ -244,55 +271,53 @@ const EditDepartment = () => {
         </div>
 
         <form onSubmit={handleSubmit} encType="multipart/form-data">
-          {/* We'll use a responsive grid: 2 columns on md+ screens, 1 column on mobile */}
+          {/* Department Name */}
           <div>
-            {/* Column 1: Department Name */}
-            <div>
-              <label className="block mb-1 font-medium">Department Name</label>
-              <input
-                type="text"
-                name="name"
-                className="border p-2 rounded w-full"
-                disabled={isSubmitting}
-                value={departmentData.translations[selectedLanguage]?.name || ""}
-                onChange={handleInputChange}
-              />
-            </div>
+            <label className="block mb-1 font-medium">Department Name</label>
+            <input
+              type="text"
+              name="name"
+              className="border p-2 rounded w-full"
+              disabled={isSubmitting}
+              value={departmentData.translations[selectedLanguage]?.name || ""}
+              onChange={handleInputChange}
+            />
+          </div>
 
-            {/* Column 2: Meta Title */}
-            <div>
-              <label className="block mb-1 font-medium">Meta Title</label>
-              <input
-                type="text"
-                name="metaTitle"
-                className="border p-2 rounded w-full"
-                disabled={isSubmitting}
-                value={departmentData.translations[selectedLanguage]?.metaTitle || ""}
-                onChange={handleInputChange}
-              />
-            </div>
+          {/* Slug Field */}
+          <div>
+            <label className="label">Slug</label>
+            <input
+              type="text"
+              name="slug"
+              className="input-field"
+              placeholder="Enter Slug"
+              value={departmentData.slug}
+              onChange={handleSlugChange}
+            />
+          </div>
 
-            {/* Next row: Department Description */}
-            <div>
-              <label className="block mb-1 font-medium">Department Description</label>
-              <JoditEditor
-                ref={editor}
-                value={departmentData.translations[selectedLanguage]?.description || ""}
-                onChange={handleContentChange}
-              />
-            </div>
+          {/* Meta Title */}
+          <div>
+            <label className="block mb-1 font-medium">Meta Title</label>
+            <input
+              type="text"
+              name="metaTitle"
+              className="border p-2 rounded w-full"
+              disabled={isSubmitting}
+              value={departmentData.translations[selectedLanguage]?.metaTitle || ""}
+              onChange={handleInputChange}
+            />
+          </div>
 
-            {/* Next column: Meta Description */}
-            <div>
-              <label className="block mb-1 font-medium">Meta Description</label>
-              <textarea
-                name="metaDescription"
-                className="border p-2 rounded w-full h-20"
-                disabled={isSubmitting}
-                value={departmentData.translations[selectedLanguage]?.metaDescription || ""}
-                onChange={handleInputChange}
-              />
-            </div>
+          {/* Description */}
+          <div>
+            <label className="block mb-1 font-medium">Department Description</label>
+            <JoditEditor
+              ref={editor}
+              value={departmentData.translations[selectedLanguage]?.description || ""}
+              onChange={handleContentChange}
+            />
           </div>
 
           {/* Existing icon preview (if any and not replaced yet) */}

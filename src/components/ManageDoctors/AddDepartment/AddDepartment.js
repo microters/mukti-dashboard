@@ -1,12 +1,12 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
-
 import JoditEditor from "jodit-react";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import { saveData } from "../../../services/indexDb";
+import slugify from "slugify";  // ✅ Import slugify for generating slugs
 
 const AddDepartment = () => {
   const editor = useRef(null);
@@ -18,48 +18,59 @@ const AddDepartment = () => {
       en: { name: "", description: "", metaTitle: "", metaDescription: "" },
       bn: { name: "", description: "", metaTitle: "", metaDescription: "" },
     },
+    slug: "", // Add slug field in state
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Function to convert Bengali digits to English
-  function convertBengaliToEnglish(str) {
-    const mapDigits = {
-      "০": "0",
-      "১": "1",
-      "২": "2",
-      "৩": "3",
-      "৪": "4",
-      "৫": "5",
-      "৬": "6",
-      "৭": "7",
-      "৮": "8",
-      "৯": "9",
-    };
-    return str.replace(/[০-৯]/g, (digit) => mapDigits[digit]);
-  }
 
   // Handle language selection
   const handleLanguageChange = (e) => {
     setSelectedLanguage(e.target.value);
   };
 
+  // Automatically generate the slug when the department name in English is updated
+  useEffect(() => {
+    if (departmentData.translations.en.name) {
+      const generatedSlug = slugify(departmentData.translations.en.name.trim(), { lower: true, strict: true });
+      setDepartmentData((prev) => ({
+        ...prev,
+        slug: prev.slug || generatedSlug, // Only generate slug if it's empty
+      }));
+    }
+  }, [departmentData.translations.en.name]); // Triggered when the name in English is updated
+  
   // Handle text input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const convertedValue = convertBengaliToEnglish(value);
-
-    setDepartmentData((prev) => ({
-      ...prev,
-      translations: {
+    setDepartmentData((prev) => {
+      const updatedTranslations = {
         ...prev.translations,
         [selectedLanguage]: {
           ...prev.translations[selectedLanguage],
-          [name]: convertedValue,
+          [name]: value,
         },
-      },
+      };
+
+      // Automatically generate slug from English title if not manually entered
+      if (selectedLanguage === "en" && name === "name") {
+        const generatedSlug = slugify(value, { lower: true, strict: true });
+        return { ...prev, translations: updatedTranslations, slug: prev.slug || generatedSlug };
+      }
+
+      return { ...prev, translations: updatedTranslations };
+    });
+  };
+
+  // Handle slug change (if the user manually edits the slug)
+  const handleSlugChange = (e) => {
+    const slugValue = e.target.value;
+    const customSlug = slugValue.replace(/\s+/g, ''); // স্পেস বাদ দিয়ে
+    setDepartmentData((prev) => ({
+      ...prev,
+      slug: slugify(customSlug, { lower: true, strict: true }), // সঠিক স্লাগ
     }));
   };
+  
 
   // Handle JoditEditor content changes
   const handleContentChange = (newContent) => {
@@ -69,13 +80,13 @@ const AddDepartment = () => {
         ...prev.translations,
         [selectedLanguage]: {
           ...prev.translations[selectedLanguage],
-          description: newContent, // Fix: updating description field correctly
+          description: newContent,
         },
       },
     }));
   };
 
-  // Handle file selection
+  // Handle file selection for icon
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setIcon(file);
@@ -99,6 +110,7 @@ const AddDepartment = () => {
       // Prepare form data for API submission
       const formData = new FormData();
       formData.append("translations", JSON.stringify(departmentData.translations));
+      formData.append("slug", departmentData.slug); // Append slug to form data
       if (icon) {
         formData.append("icon", icon); // Append file if selected
       }
@@ -117,6 +129,7 @@ const AddDepartment = () => {
             en: { name: "", description: "", metaTitle: "", metaDescription: "" },
             bn: { name: "", description: "", metaTitle: "", metaDescription: "" },
           },
+          slug: "", // Reset slug
         });
         setIcon(null);
         setPreviewIcon(null);
@@ -132,8 +145,8 @@ const AddDepartment = () => {
   };
 
   return (
-    <div className="bg-gray-100  p-6">
-      <div className="max-w-10xl  bg-white shadow-lg rounded p-6">
+    <div className="bg-gray-100 p-6">
+      <div className="max-w-10xl bg-white shadow-lg rounded p-6">
         <h2 className="text-xl font-semibold mb-4">Add Department</h2>
 
         {/* Language dropdown */}
@@ -166,6 +179,19 @@ const AddDepartment = () => {
                 onChange={handleChange}
               />
             )}
+          </div>
+
+          {/* Slug Field */}
+          <div className="mb-4">
+            <label className="label">Slug</label>
+            <input
+              type="text"
+              name="slug"
+              className="input-field"
+              placeholder="Enter Slug"
+              value={departmentData.slug}
+              onChange={handleSlugChange} // Allow manual slug editing
+            />
           </div>
 
           {/* Department Description */}
@@ -218,7 +244,12 @@ const AddDepartment = () => {
           {/* File Upload */}
           <div className="mb-4">
             <label className="block mb-1 font-medium">Upload Icon</label>
-            <input type="file" accept="image/*" onChange={handleFileChange} className="border p-2 rounded w-full" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="border p-2 rounded w-full"
+            />
             {previewIcon && <img src={previewIcon} alt="Icon Preview" className="mt-2 w-24 h-24 rounded-lg shadow" />}
           </div>
 
@@ -227,9 +258,7 @@ const AddDepartment = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
