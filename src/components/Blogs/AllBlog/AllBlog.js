@@ -77,6 +77,7 @@ const BlogList = () => {
 
     fetchBlogs();
   }, []);
+console.log(blogs);
 
   // 2. Handle search input
   const handleSearch = (event) => {

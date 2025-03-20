@@ -2,10 +2,21 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import JoditEditor from "jodit-react";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+
+/**
+ * @function sanitizeContent
+ * Only remove <script> tags for security. Keep all other HTML tags, inline styles, etc.
+ */
+function sanitizeContent(content) {
+  // Remove <script> tags (if any).
+  return content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+}
 
 const AddBlog = () => {
   const editor = useRef(null);
+
+  // Main form data state
   const [formData, setFormData] = useState({
     metaTitle: "",
     metaDescription: "",
@@ -26,32 +37,19 @@ const AddBlog = () => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Constants for validation
+  // Validation constants
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
   const MAX_CONTENT_LENGTH = 100000; // 100,000 characters
-  const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB chunks
 
-  // Sanitize content to prevent JSON serialization issues
-  const sanitizeContent = (content) => {
-    // Remove any problematic HTML and scripts
-    const cleanContent = content
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-      .replace(/<\/?[^>]+(>|$)/g, '') // Remove HTML tags
-      .replace(/&nbsp;/gi, ' ') // Replace non-breaking spaces
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-    
-    // Limit content length
-    if (cleanContent.length > MAX_CONTENT_LENGTH) {
-      toast.warn(`Content truncated to ${MAX_CONTENT_LENGTH} characters`);
-      return cleanContent.substring(0, MAX_CONTENT_LENGTH);
-    }
-    
-    return cleanContent;
-  };
+  // For optional chunked uploading (1MB chunks). If you don't need chunking, remove this.
+  const CHUNK_SIZE = 1 * 1024 * 1024;
 
-  // Chunked file upload method
+  /**
+   * @function uploadFileInChunks
+   * Optional method to upload very large images in chunks.
+   * If your image is smaller than MAX_FILE_SIZE, you can skip chunking.
+   */
   const uploadFileInChunks = async (file) => {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     let uploadedChunks = 0;
@@ -62,18 +60,19 @@ const AddBlog = () => {
       const chunkFile = file.slice(start, end);
 
       const chunkFormData = new FormData();
-      chunkFormData.append('chunk', chunkFile);
-      chunkFormData.append('chunkNumber', chunk);
-      chunkFormData.append('totalChunks', totalChunks);
-      chunkFormData.append('originalFileName', file.name);
+      chunkFormData.append("chunk", chunkFile);
+      chunkFormData.append("chunkNumber", chunk);
+      chunkFormData.append("totalChunks", totalChunks);
+      chunkFormData.append("originalFileName", file.name);
 
       try {
-        const response = await fetch('https://api.muktihospital.com/api/blogs/upload-chunk', {
-          method: 'POST',
-          headers: { 
-            'x-api-key': 'caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079' 
+        const response = await fetch("https://api.muktihospital.com/api/blogs/upload-chunk", {
+          method: "POST",
+          headers: {
+            "x-api-key":
+              "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
-          body: chunkFormData
+          body: chunkFormData,
         });
 
         if (!response.ok) {
@@ -91,13 +90,18 @@ const AddBlog = () => {
     return true;
   };
 
-  // Fetch categories on component mount
+  // -------------------------------------------------------------------------
+  // 1) Fetch categories when the component mounts
+  // -------------------------------------------------------------------------
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
         const response = await axios.get("https://api.muktihospital.com/api/category", {
-          headers: { "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" },
+          headers: {
+            "x-api-key":
+              "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+          },
         });
         setCategoriesList(response.data);
       } catch (error) {
@@ -110,186 +114,183 @@ const AddBlog = () => {
     fetchCategories();
   }, []);
 
-  // Auto-generate slug
+  // -------------------------------------------------------------------------
+  // 2) Auto-generate slug from title if user hasn't manually edited it
+  // -------------------------------------------------------------------------
   useEffect(() => {
     if (formData.title && !isSlugEditable) {
-      const generatedSlug = formData.title.toLowerCase()
+      const generatedSlug = formData.title
+        .toLowerCase()
         .replace(/\s+/g, "-")
         .replace(/[^\w\-]+/g, "");
       setFormData((prev) => ({ ...prev, slug: generatedSlug }));
     }
   }, [formData.title, isSlugEditable]);
 
-  // Input change handlers
+  // -------------------------------------------------------------------------
+  // 3) Handle input changes for meta fields, title, slug, etc.
+  // -------------------------------------------------------------------------
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // -------------------------------------------------------------------------
+  // 4) Handle image file selection
+  // -------------------------------------------------------------------------
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    setPreviewImage(null); // reset previous preview
 
-    // Reset previous state
-    setPreviewImage(null);
-    
     if (file) {
-      // Validate file size
+      // Check file size
       if (file.size > MAX_FILE_SIZE) {
         toast.error(`File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`);
-        e.target.value = null; // Clear the file input
+        e.target.value = null; // clear the file input
         return;
       }
 
-      // Validate file type
+      // Check file type
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         toast.error("Invalid file type. Allowed types: JPEG, PNG, GIF, WEBP");
-        e.target.value = null; // Clear the file input
+        e.target.value = null; // clear the file input
         return;
       }
 
-      // Set file and create preview
+      // Set the file and create a local preview
       setFormData((prev) => ({ ...prev, image: file }));
       const previewURL = URL.createObjectURL(file);
       setPreviewImage(previewURL);
     }
   };
 
+  // -------------------------------------------------------------------------
+  // 5) Handle category dropdown change
+  // -------------------------------------------------------------------------
   const handleCategoryChange = (e) => {
     const selectedCategoryId = e.target.value;
     const selectedCategoryName = e.target.options[e.target.selectedIndex].text;
-
     setFormData((prev) => ({
       ...prev,
       category: { id: selectedCategoryId, name: selectedCategoryName },
     }));
   };
 
+  // -------------------------------------------------------------------------
+  // 6) Handle JoditEditor content changes (HTML formatting)
+  // -------------------------------------------------------------------------
   const handleContentChange = (newContent) => {
-    // Validate content length in real-time
+    // If you want to limit content length in real time
     if (newContent.length > MAX_CONTENT_LENGTH) {
       toast.warn(`Content exceeds ${MAX_CONTENT_LENGTH} characters. Please reduce.`);
-      // Optionally, truncate the content
-      // newContent = newContent.substring(0, MAX_CONTENT_LENGTH);
     }
-
     setFormData((prev) => ({ ...prev, content: newContent }));
   };
 
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
-  };
-
+  // -------------------------------------------------------------------------
+  // 7) Toggle slug editing
+  // -------------------------------------------------------------------------
   const handleSlugEditToggle = () => {
     setIsSlugEditable((prev) => !prev);
   };
 
-  // Validate form data before submission
+  // -------------------------------------------------------------------------
+  // 8) Validate the form before submitting
+  // -------------------------------------------------------------------------
   const validateFormData = (data) => {
-    // Check required fields
     const requiredFields = [
-      'metaTitle', 'metaDescription', 'title', 
-      'slug', 'description', 'content', 
-      'category'
+      "metaTitle",
+      "metaDescription",
+      "title",
+      "slug",
+      "description",
+      "content",
+      "category",
     ];
 
     for (let field of requiredFields) {
-      if (!data[field] || (field === 'category' && !data[field].id)) {
+      if (!data[field] || (field === "category" && !data[field].id)) {
         toast.error(`Please fill in the ${field} field`);
         return false;
       }
     }
 
-    // Additional content validation
     if (data.content.length < 10) {
       toast.error("Content is too short");
       return false;
     }
-
     return true;
   };
 
+  // -------------------------------------------------------------------------
+  // 9) Submit form to create the blog (POST request)
+  // -------------------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Reset previous states
     setLoading(true);
     setMessage(null);
     setError(null);
 
-    // Validate form data
+    // Check if required fields are filled
     if (!validateFormData(formData)) {
       setLoading(false);
       return;
     }
 
     try {
-      // Sanitize content before submission
-      const sanitizedFormData = {
-        ...formData,
-        content: sanitizeContent(formData.content)
-      };
+      // Only remove <script> tags, keep all other HTML
+      const sanitizedHTML = sanitizeContent(formData.content);
 
-      // Prepare translations with sanitized content
+      // Prepare translations object
       const translations = {
-        en: language === "en" ? { ...sanitizedFormData } : {},
-        bn: language === "bn" ? { ...sanitizedFormData } : {},
+        en: language === "en"
+          ? { ...formData, content: sanitizedHTML }
+          : {},
+        bn: language === "bn"
+          ? { ...formData, content: sanitizedHTML }
+          : {},
       };
 
-      // Safe JSON stringification
-      const safeTranslations = JSON.parse(JSON.stringify(translations), (key, value) => {
-        // Remove any non-serializable or problematic content
-        if (typeof value === 'string') {
-          // Remove any remaining HTML tags or scripts
-          return value.replace(/<\/?[^>]+(>|$)/g, '');
-        }
-        return value;
-      });
+      // If you want to do further checks or merges for multi-language, you can do so here.
 
-      // Chunked upload for large images
+      // Convert translations to JSON
+      const safeTranslations = JSON.stringify(translations);
+
+      // Optional chunked upload if image is large
       if (formData.image && formData.image.size > MAX_FILE_SIZE) {
         const chunkUploadSuccess = await uploadFileInChunks(formData.image);
         if (!chunkUploadSuccess) {
-          throw new Error('Chunk upload failed');
+          throw new Error("Chunk upload failed");
         }
       }
 
-      // Create form data for submission
+      // Prepare final FormData
       const data = new FormData();
-      
-      try {
-        // Attempt to stringify translations
-        data.append("translations", JSON.stringify(safeTranslations));
-      } catch (stringifyError) {
-        console.error("Translation stringify error:", stringifyError);
-        toast.error("Error processing blog content. Please reduce content length.");
-        setLoading(false);
-        return;
-      }
-
+      data.append("translations", safeTranslations);
       data.append("category", JSON.stringify(formData.category));
-      
-      // Append image if exists
+
+      // If there's an image, attach it
       if (formData.image) {
         data.append("image", formData.image);
       }
 
-      // Submit to API
+      // Send POST request to Mukti Hospital API
       const response = await fetch("https://api.muktihospital.com/api/blogs/add", {
         method: "POST",
-        headers: { 
-          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079" 
+        headers: {
+          "x-api-key":
+            "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
         body: data,
       });
 
       const result = await response.json();
 
-      // Handle response
       if (!response.ok) {
         throw new Error(result.error || "Failed to submit blog");
       }
 
-      // Success handling
+      // Success
       toast.success(result.message || "Blog added successfully");
       setMessage(result.message);
 
@@ -305,42 +306,45 @@ const AddBlog = () => {
         image: null,
       });
       setPreviewImage(null);
-
     } catch (err) {
       console.error("Submission error:", err);
-      
-      // Detailed error handling
+
       if (err.response) {
-        const errorMessage = err.response.data.message || 'Submission failed';
+        const errorMessage = err.response.data.message || "Submission failed";
         setError(errorMessage);
         toast.error(errorMessage);
       } else if (err.request) {
-        setError('No response from server. Check your network connection.');
-        toast.error('Network error. Please try again.');
+        setError("No response from server. Check your network connection.");
+        toast.error("Network error. Please try again.");
       } else {
-        setError(err.message || 'An unexpected error occurred');
-        toast.error('Error processing content. Please check your input.');
+        setError(err.message || "An unexpected error occurred");
+        toast.error("Error processing content. Please check your input.");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // -------------------------------------------------------------------------
+  // Render the Add Blog form
+  // -------------------------------------------------------------------------
   return (
     <div className="container mx-auto p-6">
-      <ToastContainer 
-        position="top-right" 
-        autoClose={3000} 
-        hideProgressBar={false} 
-        newestOnTop={false} 
-        closeOnClick 
-        rtl={false} 
-        pauseOnFocusLoss 
-        draggable 
-        pauseOnHover 
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
       />
-      
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">Add New Blog</h1>
+
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+        Add New Blog
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Language Switcher */}
@@ -348,7 +352,7 @@ const AddBlog = () => {
           <label className="text-gray-700">Language</label>
           <select
             value={language}
-            onChange={handleLanguageChange}
+            onChange={(e) => setLanguage(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md"
           >
             <option value="en">English</option>
@@ -425,14 +429,20 @@ const AddBlog = () => {
 
         {/* Content Editor */}
         <div>
-          <JoditEditor 
-            ref={editor} 
-            value={formData.content} 
-            onChange={handleContentChange} 
+          <JoditEditor
+            ref={editor}
+            value={formData.content}
+            onChange={handleContentChange}
             config={{
               height: 400,
-              placeholder: 'Start typing your blog content...',
-              maxlength: MAX_CONTENT_LENGTH
+              placeholder: "Start typing your blog content...",
+              // Let Jodit keep all styles, do not remove tags
+              cleanHTML: {
+                removeEmptyTags: false,
+                removeEmptyNodes: false,
+              },
+              // You can set a maximum length if you like
+              // but we also handle it in handleContentChange
             }}
           />
           <p className="text-sm text-gray-600 mt-1">
@@ -441,11 +451,11 @@ const AddBlog = () => {
         </div>
 
         {/* Category Dropdown */}
-        <select 
-          name="category" 
-          value={formData.category.id} 
-          onChange={handleCategoryChange} 
-          className="w-full p-3 border border-gray-300 rounded-md" 
+        <select
+          name="category"
+          value={formData.category.id}
+          onChange={handleCategoryChange}
+          className="w-full p-3 border border-gray-300 rounded-md"
           required
         >
           <option value="">Select Category</option>
@@ -458,22 +468,22 @@ const AddBlog = () => {
 
         {/* Image Upload */}
         <div>
-          <input 
-            type="file" 
-            name="image" 
-            onChange={handleImageChange} 
-            className="w-full p-3 border border-gray-300 rounded-md" 
-            accept={ALLOWED_FILE_TYPES.join(',')}
+          <input
+            type="file"
+            name="image"
+            onChange={handleImageChange}
+            className="w-full p-3 border border-gray-300 rounded-md"
+            accept={ALLOWED_FILE_TYPES.join(",")}
           />
           <p className="text-sm text-gray-600 mt-1">
-            Max file size: {MAX_FILE_SIZE / 1024 / 1024}MB. 
-            Allowed types: JPEG, PNG, GIF, WEBP
+            Max file size: {MAX_FILE_SIZE / 1024 / 1024}MB. Allowed types: JPEG,
+            PNG, GIF, WEBP
           </p>
           {previewImage && (
-            <img 
-              src={previewImage} 
-              alt="Preview" 
-              className="mt-3 w-32 h-32 object-cover rounded-md" 
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="mt-3 w-32 h-32 object-cover rounded-md"
             />
           )}
         </div>
