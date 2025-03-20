@@ -14,7 +14,7 @@ function sanitizeContent(html) {
   return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
 }
 
-// Define constants
+// Constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_CONTENT_LENGTH = 100000; // 100,000 characters
 
@@ -23,7 +23,7 @@ const EditBlog = () => {
   const navigate = useNavigate();
   const editor = useRef(null);
 
-  // Main form data for the blog
+  // Main form data for the blog. Use a unified "category" object.
   const [formData, setFormData] = useState({
     metaTitle: "",
     metaDescription: "",
@@ -31,9 +31,8 @@ const EditBlog = () => {
     slug: "",
     description: "",
     content: "",
-    // We'll store the category ID here as a string
-    categories: "",
-    image: null, // New image file to upload
+    category: { id: "", name: "" },
+    image: null,
   });
 
   // Translations for English and Bangla
@@ -61,7 +60,7 @@ const EditBlog = () => {
   // Current selected language (default "en")
   const [language, setLanguage] = useState("en");
 
-  // Slug edit toggle
+  // Slug editing toggle
   const [isSlugEditable, setIsSlugEditable] = useState(false);
 
   // Loading and fetching states
@@ -72,10 +71,10 @@ const EditBlog = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
-  // Image preview
+  // Image preview state
   const [previewImage, setPreviewImage] = useState(null);
 
-  // Categories list
+  // Categories list from API
   const [categoriesList, setCategoriesList] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
@@ -128,9 +127,12 @@ const EditBlog = () => {
         // Store translations for language switching
         setTranslations(data.translations || { en: {}, bn: {} });
         const langData = data.translations?.[language] || {};
-        const selectedCategory = langData.category || { id: "", name: "" };
-
-        // Always use the English slug regardless of language
+        let selectedCategory = langData.category || { id: "", name: "" };
+        // If switching to Bangla and no category is set, default to English
+        if (language === "bn" && !selectedCategory.id) {
+          selectedCategory = data.translations?.en?.category || { id: "", name: "" };
+        }
+        // Always use the English slug
         setFormData({
           metaTitle: langData.metaTitle || "",
           metaDescription: langData.metaDescription || "",
@@ -138,7 +140,7 @@ const EditBlog = () => {
           slug: data.translations?.en?.slug || "",
           description: langData.description || "",
           content: langData.content || "",
-          categories: selectedCategory.id,
+          category: selectedCategory,
           image: null, // Only set if user selects a new file
         });
 
@@ -183,23 +185,23 @@ const EditBlog = () => {
   const handleCategoryChange = (e) => {
     const selectedCategoryId = e.target.value;
     const selectedCategoryName = e.target.options[e.target.selectedIndex].text;
-    // Update translations state for the current language
+    // Update translations state for current language
     setTranslations((prev) => ({
       ...prev,
       [language]: {
         ...prev[language],
-        category: {
-          id: selectedCategoryId,
-          name: selectedCategoryName,
-        },
+        category: { id: selectedCategoryId, name: selectedCategoryName },
       },
     }));
-    // Update formData (store the category id as a string)
-    setFormData((prev) => ({ ...prev, categories: selectedCategoryId }));
+    // Update formData with the selected category object
+    setFormData((prev) => ({
+      ...prev,
+      category: { id: selectedCategoryId, name: selectedCategoryName },
+    }));
   };
 
   // -------------------------------------------------------------------------
-  // 6) Handle image file selection and create a local preview
+  // 6) Handle image file selection and preview creation
   // -------------------------------------------------------------------------
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -210,7 +212,7 @@ const EditBlog = () => {
   };
 
   // -------------------------------------------------------------------------
-  // 7) Handle JoditEditor content changes (HTML formatting)
+  // 7) Handle JoditEditor content changes
   // -------------------------------------------------------------------------
   const handleContentChange = (newContent) => {
     setFormData((prev) => ({ ...prev, content: newContent }));
@@ -237,18 +239,22 @@ const EditBlog = () => {
     const selectedLang = e.target.value;
     setLanguage(selectedLang);
     // Retrieve corresponding language data from translations
-    const langData = translations[selectedLang] || {};
-    const selectedCategory = langData.category || { id: "", name: "" };
+    let langData = translations[selectedLang] || {};
+    let selectedCategory = langData.category || { id: "", name: "" };
+    // If switching to Bangla and no category exists, default to English category
+    if (selectedLang === "bn" && !selectedCategory.id) {
+      selectedCategory = translations.en?.category || { id: "", name: "" };
+    }
     // Always use the English slug
     const englishSlug = translations.en?.slug || "";
     setFormData({
       metaTitle: langData.metaTitle || "",
       metaDescription: langData.metaDescription || "",
       title: langData.title || "",
-      slug: englishSlug, // Always use the English slug
+      slug: englishSlug, // Always use English slug
       description: langData.description || "",
       content: langData.content || "",
-      categories: selectedCategory.id,
+      category: selectedCategory,
       image: null, // Only update if user selects a new file
     });
   };
@@ -274,11 +280,7 @@ const EditBlog = () => {
           slug: formData.slug,
           description: formData.description,
           content: sanitizeContent(formData.content),
-          category: {
-            id: formData.categories,
-            name:
-              categoriesList.find((cat) => cat.id === formData.categories)?.name || "",
-          },
+          category: formData.category,
         },
       };
 
@@ -291,7 +293,8 @@ const EditBlog = () => {
       const response = await fetch(`https://api.muktihospital.com/api/blogs/edit/${id}`, {
         method: "PUT",
         headers: {
-          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+          "x-api-key":
+            "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
         body: data,
       });
@@ -315,7 +318,7 @@ const EditBlog = () => {
   };
 
   // -------------------------------------------------------------------------
-  // 12) If still fetching the blog data, show a loading indicator
+  // 12) If fetching blog data, show a loading indicator
   // -------------------------------------------------------------------------
   if (fetching) {
     return (
@@ -431,7 +434,7 @@ const EditBlog = () => {
         {/* Category Dropdown */}
         <select
           name="category"
-          value={formData.categories}
+          value={formData.category.id}
           onChange={handleCategoryChange}
           className="w-full p-3 border border-gray-300 rounded-md"
           required
