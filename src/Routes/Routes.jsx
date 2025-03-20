@@ -26,6 +26,8 @@ import ProfilePage from "../components/ProfilePage";
 import AboutPage from "../components/Manage Section/AboutPage";
 import AppointmentList from "../components/Appointment/AppoinmentList/AllAppoinment";
 import TodayAppointments from "../components/Appointment/AppoinmentList/TodayAppointments";
+import Header from "../components/Manage Section/Header";
+import Footer from "../components/Manage Section/Footer";
 
 
 
