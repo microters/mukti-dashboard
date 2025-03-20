@@ -5,41 +5,43 @@ import Skeleton from "react-loading-skeleton";
 import JoditEditor from "jodit-react";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
-import { saveData } from "../../../services/indexDb";
-import slugify from "slugify";  // ✅ Import slugify for generating slugs
+import slugify from "slugify";
 
 const AddDepartment = () => {
   const editor = useRef(null);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [icon, setIcon] = useState(null); // Stores file
-  const [previewIcon, setPreviewIcon] = useState(null); // Stores image preview
+  const [icon, setIcon] = useState(null); // আপলোডের জন্য ফাইল
+  const [previewIcon, setPreviewIcon] = useState(null); // আইকনের প্রিভিউ
   const [departmentData, setDepartmentData] = useState({
+    // লক্ষ্য করুন: ইংরেজি শিরোনামের key হিসেবে "title" ব্যবহার করা হয়েছে
     translations: {
-      en: { name: "", description: "", metaTitle: "", metaDescription: "" },
-      bn: { name: "", description: "", metaTitle: "", metaDescription: "" },
+      en: { title: "", description: "", metaTitle: "", metaDescription: "" },
+      bn: { title: "", description: "", metaTitle: "", metaDescription: "" },
     },
-    slug: "", // Add slug field in state
+    slug: "", // slug state
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle language selection
+  // ইংরেজি শিরোনাম পরিবর্তিত হলে স্বয়ংক্রিয়ভাবে slug generate হবে
+  useEffect(() => {
+    if (departmentData.translations.en.title) {
+      const generatedSlug = slugify(
+        departmentData.translations.en.title.trim(),
+        { lower: true, strict: true }
+      );
+      setDepartmentData((prev) => ({
+        ...prev,
+        slug: generatedSlug,
+      }));
+    }
+  }, [departmentData.translations.en.title]);
+
+  // ভাষা নির্বাচন হ্যান্ডল
   const handleLanguageChange = (e) => {
     setSelectedLanguage(e.target.value);
   };
 
-  // Automatically generate the slug when the department name in English is updated
-  useEffect(() => {
-    if (departmentData.translations.en.name) {
-      const generatedSlug = slugify(departmentData.translations.en.name.trim(), { lower: true, strict: true });
-      setDepartmentData((prev) => ({
-        ...prev,
-        slug: prev.slug || generatedSlug, // Only generate slug if it's empty
-      }));
-    }
-  }, [departmentData.translations.en.name]); // Triggered when the name in English is updated
-  
-  // Handle text input changes
+  // ইনপুট ফিল্ড পরিবর্তনের হ্যান্ডলার
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDepartmentData((prev) => {
@@ -50,29 +52,26 @@ const AddDepartment = () => {
           [name]: value,
         },
       };
-
-      // Automatically generate slug from English title if not manually entered
-      if (selectedLanguage === "en" && name === "name") {
+      // যদি ইংরেজি ভাষায় "title" পরিবর্তিত হয়, তাহলে slug update করুন
+      if (selectedLanguage === "en" && name === "title") {
         const generatedSlug = slugify(value, { lower: true, strict: true });
-        return { ...prev, translations: updatedTranslations, slug: prev.slug || generatedSlug };
+        return { ...prev, translations: updatedTranslations, slug: generatedSlug };
       }
-
       return { ...prev, translations: updatedTranslations };
     });
   };
 
-  // Handle slug change (if the user manually edits the slug)
+  // ম্যানুয়ালভাবে slug পরিবর্তনের হ্যান্ডলার
   const handleSlugChange = (e) => {
     const slugValue = e.target.value;
-    const customSlug = slugValue.replace(/\s+/g, ''); // স্পেস বাদ দিয়ে
+    const customSlug = slugValue.replace(/\s+/g, ""); // স্পেস বাদ দিন
     setDepartmentData((prev) => ({
       ...prev,
-      slug: slugify(customSlug, { lower: true, strict: true }), // সঠিক স্লাগ
+      slug: slugify(customSlug, { lower: true, strict: true }),
     }));
   };
-  
 
-  // Handle JoditEditor content changes
+  // JoditEditor এর কন্টেন্ট পরিবর্তন হ্যান্ডলার
   const handleContentChange = (newContent) => {
     setDepartmentData((prev) => ({
       ...prev,
@@ -86,11 +85,10 @@ const AddDepartment = () => {
     }));
   };
 
-  // Handle file selection for icon
+  // ফাইল আপলোড হ্যান্ডলার
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setIcon(file);
-
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => setPreviewIcon(reader.result);
@@ -98,38 +96,40 @@ const AddDepartment = () => {
     }
   };
 
-  // Handle form submission
+  // ফর্ম সাবমিশনের হ্যান্ডলার
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
-      // Save department data to IndexedDB before submitting to the backend
-      await saveData("addDepartment", departmentData);
+      // IndexedDB-তে ডাটা সেভ করার জন্য (যদি দরকার হয়)
+     
 
-      // Prepare form data for API submission
       const formData = new FormData();
       formData.append("translations", JSON.stringify(departmentData.translations));
-      formData.append("slug", departmentData.slug); // Append slug to form data
+      formData.append("slug", departmentData.slug);
       if (icon) {
-        formData.append("icon", icon); // Append file if selected
+        formData.append("icon", icon);
       }
 
-      const response = await axios.post("https://api.muktihospital.com/api/department", formData, {
-        headers: {
-          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/department",
+        formData,
+        {
+          headers: {
+            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       if (response.status === 201) {
         toast.success("Department added successfully!");
         setDepartmentData({
           translations: {
-            en: { name: "", description: "", metaTitle: "", metaDescription: "" },
-            bn: { name: "", description: "", metaTitle: "", metaDescription: "" },
+            en: { title: "", description: "", metaTitle: "", metaDescription: "" },
+            bn: { title: "", description: "", metaTitle: "", metaDescription: "" },
           },
-          slug: "", // Reset slug
+          slug: "",
         });
         setIcon(null);
         setPreviewIcon(null);
@@ -148,8 +148,7 @@ const AddDepartment = () => {
     <div className="bg-gray-100 p-6">
       <div className="max-w-10xl bg-white shadow-lg rounded p-6">
         <h2 className="text-xl font-semibold mb-4">Add Department</h2>
-
-        {/* Language dropdown */}
+        {/* ভাষা নির্বাচন */}
         <div className="mb-4">
           <label className="block mb-1 font-medium">Language:</label>
           <select
@@ -162,7 +161,7 @@ const AddDepartment = () => {
           </select>
         </div>
 
-        {/* Department Form */}
+        {/* Department ফর্ম */}
         <form onSubmit={handleSubmit}>
           {/* Department Name */}
           <div className="mb-4">
@@ -172,10 +171,10 @@ const AddDepartment = () => {
             ) : (
               <input
                 type="text"
-                name="name"
+                name="title"
                 placeholder="Enter Department Name"
                 className="border p-2 rounded w-full"
-                value={departmentData.translations[selectedLanguage].name}
+                value={departmentData.translations[selectedLanguage].title}
                 onChange={handleChange}
               />
             )}
@@ -183,14 +182,14 @@ const AddDepartment = () => {
 
           {/* Slug Field */}
           <div className="mb-4">
-            <label className="label">Slug</label>
+            <label className="block mb-1 font-medium">Slug</label>
             <input
               type="text"
               name="slug"
-              className="input-field"
+              className="border p-2 rounded w-full"
               placeholder="Enter Slug"
               value={departmentData.slug}
-              onChange={handleSlugChange} // Allow manual slug editing
+              onChange={handleSlugChange}
             />
           </div>
 
@@ -250,7 +249,13 @@ const AddDepartment = () => {
               onChange={handleFileChange}
               className="border p-2 rounded w-full"
             />
-            {previewIcon && <img src={previewIcon} alt="Icon Preview" className="mt-2 w-24 h-24 rounded-lg shadow" />}
+            {previewIcon && (
+              <img
+                src={previewIcon}
+                alt="Icon Preview"
+                className="mt-2 w-24 h-24 rounded-lg shadow"
+              />
+            )}
           </div>
 
           {/* Submit Button */}
@@ -258,7 +263,9 @@ const AddDepartment = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
