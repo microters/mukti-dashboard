@@ -1,55 +1,72 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Select from "react-select";
-import {
-  FaUserMd, FaUser, FaMoneyBillWave, FaStethoscope
-} from "react-icons/fa";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import { FaUserMd, FaUser, FaMoneyBillWave, FaStethoscope } from "react-icons/fa";
 import { MdFormatListNumbered, MdPayment } from "react-icons/md";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import useDoctors from "../../../hook/useDoctors";
 
+const getAvailableDatesForMonth = (selectedMonth, availableDays) => {
+  const year = selectedMonth.getFullYear();
+  const month = selectedMonth.getMonth();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const availableDates = [];
+  for (let day = 1; day <= totalDays; day++) {
+    const date = new Date(year, month, day);
+    if (availableDays.includes(date.getDay())) {
+      availableDates.push(date);
+    }
+  }
+  return availableDates;
+};
 
 const AddAppointment = () => {
+  // State declarations
   const [loading, setLoading] = useState(false);
   const [patientLoading, setPatientLoading] = useState(true);
   const [scheduleLoading, setScheduleLoading] = useState(false);
-
+  
   const { doctors, loading: doctorLoading, fetchDoctors } = useDoctors();
   const [patients, setPatients] = useState([]);
-  const [schedules, setSchedules] = useState([]);
-  const [availableSchedules, setAvailableSchedules] = useState([]);
+  
+  // Use calendar for selecting appointment date
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [availableDates, setAvailableDates] = useState([]);
+  
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [selectedFee, setSelectedFee] = useState(null);
   const [feeOptions, setFeeOptions] = useState([]);
   const [selectedBloodGroup, setSelectedBloodGroup] = useState(null);
   const [newPatientInput, setNewPatientInput] = useState("");
-  const [hasScheduleForToday, setHasScheduleForToday] = useState(false);
-
+  
   const [formData, setFormData] = useState({
     doctor: "",
     patient: "",
     consultationFee: "",
     paymentMethod: "",
     reference: "",
-    scheduleId: "",
     mobileNumber: "",
     weight: "",
     age: "",
     isManualPatient: false,
   });
-
-  const API_KEY = "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";  // Change to your API key
-  const BASE_URL = "https://api.muktihospital.com/api";  // Change to your backend API URL
-
+  
+  // API key and BASE_URL (update these as needed)
+  const API_KEY = "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";
+  const BASE_URL = "http://localhost:5000/api";
+  
+  // Fetch doctors on mount
   useEffect(() => {
-    // Fetch doctors using the useDoctors hook
     fetchDoctors();
   }, [fetchDoctors]);
   
+  // Fetch patients on mount
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -70,42 +87,31 @@ const AddAppointment = () => {
     };
     fetchPatients();
   }, []);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   
+  // Handle doctor selection
   const handleDoctorChange = (selectedOption) => {
     setSelectedDoctor(selectedOption);
     setFormData({ ...formData, doctor: selectedOption?.value || "" });
-
+  
     if (!selectedOption) {
-      setSchedules([]);
-      setAvailableSchedules([]);
-      setSelectedSchedule(null);
+      setAvailableDates([]);
       setFeeOptions([]);
       setSelectedFee(null);
-      setHasScheduleForToday(false);
       return;
     }
-
+  
     setScheduleLoading(true);
     const doctor = doctors.find((doc) => doc.id === selectedOption.value);
-    
     if (doctor) {
-      // Get current day of the week (Sunday, Monday, etc.)
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const today = new Date();
-      const currentDayName = daysOfWeek[today.getDay()];
-      
-      // Store all schedules
-      setSchedules(doctor?.schedule || []);
-      
-      // Filter schedules for today
-      const todaySchedules = doctor?.schedule?.filter(sch => 
-        sch.day === currentDayName
-      ) || [];
-      
-      setAvailableSchedules(todaySchedules);
-      setHasScheduleForToday(todaySchedules.length > 0);
-
-      // Set fee options
+      // Convert doctor's available schedule days to numbers
+      const daysMapping = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+      const availableDays = doctor?.schedule?.map((sch) => daysMapping[sch.day]) || [];
+      // Calculate available dates for the currently selected month
+      setAvailableDates(getAvailableDatesForMonth(selectedDate, availableDays));
+  
       const appointmentFee = doctor.translations?.en?.appointmentFee;
       const followUpFee = doctor.translations?.en?.followUpFee;
       setFeeOptions([
@@ -116,7 +122,8 @@ const AddAppointment = () => {
     }
     setScheduleLoading(false);
   };
-
+  
+  // Handle fee change
   const handleFeeChange = (selectedOption) => {
     if (selectedOption) {
       setSelectedFee({ value: selectedOption.value, label: selectedOption.value });
@@ -126,7 +133,8 @@ const AddAppointment = () => {
       setFormData({ ...formData, consultationFee: "" });
     }
   };
-
+  
+  // Handle patient selection
   const handlePatientChange = (selectedOption) => {
     setSelectedPatient(selectedOption);
     setFormData({
@@ -136,22 +144,20 @@ const AddAppointment = () => {
       isManualPatient: false,
     });
   };
-
-  const handleScheduleChange = (selectedOption) => {
-    setSelectedSchedule(selectedOption);
-    setFormData({ ...formData, scheduleId: selectedOption?.value || "" });
-  };
-
+  
+  // Handle payment method change
   const handlePaymentMethodChange = (selectedOption) => {
     setSelectedPaymentMethod(selectedOption);
     setFormData({ ...formData, paymentMethod: selectedOption?.value || "" });
   };
-
+  
+  // Handle blood group change
   const handleBloodGroupChange = (selectedOption) => {
     setSelectedBloodGroup(selectedOption);
     setFormData({ ...formData, bloodGroup: selectedOption?.value || "" });
   };
-
+  
+  // Handle patient creation by pressing Enter (for new patient)
   const handlePatientKeyDown = (event) => {
     if (event.key === "Enter" && newPatientInput.trim() !== "") {
       event.preventDefault();
@@ -160,7 +166,6 @@ const AddAppointment = () => {
         label: newPatientInput.trim(),
         phone: "",
       };
-
       setPatients((prev) => [...prev, newPatient]);
       setSelectedPatient(newPatient);
       setFormData({
@@ -169,37 +174,32 @@ const AddAppointment = () => {
         mobileNumber: "",
         isManualPatient: true,
       });
-
       setNewPatientInput("");
     }
   };
-
-  const handleChange = (e) => {
+  
+  // Generic change handler for other fields
+  const handleChangeFields = (e) => {
     const { name, value } = e.target;
-    
-    // Special handling only for mobile number
-    if (name === 'mobileNumber') {
+    if (name === "mobileNumber") {
       let cleanedValue = value.trim();
-      // Remove leading '88' or any country code if already added
-      if (cleanedValue.startsWith('88')) {
+      if (cleanedValue.startsWith("88")) {
         cleanedValue = cleanedValue.substring(2);
       }
       setFormData({ ...formData, [name]: cleanedValue });
     } else {
-      // For all other fields including "reason", preserve spaces
       setFormData({ ...formData, [name]: value });
     }
   };
   
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
   
     let cleanedMobileNumber = formData.mobileNumber.trim();
-  
-    // Add '88' as the country code if it doesn't already have it
-    if (!cleanedMobileNumber.startsWith('88')) {
-      cleanedMobileNumber = '88' + cleanedMobileNumber;  // Prepend '88' country code
+    if (!cleanedMobileNumber.startsWith("88")) {
+      cleanedMobileNumber = "88" + cleanedMobileNumber;
     }
   
     const payload = {
@@ -207,16 +207,16 @@ const AddAppointment = () => {
       doctorName: selectedDoctor ? selectedDoctor.label : "",
       patientId: selectedPatient && !selectedPatient.value.startsWith("new-") ? selectedPatient.value : null,
       patientName: selectedPatient ? selectedPatient.label : "",
-      scheduleId: formData.scheduleId || null,
+      appointmentDate: selectedDate, // Directly use the date selected via calendar
       consultationFee: parseFloat(formData.consultationFee),
       paymentMethod: formData.paymentMethod,
       serialNumber: formData.serialNumber || null,
-      mobileNumber: cleanedMobileNumber,  // Use mobile number with '88' prepended
+      mobileNumber: cleanedMobileNumber,
       weight: formData.weight || null,
       age: formData.age || null,
       reference: formData.reference || null,
       bloodGroup: formData.bloodGroup || null,
-      reason: formData.reason || "",  // Preserve spaces in reason
+      reason: formData.reason || "",
       address: formData.address || "",
       isNewPatient: selectedPatient && selectedPatient.value.startsWith("new-") ? true : false,
     };
@@ -234,7 +234,6 @@ const AddAppointment = () => {
     }
   };
   
-
   return (
     <div className="bg-gray-100 min-h-screen p-6">
       <div className="bg-white shadow-lg rounded-lg p-6">
@@ -242,230 +241,225 @@ const AddAppointment = () => {
           <FaStethoscope /> Add New Appointment
         </h2>
         <form className="mt-6" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Doctor Selection */}
-            <div>
-              <label className="label flex items-center gap-2">
-                <FaUserMd /> Select Doctor
-              </label>
-              {doctorLoading ? (
-                <Skeleton height={40} />
-              ) : (
-                <Select
-                  options={doctors.map((doc) => ({
-                    value: doc.id,
-                    label: doc.name || (doc.translations?.en?.name ?? "Unknown Doctor"),
-                  }))}
-                  value={selectedDoctor}
-                  onChange={handleDoctorChange}
-                  placeholder="Choose a Doctor"
-                  isClearable
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                />
-              )}
-            </div>
-            {/* Schedule Selection */}
-            {selectedDoctor && (
-              <div>
-                <label className="label flex items-center gap-2">
-                  Doctor's Schedule
-                </label>
-                {scheduleLoading ? (
-                  <Skeleton height={40} />
-                ) : hasScheduleForToday ? (
-                  <Select
-                    options={availableSchedules.map((sch) => ({
-                      value: sch.id,
-                      label: `${sch.day} (${sch.startTime} - ${sch.endTime})`,
-                    }))}
-                    value={selectedSchedule}
-                    onChange={handleScheduleChange}
-                    placeholder="Choose a Schedule"
-                    isClearable
-                  />
-                ) : (
-                  <div className="text-red-500 py-2 px-3 bg-red-50 rounded border border-red-200">
-                    Schedule Not Found. Doctor is not available today.
-                  </div>
-                )}
-              </div>
+          {/* Doctor Selection */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              <FaUserMd /> Select Doctor
+            </label>
+            {doctorLoading ? (
+              <Skeleton height={40} />
+            ) : (
+              <Select
+                options={doctors.map((doc) => ({
+                  value: doc.id,
+                  label: doc.name || (doc.translations?.en?.name ?? "Unknown Doctor"),
+                }))}
+                value={selectedDoctor}
+                onChange={handleDoctorChange}
+                placeholder="Choose a Doctor"
+                isClearable
+              />
             )}
-
-            {/* Patient Selection */}
-            <div>
-              <label className="label flex items-center gap-2">
-                <FaUser /> Select Patient
-              </label>
-              {patientLoading ? (
-                <Skeleton height={40} />
-              ) : (
-                <Select
-                  options={patients}
-                  value={selectedPatient}
-                  onChange={handlePatientChange}
-                  onInputChange={(inputValue) => setNewPatientInput(inputValue)}
-                  onKeyDown={handlePatientKeyDown}
-                  placeholder="Type and press Enter to add"
-                  isClearable
-                />
-              )}
-            </div>
-
-            {/* Payment Method */}
-            <div>
-              <label className="label flex items-center gap-2">
-                <MdPayment /> Payment Method
-              </label>
-              <Select
-                options={[
-                  { value: "CASH", label: "Cash" },
-                  { value: "BKASH", label: "Bkash" },
-                  { value: "NAGAD", label: "Nagad" },
-                  { value: "ROCKET", label: "Rocket" },
-                  { value: "BANK", label: "Bank" },
-                ]}
-                value={selectedPaymentMethod}
-                onChange={handlePaymentMethodChange}
-                placeholder="Choose Payment Method"
-                isClearable
-              />
-            </div>
-
-            {/* Fee Selection */}
-            <div>
-              <label className="label flex items-center gap-2">
-                <FaMoneyBillWave /> Fee
-              </label>
-              <Select
-                options={feeOptions}
-                value={selectedFee}
-                onChange={handleFeeChange}
-                placeholder="Select Fee"
-                isClearable
-              />
-            </div>
-
-            {/* Serial Number */}
-            <div>
-              <label className="label flex items-center gap-2">
-                <MdFormatListNumbered /> Serial Number
-              </label>
-              <input
-                type="number"
-                name="serialNumber"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
-                value={formData.serialNumber}
-                onChange={handleChange}
-                placeholder="Enter Serial Number"
-              />
-            </div>
-
-            {/* Mobile Number */}
-            <div>
-              <label className="label">Mobile Number</label>
-              <input
-                type="number"
-                name="mobileNumber"
-                className="input-field mt-0"
-                value={formData.mobileNumber}
-                onChange={handleChange}
-                disabled={formData.isManualPatient ? false : !!selectedPatient}
-              />
-            </div>
-
-            {/* Blood Group */}
-            <div>
-              <label className="label">Blood Group</label>
-              <Select
-                options={[
-                  { value: "A+", label: "A+" },
-                  { value: "A-", label: "A-" },
-                  { value: "B+", label: "B+" },
-                  { value: "B-", label: "B-" },
-                  { value: "O+", label: "O+" },
-                  { value: "O-", label: "O-" },
-                  { value: "AB+", label: "AB+" },
-                  { value: "AB-", label: "AB-" },
-                ]}
-                value={selectedBloodGroup}
-                onChange={handleBloodGroupChange}
-                placeholder="Select Blood Group"
-                isClearable
-              />
-            </div>
-
-            {/* Weight Field */}
-            <div>
-              <label className="label flex items-center gap-2">
-                Weight (kg)
-              </label>
-              <input
-                type="number"
-                name="weight"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.weight}
-                onChange={handleChange}
-                placeholder="Enter weight in kg"
-              />
-            </div>
-
-            {/* Age Field */}
-            <div>
-              <label className="label flex items-center gap-2">
-                Age (years)
-              </label>
-              <input
-                type="number"
-                name="age"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder="Enter age in years"
-              />
-            </div>
-             {/* Reference Field */}
-            <div>
-              <label className="label">Reference</label>
-              <input
-                type="text"
-                name="reference"
-                className="input-field"
-                value={formData.reference}
-                onChange={handleChange}
-              />
-            </div>
-            {/* Reason */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">Reason</label>
-              <textarea
-                name="reason"
-                className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.reason || ''}
-                onChange={handleChange}
-                onKeyDown={(e) => {
-                  // Prevent any special handling of space key
-                  if (e.key === ' ') {
-                    e.stopPropagation();
-                  }
-                }}
-                placeholder="Enter the reason for the appointment"
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="label">Address</label>
-              <input
-                type="text"
-                name="address"
-                className="input-field"
-                value={formData.address}
-                onChange={handleChange}
-              />
-            </div>
           </div>
-
+  
+          {/* Calendar for Appointment Date */}
+          {selectedDoctor && (
+            <div className="mb-6">
+              <label className="label flex items-center gap-2">
+                Select Appointment Date
+              </label>
+              <Calendar
+                onChange={(date) => {
+                  setSelectedDate(date);
+                  // Update available dates when month changes
+                  const daysMapping = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+                  const availableDays = (selectedDoctor &&
+                    doctors.find(doc => doc.id === selectedDoctor.value)?.schedule || []
+                  ).map(sch => daysMapping[sch.day]);
+                  setAvailableDates(getAvailableDatesForMonth(date, availableDays));
+                }}
+                value={selectedDate}
+                minDate={new Date()}
+                tileDisabled={({ date }) =>
+                  !availableDates.some(d => d.toDateString() === date.toDateString())
+                }
+              />
+              
+            </div>
+          )}
+  
+          {/* Patient Selection */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              <FaUser /> Select Patient
+            </label>
+            {patientLoading ? (
+              <Skeleton height={40} />
+            ) : (
+              <Select
+                options={patients}
+                value={selectedPatient}
+                onChange={handlePatientChange}
+                onInputChange={(inputValue) => setNewPatientInput(inputValue)}
+                onKeyDown={handlePatientKeyDown}
+                placeholder="Type and press Enter to add"
+                isClearable
+              />
+            )}
+          </div>
+  
+          {/* Payment Method */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              <MdPayment /> Payment Method
+            </label>
+            <Select
+              options={[
+                { value: "CASH", label: "Cash" },
+                { value: "BKASH", label: "Bkash" },
+                { value: "NAGAD", label: "Nagad" },
+                { value: "ROCKET", label: "Rocket" },
+                { value: "BANK", label: "Bank" },
+              ]}
+              value={selectedPaymentMethod}
+              onChange={handlePaymentMethodChange}
+              placeholder="Choose Payment Method"
+              isClearable
+            />
+          </div>
+  
+          {/* Fee Selection */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              <FaMoneyBillWave /> Fee
+            </label>
+            <Select
+              options={feeOptions}
+              value={selectedFee}
+              onChange={handleFeeChange}
+              placeholder="Select Fee"
+              isClearable
+            />
+          </div>
+  
+          {/* Serial Number */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              <MdFormatListNumbered /> Serial Number
+            </label>
+            <input
+              type="number"
+              name="serialNumber"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+              value={formData.serialNumber}
+              onChange={handleChangeFields}
+              placeholder="Enter Serial Number"
+            />
+          </div>
+  
+          {/* Mobile Number */}
+          <div className="mb-6">
+            <label className="label">Mobile Number</label>
+            <input
+              type="number"
+              name="mobileNumber"
+              className="input-field"
+              value={formData.mobileNumber}
+              onChange={handleChange}
+              disabled={formData.isManualPatient ? false : !!selectedPatient}
+            />
+          </div>
+  
+          {/* Blood Group */}
+          <div className="mb-6">
+            <label className="label">Blood Group</label>
+            <Select
+              options={[
+                { value: "A+", label: "A+" },
+                { value: "A-", label: "A-" },
+                { value: "B+", label: "B+" },
+                { value: "B-", label: "B-" },
+                { value: "O+", label: "O+" },
+                { value: "O-", label: "O-" },
+                { value: "AB+", label: "AB+" },
+                { value: "AB-", label: "AB-" },
+              ]}
+              value={selectedBloodGroup}
+              onChange={handleBloodGroupChange}
+              placeholder="Select Blood Group"
+              isClearable
+            />
+          </div>
+  
+          {/* Weight Field */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              Weight (kg)
+            </label>
+            <input
+              type="number"
+              name="weight"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.weight}
+              onChange={handleChangeFields}
+              placeholder="Enter weight in kg"
+            />
+          </div>
+  
+          {/* Age Field */}
+          <div className="mb-6">
+            <label className="label flex items-center gap-2">
+              Age (years)
+            </label>
+            <input
+              type="number"
+              name="age"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.age}
+              onChange={handleChangeFields}
+              placeholder="Enter age in years"
+            />
+          </div>
+  
+          {/* Reference Field */}
+          <div className="mb-6">
+            <label className="label">Reference</label>
+            <input
+              type="text"
+              name="reference"
+              className="input-field"
+              value={formData.reference}
+              onChange={handleChangeFields}
+            />
+          </div>
+  
+          {/* Reason */}
+          <div className="mb-6">
+            <label className="text-sm font-medium text-gray-700">Reason</label>
+            <textarea
+              name="reason"
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.reason || ""}
+              onChange={handleChangeFields}
+              onKeyDown={(e) => {
+                if (e.key === " ") e.stopPropagation();
+              }}
+              placeholder="Enter the reason for the appointment"
+            />
+          </div>
+  
+          {/* Address */}
+          <div className="mb-6">
+            <label className="label">Address</label>
+            <input
+              type="text"
+              name="address"
+              className="input-field"
+              value={formData.address}
+              onChange={handleChangeFields}
+            />
+          </div>
+  
           {/* Submit & Reset Buttons */}
           <div className="mt-6 flex gap-4">
             <button

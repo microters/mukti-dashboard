@@ -1,7 +1,7 @@
 // TodayAppointments.js - Component to show only today's appointments with full edit functionality
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaCheckCircle, FaClock, FaEdit, FaTimesCircle, FaCalendarDay, FaPen, FaSave, FaTimes } from "react-icons/fa";
+import { FaCheckCircle, FaClock, FaEdit, FaCalendarDay, FaPen, FaSave, FaTimes } from "react-icons/fa";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -34,7 +34,7 @@ const TodayAppointments = () => {
   const [selectedDoctor, setSelectedDoctor] = useState("");
 
   const API_KEY = "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079";
-  const BASE_URL = "https://api.muktihospital.com/api";
+  const BASE_URL = "http://localhost:5000/api";
 
   useEffect(() => {
     fetchAppointments();
@@ -595,7 +595,7 @@ const TodayAppointments = () => {
               <table className="min-w-full bg-white">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="py-3 px-4 text-left">Time</th>
+                    <th className="py-3 px-4 text-left">Appointment Date</th>
                     <th className="py-3 px-4 text-left">Patient</th>
                     <th className="py-3 px-4 text-left">Doctor</th>
                     <th className="py-3 px-4 text-left">Serial</th>
@@ -609,9 +609,15 @@ const TodayAppointments = () => {
                   {todayAppointments.length > 0 ? (
                     todayAppointments.map((appointment) => (
                       <tr key={appointment.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4">
-                          {formatTime(appointment.createdAt)}
-                        </td>
+<td className="py-3 px-4">
+  {appointment.appointmentDate 
+    ? new Date(appointment.appointmentDate).toLocaleDateString("en-US", {
+        dateStyle: "medium",
+      })
+    : 'N/A'}
+</td>
+
+
                         <td className="py-3 px-4">{appointment.patientName || 'N/A'}</td>
                         <td className="py-3 px-4">{appointment.doctorName || 'N/A'}</td>
                         <td className="py-3 px-4">

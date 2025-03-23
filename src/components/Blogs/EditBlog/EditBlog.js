@@ -432,20 +432,34 @@ const EditBlog = () => {
           </p>
         </div>
         {/* Category Dropdown */}
-        <select
-          name="category"
-          value={formData.category.id}
-          onChange={handleCategoryChange}
-          className="w-full p-3 border border-gray-300 rounded-md"
-          required
-        >
-          <option value="">Select Category</option>
-          {categoriesList.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.translations?.[language]?.name || category.name}
-            </option>
-          ))}
-        </select>
+       {/* Category Dropdown */}
+<select
+  name="category"
+  value={formData.category.id}
+  onChange={handleCategoryChange}
+  className="w-full p-3 border border-gray-300 rounded-md"
+  required
+>
+  {/* ডিফল্ট অপশন, যাতে ইউজারকে "Select Category" দেখায় */}
+  <option value="">Select Category</option>
+
+  {/* প্রতিটি ক্যাটাগরির জন্য আলাদা <option> তৈরি */}
+  {categoriesList.map((category) => (
+    <option key={category.id} value={category.id}>
+      {/*
+        এখানে ভাষাভিত্তিক নাম বাছাই করছি:
+        1) যদি `language` হলো "en", তাহলে `category.translations.en.name` দেখাবার চেষ্টা।
+        2) যদি সেটি না থাকে, তাহলে `category.translations.bn.name` দেখানোর চেষ্টা।
+        3) সেটিও না থাকলে, সর্বশেষে `category.name` দেখাবে।
+      */}
+      {category.translations?.[language]?.name 
+        || category.translations?.bn?.name
+        || category.translations?.en?.name
+        || category.name}
+    </option>
+  ))}
+</select>
+
         {/* Image Upload */}
         <div>
           <input

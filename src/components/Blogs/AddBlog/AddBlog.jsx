@@ -452,19 +452,21 @@ const AddBlog = () => {
 
         {/* Category Dropdown */}
         <select
-          name="category"
-          value={formData.category.id}
-          onChange={handleCategoryChange}
-          className="w-full p-3 border border-gray-300 rounded-md"
-          required
-        >
-          <option value="">Select Category</option>
-          {categoriesList.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.translations[language]?.name || category.name}
-            </option>
-          ))}
-        </select>
+  name="category"
+  value={formData.category.id}
+  onChange={handleCategoryChange}
+  className="w-full p-3 border border-gray-300 rounded-md"
+  required
+>
+  <option value="">Select Category</option>
+  {categoriesList.map((category) => (
+    <option key={category.id} value={category.id}>
+      {language === "en"
+        ? category.translations?.en?.name || category.translations?.bn?.name || "No name available"
+        : category.translations?.bn?.name || category.name}
+    </option>
+  ))}
+</select>
 
         {/* Image Upload */}
         <div>
