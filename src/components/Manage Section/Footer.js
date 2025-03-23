@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaPlus,
   FaTrash,
@@ -10,8 +10,8 @@ import {
   FaLinkedin,
   FaYoutube,
 } from "react-icons/fa";
+import axios from "axios";
 
-// 🔹 Reusable Image Upload Component
 const ImageUpload = ({ label, file, setFile }) => {
   const handleFileUpload = (event) => {
     const selectedFile = event.target.files[0];
@@ -21,6 +21,13 @@ const ImageUpload = ({ label, file, setFile }) => {
   const removeImage = () => {
     setFile(null);
   };
+
+  const imageSrc =
+    typeof file === "string"
+      ? `http://localhost:5000${file.startsWith("/") ? file : `/${file}`}`
+      : file
+      ? URL.createObjectURL(file)
+      : null;
 
   return (
     <div className="flex flex-col items-start bg-white p-4 rounded-md border">
@@ -38,10 +45,10 @@ const ImageUpload = ({ label, file, setFile }) => {
       >
         <FaUpload /> Upload Image
       </label>
-      {file && (
+      {imageSrc && (
         <div className="mt-4 relative">
           <img
-            src={URL.createObjectURL(file)}
+            src={imageSrc}
             alt="Uploaded"
             className="border rounded-md w-40 h-32 object-cover"
           />
@@ -83,10 +90,30 @@ const Footer = () => {
     PatientCare: "Patient Care",
     Treatments: "Treatments",
     Diagnostic: "Diagnostic",
-    QuickLinks: "Quick Links"
+    QuickLinks: "Quick Links",
   };
 
-  // Handles changes for links within the dynamic sections (PatientCare, Treatments, etc.)
+  useEffect(() => {
+    const fetchFooter = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/footer");
+        const data = res.data?.translations?.[language];
+        if (data) {
+          setFooterLogo(data.footerLogo || null);
+          setDescription(data.description || "");
+          setContact(data.contact || { logo: null, title: "", phone: "" });
+          setSections(data.sections || sections);
+          setCopyright(data.copyright || "");
+          setSocialLinks(data.socialLinks || {});
+          setListItems(data.listItems || [{ label: "", url: "" }]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch footer data", err);
+      }
+    };
+    fetchFooter();
+  }, [language]);
+
   const handleSectionChange = (section, index, field, value) => {
     const updatedLinks = [...sections[section].links];
     updatedLinks[index][field] = value;
@@ -96,7 +123,6 @@ const Footer = () => {
     });
   };
 
-  // Add a new link to a given section
   const addSectionLink = (section) => {
     setSections({
       ...sections,
@@ -107,7 +133,6 @@ const Footer = () => {
     });
   };
 
-  // Remove a link by index from a given section
   const removeSectionLink = (section, index) => {
     const updatedLinks = sections[section].links.filter((_, i) => i !== index);
     setSections({
@@ -116,27 +141,34 @@ const Footer = () => {
     });
   };
 
-  // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Gather all data to submit or log
-    const formData = {
-      language,
-      footerLogo,
-      description,
-      contact,
-      sections,
-      copyright,
-      socialLinks,
-      listItems,
-    };
+    const formData = new FormData();
+    formData.append("language", language);
+    formData.append("description", description);
+    formData.append("copyright", copyright);
+    formData.append("socialLinks", JSON.stringify(socialLinks));
+    formData.append("sections", JSON.stringify(sections));
+    formData.append("listItems", JSON.stringify(listItems));
 
-    // For demonstration, we simply log the form data
-    console.log("Footer Data Submitted:", formData);
+    if (footerLogo instanceof File) {
+      formData.append("footerLogo", footerLogo);
+    }
+    if (contact.logo instanceof File) {
+      formData.append("contactLogo", contact.logo);
+    }
+    formData.append("contactTitle", contact.title);
+    formData.append("contactPhone", contact.phone);
 
-    // You could do other logic here like sending an API request
-  };
+    try {
+      const res = await axios.post("http://localhost:5000/api/footer", formData);
+      alert("✅ Footer Saved Successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Something went wrong while saving");
+    }
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
