@@ -28,6 +28,7 @@ import AppointmentList from "../components/Appointment/AppoinmentList/AllAppoinm
 import TodayAppointments from "../components/Appointment/AppoinmentList/TodayAppointments";
 import Header from "../components/Manage Section/Header";
 import Footer from "../components/Manage Section/Footer";
+import AdminDashboard from "../pages/Admin/Dashboard";
 
 
 
@@ -37,11 +38,19 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-   
  <Dashboard />
     ),
     errorElement: <ErrorPage />,
     children: [
+      /** Dashboard **/
+      {
+        path: "dashboard",
+        element: (
+        //   <AdminRoute>
+            <AdminDashboard/>
+        //   </AdminRoute>
+        ),
+      },
       /** Manage Doctors **/
       {
         path: "all-doctors",
