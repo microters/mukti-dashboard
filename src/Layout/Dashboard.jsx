@@ -3,6 +3,7 @@ import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "../pages/Shared/Sidebar/Sidebar";
 import TopHeader from "../pages/Shared/TopHeader/TopHeader";
 import { HiChevronLeft } from "react-icons/hi";
+import { RxCross2 } from "react-icons/rx";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -79,10 +80,10 @@ console.log(user);
         {/* Close Arrow Button Inside Sidebar (ONLY for Mobile) */}
         {isSidebarOpen && isMobile && (
           <button
-            className="absolute top-5 right-5 bg-orange-500 text-white rounded-md p-2 shadow-md transition-all"
+            className="absolute top-6 right-3 text-white rounded-md transition-all"
             onClick={() => setIsSidebarOpen(false)}
           >
-            <HiChevronLeft size={24} />
+            <RxCross2 size={24} />
           </button>
         )}
       </div>
@@ -96,12 +97,12 @@ console.log(user);
       )}
 
       {/* Right Side Content */}
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full bg-[#F9FCFE]">
         {/* Top Header */}
         <TopHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}  user={user} />
 
         {/* Main Content */}
-        <div className="p-4 hide-scrollbar overflow-y-auto flex-grow h-[calc(100vh-72px)]">
+        <div className="p-4 hide-scrollbar overflow-y-auto flex-grow h-[calc(100vh-74px)]">
           <Outlet />
         </div>
       </div>

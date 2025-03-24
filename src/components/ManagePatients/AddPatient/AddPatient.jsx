@@ -197,7 +197,7 @@ const handleChange = (e) => {
     }
 
     return (
-        <div className="bg-gray-100 min-h-screen p-6">
+        <div className="min-h-screen">
             <div className="bg-white shadow-lg rounded-lg p-6">
                 <div className="flex items-center justify-between">
                     <div>
