@@ -11,16 +11,14 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-// Example custom modal for confirm delete
+// Confirm Delete Modal
 const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, doctorId }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 className="text-xl font-bold mb-4 text-gray-700">
-          Are you sure?
-        </h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-700">Are you sure?</h2>
         <p className="text-gray-600 mb-6">
           Do you really want to delete this doctor record?
         </p>
@@ -51,7 +49,12 @@ const DoctorList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
-  // For Delete Confirmation Modal
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
+
+  // Delete Confirmation Modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState(null);
 
@@ -69,11 +72,10 @@ const DoctorList = () => {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
-        // Check if the data is nested
         const doctorsData = Array.isArray(response.data)
           ? response.data
           : response.data.doctors || [];
-  
+
         setDoctors(doctorsData);
         setFilteredDoctors(doctorsData);
       } catch (error) {
@@ -83,10 +85,13 @@ const DoctorList = () => {
         setLoading(false);
       }
     };
-  
     fetchDoctors();
   }, []);
-  
+
+  // যেকোনো ফিল্টার পরিবর্তন হলে currentPage রিসেট করে ১ এ নিয়ে আসবে
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredDoctors]);
 
   // ------------------------------
   // 2. Handle Search
@@ -168,6 +173,16 @@ const DoctorList = () => {
     navigate(`/edit-doctor/${id}`);
   };
 
+  // ------------------------------
+  // 7. Pagination Calculation
+  // ------------------------------
+  const indexOfLastDoctor = currentPage * itemsPerPage;
+  const indexOfFirstDoctor = indexOfLastDoctor - itemsPerPage;
+  const currentDoctors = filteredDoctors.slice(indexOfFirstDoctor, indexOfLastDoctor);
+
+  // ------------------------------
+  // 8. Render
+  // ------------------------------
   return (
     <div className="container mx-auto p-6">
       {/* Toastify container for notifications */}
@@ -185,7 +200,6 @@ const DoctorList = () => {
 
       {/* Top controls: Language selector + search */}
       <div className="flex justify-between items-center mb-4">
-        {/* Language selector */}
         <select
           className="p-2 border rounded-md"
           onChange={handleLanguageChange}
@@ -195,7 +209,6 @@ const DoctorList = () => {
           <option value="bn">Bangla</option>
         </select>
 
-        {/* Search input */}
         <input
           type="text"
           className="p-2 border rounded-md"
@@ -207,9 +220,8 @@ const DoctorList = () => {
 
       {/* Table */}
       {loading ? (
-        /* Show skeleton placeholders while loading */
+        // Show skeleton placeholders while loading
         <div className="mt-4">
-          {/* Example: 5 skeleton rows */}
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex gap-4 mb-2">
               <Skeleton width={600} height={25} />
@@ -233,15 +245,14 @@ const DoctorList = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredDoctors.map((doctor) => (
+              {currentDoctors.map((doctor) => (
                 <tr key={doctor.id} className="hover:bg-gray-50">
                   <td className="border px-4 py-2">{doctor.id}</td>
                   <td className="border px-4 py-2">
                     {doctor.translations[selectedLanguage]?.name || "N/A"}
                   </td>
                   <td className="border px-4 py-2">
-                    {doctor.translations[selectedLanguage]?.department ||
-                      "N/A"}
+                    {doctor.translations[selectedLanguage]?.department || "N/A"}
                   </td>
                   <td className="border px-4 py-2">{doctor.email}</td>
                   <td className="border px-4 py-2">
@@ -267,7 +278,7 @@ const DoctorList = () => {
               ))}
 
               {/* If no doctors found after filtering */}
-              {filteredDoctors.length === 0 && (
+              {currentDoctors.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"
@@ -279,6 +290,42 @@ const DoctorList = () => {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4 space-x-2">
+              {/* Previous Button */}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded-md hover:bg-gray-200 disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {/* Page Number Buttons */}
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`px-3 py-1 border rounded-md hover:bg-gray-200 ${
+                    currentPage === index + 1 ? "bg-blue-500 text-white" : ""
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border rounded-md hover:bg-gray-200 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
