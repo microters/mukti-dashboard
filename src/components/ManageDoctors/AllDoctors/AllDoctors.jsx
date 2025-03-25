@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,6 @@ import "react-loading-skeleton/dist/skeleton.css";
 // Confirm Delete Modal
 const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, doctorId }) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-lg p-6 w-96">
@@ -45,14 +44,13 @@ const DoctorList = () => {
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Delete Confirmation Modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -61,7 +59,7 @@ const DoctorList = () => {
   const navigate = useNavigate();
 
   // ------------------------------
-  // 1. Fetch Doctors
+  // 1. Fetch All Doctors (No Pagination from Backend)
   // ------------------------------
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -72,12 +70,13 @@ const DoctorList = () => {
             "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
           },
         });
+        // Assuming backend returns all doctors as an array directly
         const doctorsData = Array.isArray(response.data)
           ? response.data
-          : response.data.doctors || [];
-
+          : [];
         setDoctors(doctorsData);
         setFilteredDoctors(doctorsData);
+        setTotalPages(Math.ceil(doctorsData.length / itemsPerPage));
       } catch (error) {
         console.error("Error fetching doctors:", error);
         toast.error("Failed to fetch doctor list");
@@ -87,11 +86,6 @@ const DoctorList = () => {
     };
     fetchDoctors();
   }, []);
-
-  // যেকোনো ফিল্টার পরিবর্তন হলে currentPage রিসেট করে ১ এ নিয়ে আসবে
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredDoctors]);
 
   // ------------------------------
   // 2. Handle Search
@@ -103,7 +97,7 @@ const DoctorList = () => {
   };
 
   // ------------------------------
-  // 3. Language Change
+  // 3. Handle Language Change
   // ------------------------------
   const handleLanguageChange = (e) => {
     const lang = e.target.value;
@@ -112,16 +106,15 @@ const DoctorList = () => {
   };
 
   // ------------------------------
-  // 4. Filter
+  // 4. Filter Doctors on Frontend
   // ------------------------------
   const filterDoctors = (term, language) => {
     const filtered = doctors.filter((doctor) => {
       const name =
-        doctor.translations[language]?.name?.toLowerCase() || "";
+        doctor.translations?.[language]?.name?.toLowerCase() || "";
       const department =
-        doctor.translations[language]?.department?.toLowerCase() || "";
+        doctor.translations?.[language]?.department?.toLowerCase() || "";
       const email = doctor.email?.toLowerCase() || "";
-
       return (
         name.includes(term) ||
         department.includes(term) ||
@@ -129,6 +122,8 @@ const DoctorList = () => {
       );
     });
     setFilteredDoctors(filtered);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1);
   };
 
   // ------------------------------
@@ -145,20 +140,16 @@ const DoctorList = () => {
   };
 
   const handleConfirmDelete = async (id) => {
-    // close modal first
     setDeleteModalOpen(false);
-
     try {
       await axios.delete(`https://api.muktihospital.com/api/doctor/delete/${id}`, {
         headers: {
-          "x-api-key":
-            "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+          "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
         },
       });
-
-      setDoctors((prev) => prev.filter((doctor) => doctor.id !== id));
-      setFilteredDoctors((prev) => prev.filter((doctor) => doctor.id !== id));
-
+      const updatedDoctors = doctors.filter((doctor) => doctor.id !== id);
+      setDoctors(updatedDoctors);
+      filterDoctors(searchTerm, selectedLanguage);
       toast.success("Doctor deleted successfully!");
     } catch (error) {
       console.error("Error deleting doctor:", error);
@@ -174,30 +165,36 @@ const DoctorList = () => {
   };
 
   // ------------------------------
-  // 7. Pagination Calculation
+  // 7. Frontend Pagination Calculation
   // ------------------------------
   const indexOfLastDoctor = currentPage * itemsPerPage;
   const indexOfFirstDoctor = indexOfLastDoctor - itemsPerPage;
   const currentDoctors = filteredDoctors.slice(indexOfFirstDoctor, indexOfLastDoctor);
 
   // ------------------------------
-  // 8. Render
+  // 8. Pagination Controls Handlers
+  // ------------------------------
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
+
+  // ------------------------------
+  // 9. Render
   // ------------------------------
   return (
     <div className="container mx-auto p-6">
-      {/* Toastify container for notifications */}
       <ToastContainer position="top-right" />
-
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         isOpen={deleteModalOpen}
         onClose={closeDeleteModal}
         onConfirm={handleConfirmDelete}
         doctorId={doctorToDelete}
       />
-
       <h2 className="text-2xl font-bold mb-4 text-gray-700">Doctor List</h2>
-
       {/* Top controls: Language selector + search */}
       <div className="flex justify-between items-center mb-4">
         <select
@@ -208,7 +205,6 @@ const DoctorList = () => {
           <option value="en">English</option>
           <option value="bn">Bangla</option>
         </select>
-
         <input
           type="text"
           className="p-2 border rounded-md"
@@ -217,10 +213,7 @@ const DoctorList = () => {
           onChange={handleSearch}
         />
       </div>
-
-      {/* Table */}
       {loading ? (
-        // Show skeleton placeholders while loading
         <div className="mt-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex gap-4 mb-2">
@@ -256,7 +249,9 @@ const DoctorList = () => {
                   </td>
                   <td className="border px-4 py-2">{doctor.email}</td>
                   <td className="border px-4 py-2">
-                    {Object.keys(doctor.translations).join(", ")}
+                    {doctor.translations
+                      ? Object.keys(doctor.translations).join(", ")
+                      : "N/A"}
                   </td>
                   <td className="border px-4 py-2 flex gap-3 items-center">
                     <button
@@ -276,34 +271,25 @@ const DoctorList = () => {
                   </td>
                 </tr>
               ))}
-
-              {/* If no doctors found after filtering */}
               {currentDoctors.length === 0 && (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="border px-4 py-4 text-center text-gray-500"
-                  >
+                  <td colSpan="6" className="border px-4 py-4 text-center text-gray-500">
                     No doctors found.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-
           {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-4 space-x-2">
-              {/* Previous Button */}
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={handlePrevPage}
                 disabled={currentPage === 1}
                 className="px-3 py-1 border rounded-md hover:bg-gray-200 disabled:opacity-50"
               >
                 Previous
               </button>
-
-              {/* Page Number Buttons */}
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index + 1}
@@ -315,10 +301,8 @@ const DoctorList = () => {
                   {index + 1}
                 </button>
               ))}
-
-              {/* Next Button */}
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={handleNextPage}
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 border rounded-md hover:bg-gray-200 disabled:opacity-50"
               >

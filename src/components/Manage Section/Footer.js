@@ -24,7 +24,7 @@ const ImageUpload = ({ label, file, setFile }) => {
 
   const imageSrc =
     typeof file === "string"
-      ? `http://localhost:5000${file.startsWith("/") ? file : `/${file}`}`
+      ? `https://api.muktihospital.com${file.startsWith("/") ? file : `/${file}`}`
       : file
       ? URL.createObjectURL(file)
       : null;
@@ -71,10 +71,10 @@ const Footer = () => {
   const [description, setDescription] = useState("");
   const [contact, setContact] = useState({ logo: null, title: "", phone: "" });
   const [sections, setSections] = useState({
-    PatientCare: { title: "", links: [{ label: "", url: "" }] },
-    Treatments: { title: "", links: [{ label: "", url: "" }] },
-    Diagnostic: { title: "", links: [{ label: "", url: "" }] },
     QuickLinks: { title: "", links: [{ label: "", url: "" }] },
+    Treatments: { title: "", links: [{ label: "", url: "" }] },
+    PatientCare: { title: "", links: [{ label: "", url: "" }] },
+    Diagnostic: { title: "", links: [{ label: "", url: "" }] },
   });
   const [copyright, setCopyright] = useState("");
   const [socialLinks, setSocialLinks] = useState({
@@ -86,17 +86,21 @@ const Footer = () => {
   });
   const [listItems, setListItems] = useState([{ label: "", url: "" }]);
 
+  // Define section labels as required.
   const SECTION_LABELS = {
-    PatientCare: "Patient Care",
-    Treatments: "Treatments",
-    Diagnostic: "Diagnostic",
     QuickLinks: "Quick Links",
+    Treatments: "Treatments",
+    PatientCare: "Advanced Treatments",
+    Diagnostic: "Diagnostic",
   };
+
+  // Define a fixed order for the sections.
+  const sectionOrder = ["QuickLinks", "Treatments", "PatientCare", "Diagnostic"];
 
   useEffect(() => {
     const fetchFooter = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/footer");
+        const res = await axios.get("https://api.muktihospital.com/api/footer");
         const data = res.data?.translations?.[language];
         if (data) {
           setFooterLogo(data.footerLogo || null);
@@ -162,13 +166,13 @@ const Footer = () => {
     formData.append("contactPhone", contact.phone);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/footer", formData);
+      const res = await axios.post("https://api.muktihospital.com/api/footer", formData);
       alert("✅ Footer Saved Successfully!");
     } catch (err) {
       console.error(err);
       alert("❌ Something went wrong while saving");
     }
-  }
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -188,260 +192,260 @@ const Footer = () => {
           </select>
         </label>
       </div>
-  <form onSubmit={handleSubmit}>
-      {/* Footer Logo */}
-      <fieldset className="border p-6 rounded-md bg-white text-black">
-        <legend className="text-lg font-semibold">Footer Logo</legend>
-        <ImageUpload
-          label="Upload Footer Logo"
-          file={footerLogo}
-          setFile={setFooterLogo}
-        />
-      </fieldset>
+      <form onSubmit={handleSubmit}>
+        {/* Footer Logo */}
+        <fieldset className="border p-6 rounded-md bg-white text-black">
+          <legend className="text-lg font-semibold">Footer Logo</legend>
+          <ImageUpload
+            label="Upload Footer Logo"
+            file={footerLogo}
+            setFile={setFooterLogo}
+          />
+        </fieldset>
 
-      {/* Footer Description */}
-      <fieldset className="border p-6 rounded-md bg-white text-black mt-6">
-        <legend className="text-lg font-semibold">Footer Description</legend>
-        <textarea
-          className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-          rows="3"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter footer description..."
-        />
-      </fieldset>
+        {/* Footer Description */}
+        <fieldset className="border p-6 rounded-md bg-white text-black mt-6">
+          <legend className="text-lg font-semibold">Footer Description</legend>
+          <textarea
+            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            rows="3"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter footer description..."
+          />
+        </fieldset>
 
-      {/* Contact Section */}
-      <fieldset className="border p-6 rounded-md bg-white text-black mt-6">
-        <legend className="text-lg font-semibold">Contact</legend>
-        <ImageUpload
-          label="Upload Contact Logo"
-          file={contact.logo}
-          setFile={(file) => setContact({ ...contact, logo: file })}
-        />
-        <input
-          type="text"
-          className="w-full px-4 py-2 border rounded-md mt-2 focus:ring-2 focus:ring-blue-500"
-          value={contact.title}
-          onChange={(e) => setContact({ ...contact, title: e.target.value })}
-          placeholder="Enter contact title"
-        />
-        <input
-          type="tel"
-          className="w-full px-4 py-2 border rounded-md mt-2 focus:ring-2 focus:ring-blue-500"
-          value={contact.phone}
-          onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-          placeholder="Enter phone number"
-        />
-        {contact.phone && (
-          <a href={`tel:${contact.phone}`} className="block mt-2 text-blue-400">
-            {contact.phone}
-          </a>
-        )}
-      </fieldset>
+        {/* Contact Section */}
+        <fieldset className="border p-6 rounded-md bg-white text-black mt-6">
+          <legend className="text-lg font-semibold">Contact</legend>
+          <ImageUpload
+            label="Upload Contact Logo"
+            file={contact.logo}
+            setFile={(file) => setContact({ ...contact, logo: file })}
+          />
+          <input
+            type="text"
+            className="w-full px-4 py-2 border rounded-md mt-2 focus:ring-2 focus:ring-blue-500"
+            value={contact.title}
+            onChange={(e) => setContact({ ...contact, title: e.target.value })}
+            placeholder="Enter contact title"
+          />
+          <input
+            type="tel"
+            className="w-full px-4 py-2 border rounded-md mt-2 focus:ring-2 focus:ring-blue-500"
+            value={contact.phone}
+            onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+            placeholder="Enter phone number"
+          />
+          {contact.phone && (
+            <a href={`tel:${contact.phone}`} className="block mt-2 text-blue-400">
+              {contact.phone}
+            </a>
+          )}
+        </fieldset>
 
-      {/* Dynamic Sections */}
-      <div className="space-y-6 mt-6">
-        {Object.keys(sections).map((section) => (
-          <fieldset
-            key={section}
-            className="border p-6 rounded-md bg-white text-black"
-          >
-            <legend className="text-lg font-semibold">
-              {SECTION_LABELS[section]}
-            </legend>
+        {/* Dynamic Sections in Fixed Order */}
+        <div className="space-y-6 mt-6">
+          {sectionOrder.map((section) => (
+            <fieldset
+              key={section}
+              className="border p-6 rounded-md bg-white text-black"
+            >
+              <legend className="text-lg font-semibold">
+                {SECTION_LABELS[section]}
+              </legend>
 
-            {/* Section Title */}
+              {/* Section Title */}
+              <input
+                type="text"
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                value={sections[section].title}
+                onChange={(e) =>
+                  setSections({
+                    ...sections,
+                    [section]: {
+                      ...sections[section],
+                      title: e.target.value,
+                    },
+                  })
+                }
+                placeholder="Enter section title"
+              />
+
+              {/* Links within this section */}
+              {sections[section].links.map((link, index) => (
+                <div key={index} className="mt-2 flex items-center gap-2">
+                  <input
+                    type="text"
+                    className="p-2 border rounded-md w-1/2"
+                    value={link.label}
+                    onChange={(e) =>
+                      handleSectionChange(section, index, "label", e.target.value)
+                    }
+                    placeholder="Link Label"
+                  />
+                  <input
+                    type="text"
+                    className="p-2 border rounded-md w-1/2"
+                    value={link.url}
+                    onChange={(e) =>
+                      handleSectionChange(section, index, "url", e.target.value)
+                    }
+                    placeholder="URL"
+                  />
+                  {link.url && (
+                    <a
+                      href={link.url}
+                      className="text-blue-400"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaLink />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeSectionLink(section, index)}
+                    className="text-red-500"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => addSectionLink(section)}
+                className="mt-3 text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                <FaPlus /> Add More Links
+              </button>
+            </fieldset>
+          ))}
+        </div>
+
+        {/* Copyright & Additional Sections */}
+        <div className="space-y-6 mt-6">
+          <fieldset className="border p-6 rounded-md bg-white text-black">
+            <legend className="text-lg font-semibold">Copyright</legend>
             <input
               type="text"
-              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-              value={sections[section].title}
-              onChange={(e) =>
-                setSections({
-                  ...sections,
-                  [section]: {
-                    ...sections[section],
-                    title: e.target.value,
-                  },
-                })
-              }
-              placeholder="Enter section title"
+              className="w-full p-2 border rounded-md"
+              value={copyright}
+              onChange={(e) => setCopyright(e.target.value)}
+              placeholder="Enter copyright text"
             />
+          </fieldset>
 
-            {/* Links within this section */}
-            {sections[section].links.map((link, index) => (
-              <div key={index} className="mt-2 flex items-center gap-2">
+          {/* Social Links */}
+          <fieldset className="border p-6 rounded-md bg-white text-black">
+            <legend className="text-lg font-semibold">Social Links</legend>
+            {Object.entries(socialLinks).map(([platform, url]) => (
+              <div key={platform} className="flex items-center gap-2 mt-2">
+                {platform === "facebook" && (
+                  <FaFacebook className="text-blue-600" size={24} />
+                )}
+                {platform === "twitter" && (
+                  <FaTwitter className="text-blue-400" size={24} />
+                )}
+                {platform === "instagram" && (
+                  <FaInstagram className="text-pink-500" size={24} />
+                )}
+                {platform === "linkedin" && (
+                  <FaLinkedin className="text-blue-700" size={24} />
+                )}
+                {platform === "youtube" && (
+                  <FaYoutube className="text-red-600" size={24} />
+                )}
                 <input
                   type="text"
-                  className="p-2 border rounded-md w-1/2"
-                  value={link.label}
+                  className="p-2 border rounded-md w-full"
+                  value={url}
                   onChange={(e) =>
-                    handleSectionChange(section, index, "label", e.target.value)
+                    setSocialLinks({ ...socialLinks, [platform]: e.target.value })
                   }
-                  placeholder="Link Label"
+                  placeholder={`Enter ${platform} URL`}
                 />
-                <input
-                  type="text"
-                  className="p-2 border rounded-md w-1/2"
-                  value={link.url}
-                  onChange={(e) =>
-                    handleSectionChange(section, index, "url", e.target.value)
-                  }
-                  placeholder="URL"
-                />
-                {link.url && (
+                {url && (
                   <a
-                    href={link.url}
-                    className="text-blue-400"
+                    href={url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="text-blue-500"
+                  >
+                    <FaLink />
+                  </a>
+                )}
+              </div>
+            ))}
+          </fieldset>
+
+          {/* Copyright List Items */}
+          <fieldset className="border p-6 rounded-md bg-white text-black">
+            <legend className="text-lg font-semibold">Copyright List Items</legend>
+            {listItems.map((item, index) => (
+              <div key={index} className="flex items-center gap-2 mt-2">
+                <input
+                  type="text"
+                  className="p-2 border rounded-md w-1/2"
+                  value={item.label}
+                  onChange={(e) => {
+                    const updatedItems = [...listItems];
+                    updatedItems[index].label = e.target.value;
+                    setListItems(updatedItems);
+                  }}
+                  placeholder="Item label"
+                />
+                <input
+                  type="text"
+                  className="p-2 border rounded-md w-1/2"
+                  value={item.url}
+                  onChange={(e) => {
+                    const updatedItems = [...listItems];
+                    updatedItems[index].url = e.target.value;
+                    setListItems(updatedItems);
+                  }}
+                  placeholder="URL"
+                />
+                {item.url && (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500"
                   >
                     <FaLink />
                   </a>
                 )}
                 <button
                   type="button"
-                  onClick={() => removeSectionLink(section, index)}
+                  onClick={() =>
+                    setListItems(listItems.filter((_, i) => i !== index))
+                  }
                   className="text-red-500"
                 >
                   <FaTrash />
                 </button>
               </div>
             ))}
-
             <button
               type="button"
-              onClick={() => addSectionLink(section)}
-              className="mt-3 text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              onClick={() => setListItems([...listItems, { label: "", url: "" }])}
+              className="mt-3 text-blue-600 flex items-center gap-1"
             >
-              <FaPlus /> Add More Links
+              <FaPlus /> Add List Item
             </button>
           </fieldset>
-        ))}
-      </div>
+        </div>
 
-      {/* Copyright & Additional Sections */}
-      <div className="space-y-6 mt-6">
-        <fieldset className="border p-6 rounded-md bg-white text-black">
-          <legend className="text-lg font-semibold">Copyright</legend>
-          <input
-            type="text"
-            className="w-full p-2 border rounded-md"
-            value={copyright}
-            onChange={(e) => setCopyright(e.target.value)}
-            placeholder="Enter copyright text"
-          />
-        </fieldset>
-
-        {/* Social Links */}
-        <fieldset className="border p-6 rounded-md bg-white text-black">
-          <legend className="text-lg font-semibold">Social Links</legend>
-          {Object.entries(socialLinks).map(([platform, url]) => (
-            <div key={platform} className="flex items-center gap-2 mt-2">
-              {platform === "facebook" && (
-                <FaFacebook className="text-blue-600" size={24} />
-              )}
-              {platform === "twitter" && (
-                <FaTwitter className="text-blue-400" size={24} />
-              )}
-              {platform === "instagram" && (
-                <FaInstagram className="text-pink-500" size={24} />
-              )}
-              {platform === "linkedin" && (
-                <FaLinkedin className="text-blue-700" size={24} />
-              )}
-              {platform === "youtube" && (
-                <FaYoutube className="text-red-600" size={24} />
-              )}
-              <input
-                type="text"
-                className="p-2 border rounded-md w-full"
-                value={url}
-                onChange={(e) =>
-                  setSocialLinks({ ...socialLinks, [platform]: e.target.value })
-                }
-                placeholder={`Enter ${platform} URL`}
-              />
-              {url && (
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500"
-                >
-                  <FaLink />
-                </a>
-              )}
-            </div>
-          ))}
-        </fieldset>
-
-        {/* Copyright List Items */}
-        <fieldset className="border p-6 rounded-md bg-white text-black">
-          <legend className="text-lg font-semibold">Copyright List Items</legend>
-          {listItems.map((item, index) => (
-            <div key={index} className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                className="p-2 border rounded-md w-1/2"
-                value={item.label}
-                onChange={(e) => {
-                  const updatedItems = [...listItems];
-                  updatedItems[index].label = e.target.value;
-                  setListItems(updatedItems);
-                }}
-                placeholder="Item label"
-              />
-              <input
-                type="text"
-                className="p-2 border rounded-md w-1/2"
-                value={item.url}
-                onChange={(e) => {
-                  const updatedItems = [...listItems];
-                  updatedItems[index].url = e.target.value;
-                  setListItems(updatedItems);
-                }}
-                placeholder="URL"
-              />
-              {item.url && (
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500"
-                >
-                  <FaLink />
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() =>
-                  setListItems(listItems.filter((_, i) => i !== index))
-                }
-                className="text-red-500"
-              >
-                <FaTrash />
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => setListItems([...listItems, { label: "", url: "" }])}
-            className="mt-3 text-blue-600 flex items-center gap-1"
-          >
-            <FaPlus /> Add List Item
-          </button>
-        </fieldset>
-      </div>
-
-      {/* Save Changes Button */}
-      <button
-        type="submit"
-        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-md shadow-lg hover:bg-blue-700 transition duration-300"
-      >
-        Save Changes
-      </button>
-    </form>
+        {/* Save Changes Button */}
+        <button
+          type="submit"
+          className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-md shadow-lg hover:bg-blue-700 transition duration-300"
+        >
+          Save Changes
+        </button>
+      </form>
     </div>
   );
 };

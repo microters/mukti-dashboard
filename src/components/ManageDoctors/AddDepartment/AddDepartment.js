@@ -112,7 +112,7 @@ const AddDepartment = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/department",
+        "https://api.muktihospital.com/api/department",
         formData,
         {
           headers: {

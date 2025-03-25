@@ -137,7 +137,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           <button className="flex items-center gap-3 p-2 rounded-md transition-all" onClick={() => setDropdownOpen(!dropdownOpen)}>
             {user && user.profilePhoto ? (
         <img 
-        src={`http://localhost:5000${user.profilePhoto}`} 
+        src={`https://api.muktihospital.com${user.profilePhoto}`} 
         alt="User Profile" 
         className="w-8 h-8 rounded-full" 
       />
