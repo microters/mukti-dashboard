@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-console.log(user);
+  console.log(user);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);

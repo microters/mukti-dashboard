@@ -39,7 +39,7 @@ const AddBlog = () => {
 
   // Validation constants
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
   const MAX_CONTENT_LENGTH = 100000; // 100,000 characters
 
   // For optional chunked uploading (1MB chunks). If you don't need chunking, remove this.
@@ -152,8 +152,8 @@ const AddBlog = () => {
 
       // Check file type
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        toast.error("Invalid file type. Allowed types: JPEG, PNG, GIF, WEBP");
-        e.target.value = null; // clear the file input
+        toast.error("Invalid file type. Allowed types: JPEG, PNG, GIF");
+        e.target.value = null; // Clear the file input
         return;
       }
 

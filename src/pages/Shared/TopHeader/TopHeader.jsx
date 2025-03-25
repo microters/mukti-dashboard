@@ -87,8 +87,22 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaBell, FaHome, FaSearch, FaUserCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
-import { HiChevronLeft, HiChevronRight, HiChevronDown, HiChevronUp } from "react-icons/hi";
+import {
+  FaBell,
+  FaHome,
+  FaSearch,
+  FaUserCircle,
+  FaCog,
+  FaSignOutAlt,
+} from "react-icons/fa";
+import {
+  HiChevronLeft,
+  HiChevronRight,
+  HiChevronDown,
+  HiChevronUp,
+} from "react-icons/hi";
+import { HiOutlineMenuAlt2 } from "react-icons/hi";
+import { IoSearchOutline } from "react-icons/io5";
 import logo from "../../../assets/logo/MH-icon.png";
 
 const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
@@ -103,30 +117,39 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
   }, []);
 
   return (
-    <div className="bg-white text-gray-800 px-6 py-4 flex justify-between items-center shadow-md relative">
+    <div className="bg-white text-gray-800 px-5 lg:px-10 py-4 flex justify-between items-center shadow relative">
       <div className="flex items-center gap-3">
         {isMobile && (
           <button
-            className="text-white transition-all p-2 bg-orange-500 rounded-md"
+            className="text-black transition-all "
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
-            {isSidebarOpen ? <HiChevronLeft size={24} /> : <HiChevronRight size={24} />}
+            {isSidebarOpen ? (
+              <div><HiOutlineMenuAlt2 size={24} /></div>
+            ) : (
+              <div><HiOutlineMenuAlt2 size={24} /></div>
+            )}
           </button>
         )}
         <div className="relative w-72 md:flex hidden">
           <input
             type="text"
             placeholder="Search..."
-            className="w-full bg-gray-100 text-gray-800 p-2 pl-10 rounded-md outline-none focus:ring focus:ring-gray-400"
+            className="w-full py-2 px-6 pl-9 border border-M-text-color/20 rounded-md ring-0 focus:ring-1 focus:ring-M-primary-color outline-none duration-300 font-jost text-base"
           />
-          <FaSearch className="absolute left-3 top-3 text-gray-600" />
+          <IoSearchOutline  className="absolute left-3 top-[14px] text-M-text-color" />
         </div>
       </div>
 
       <div className="flex items-center gap-3 lg:gap-6">
-        <Link to="/notifications" className="relative text-gray-600 hover:text-gray-800">
+        <Link
+          to="/notifications"
+          className="relative text-gray-600 hover:text-gray-800"
+        >
           <FaBell size={20} />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white w-4 h-4 flex items-center justify-center rounded-full">3</span>
+          <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white w-4 h-4 flex items-center justify-center rounded-full">
+            3
+          </span>
         </Link>
 
         <Link to="/" className="text-gray-600 hover:text-gray-800">
@@ -134,7 +157,10 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
         </Link>
 
         <div className="relative">
-          <button className="flex items-center gap-3 p-2 rounded-md transition-all" onClick={() => setDropdownOpen(!dropdownOpen)}>
+          <button
+            className="flex items-center gap-3 p-2 rounded-md transition-all font-jost "
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+          >
             {user && user.profilePhoto ? (
         <img 
         src={`https://api.muktihospital.com${user.profilePhoto}`} 
@@ -145,19 +171,32 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
             ) : (
               <FaUserCircle size={24} />
             )}
-            <span className="text-sm">{user ? user.name : "Loading..."}</span>
-            {dropdownOpen ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
+            <span className="text-sm text-left capitalize font-medium truncate text-ellipsis w-16">{user ? user.name : "Loading..."}</span>
+            {dropdownOpen ? (
+              <HiChevronUp size={18} />
+            ) : (
+              <HiChevronDown size={18} />
+            )}
           </button>
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-[100%] bg-gray-100 rounded-md shadow-lg overflow-hidden z-50">
-              <Link to="/profile" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-200 transition-all">
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-200 transition-all"
+              >
                 <FaUserCircle /> Profile
               </Link>
-              <Link to="/settings" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-200 transition-all">
+              <Link
+                to="/settings"
+                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-200 transition-all"
+              >
                 <FaCog /> Settings
               </Link>
-              <button onClick={() => alert("Logging out...")} className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:bg-red-100 hover:text-red-600 transition-all">
+              <button
+                onClick={() => alert("Logging out...")}
+                className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:bg-red-100 hover:text-red-600 transition-all"
+              >
                 <FaSignOutAlt /> Logout
               </button>
             </div>
