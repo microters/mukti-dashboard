@@ -162,10 +162,10 @@ const AddDepartment = () => {
         </div>
 
         {/* Department ফর্ম */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
           {/* Department Name */}
           <div className="mb-4">
-            <label className="block mb-1 font-medium">Department Name</label>
+            <label className="block mb-1 font-inter font-medium text-sm">Department Name</label>
             {isSubmitting ? (
               <Skeleton height={35} />
             ) : (
@@ -173,7 +173,7 @@ const AddDepartment = () => {
                 type="text"
                 name="title"
                 placeholder="Enter Department Name"
-                className="border p-2 rounded w-full"
+                className="border border-M-text-color font-inter w-full outline-none ring-0 py-2 px-5 rounded-md"
                 value={departmentData.translations[selectedLanguage].title}
                 onChange={handleChange}
               />
@@ -194,7 +194,7 @@ const AddDepartment = () => {
           </div>
 
           {/* Department Description */}
-          <div className="mb-4">
+          <div className="mb-4 col-span-2">
             <label className="block mb-1 font-medium">Department Description</label>
             {isSubmitting ? (
               <Skeleton height={35} />

@@ -1,34 +1,90 @@
-@import url("https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 body {
-  @apply box-border m-0;
+  @apply box-border m-0 font-inter;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  @apply font-jost font-bold !leading-[1.4];
+  @apply font-inter font-bold !leading-[1.4];
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
 .label {
-  @apply block text-sm font-medium text-gray-700;
+  @apply font-medium text-sm text-M-text-color mb-2 block;
 }
 
 .input-field {
-  @apply mt-2 p-2 w-full border rounded-md;
+  @apply py-2 px-3 w-full border rounded-md outline-none ring-0 focus:outline-none focus:ring-0 shadow-none font-normal text-sm text-M-text-color;
 }
 
 /* Scrollbar */
 .hide-scrollbar {
   scrollbar-width: none;
 }
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+
+
+/* React Calender */
+.react-calendar {
+  @apply !font-inter !border-none rounded-md p-3 !shadow-none !max-w-full !w-full
+}
+
+.react-calendar__month-view__days__day--weekend {
+  @apply !text-black;
+}
+
+.react-calendar__tile--active:enabled:hover, .react-calendar__tile--active:enabled:focus,
+.react-calendar__tile--active,
+.react-calendar__tile--now {
+  @apply !text-M-secondary-color rounded-full !bg-white !font-semibold
+}
+
+
+.react-calendar button {
+  @apply !rounded-full
+}
+
+abbr:where([title]) {
+  text-decoration: none !important;
+}
+
+.react-calendar__tile:disabled {
+  @apply !text-M-text-color !bg-white !cursor-not-allowed
+}
+
+
+/* Apex Chart */
+.apexcharts-toolbar {
+  @apply !hidden;
+}
+
+.apex-charts .apexcharts-bar-series path, .apex-charts .apexcharts-heatmap-series rect, .apex-charts .apexcharts-pie-series path, .apex-charts .apexcharts-treemap rect {
+  stroke: #fafdff;
+}
+
+.apexcharts-yaxis-label,
+.apexcharts-xaxis-label {
+  fill: #9ba6b7;
+  font-weight: 500;
+}
+
+.apexcharts-legend-series {
+  @apply font-inter text-sm
+}
+
+.apexcharts-ycrosshairs {
+  @apply !border !border-dashed !border-M-text-color/50
 }
