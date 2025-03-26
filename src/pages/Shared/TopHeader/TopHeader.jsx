@@ -152,7 +152,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           </span>
         </Link>
 
-        <Link to="/" className="text-gray-600 hover:text-gray-800">
+        <Link to="https://mukti-frontend.vercel.app/" className="text-gray-600 hover:text-gray-800">
           <FaHome size={20} />
         </Link>
 

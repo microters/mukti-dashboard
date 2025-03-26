@@ -114,113 +114,124 @@ const EditDoctor = () => {
     const fetchDoctor = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-        `https://api.muktihospital.com/api/doctor/${id}?lang=${selectedLanguage}`,
-          {
+  
+        // দুইটা ভাষার ডেটা একসাথে আনো
+        const [resEn, resBn] = await Promise.all([
+          axios.get(`https://api.muktihospital.com/api/doctor/${id}?lang=en`, {
             headers: {
-              "x-api-key":
-                "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+              "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
             },
-          }
-        );
-
-        const doctor = response.data;
-        console.log("Fetched:", doctor);
-        const generatedSlug = doctor.slug || slugify(doctor.translations?.en?.name || "doctor", { lower: true, strict: true });
-        // fill up the multi-language fields for the selected language
+          }),
+          axios.get(`https://api.muktihospital.com/api/doctor/${id}?lang=bn`, {
+            headers: {
+              "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+            },
+          }),
+        ]);
+  
+        const doctorEn = resEn.data;
+        const doctorBn = resBn.data;
+  
+        const generatedSlug =
+          doctorEn.slug ||
+          slugify(doctorEn.translations?.en?.name || "doctor", {
+            lower: true,
+            strict: true,
+          });
+  
         setDoctorData((prev) => ({
           ...prev,
-
           metaTitle: {
-            ...prev.metaTitle,
-            [selectedLanguage]: doctor.translations?.metaTitle || "",
+            en: doctorEn.translations?.metaTitle || "",
+            bn: doctorBn.translations?.metaTitle || "",
           },
           metaDescription: {
-            ...prev.metaDescription,
-            [selectedLanguage]: doctor.translations?.metaDescription || "",
+            en: doctorEn.translations?.metaDescription || "",
+            bn: doctorBn.translations?.metaDescription || "",
           },
           name: {
-            ...prev.name,
-            [selectedLanguage]: doctor.translations?.name || "",
+            en: doctorEn.translations?.name || "",
+            bn: doctorBn.translations?.name || "",
           },
-          email: doctor.email || "",
+          email: doctorEn.email || "",
           slug: generatedSlug,
           contactNumber: {
-            ...prev.contactNumber,
-            [selectedLanguage]: doctor.translations?.contactNumber || "",
+            en: doctorEn.translations?.contactNumber || "",
+            bn: doctorBn.translations?.contactNumber || "",
           },
           contactNumberSerial: {
-            ...prev.contactNumberSerial,
-            [selectedLanguage]: doctor.translations?.contactNumberSerial || "",
+            en: doctorEn.translations?.contactNumberSerial || "",
+            bn: doctorBn.translations?.contactNumberSerial || "",
           },
           designation: {
-            ...prev.designation,
-            [selectedLanguage]: doctor.translations?.designation || "",
+            en: doctorEn.translations?.designation || "",
+            bn: doctorBn.translations?.designation || "",
           },
           gender: {
-            ...prev.gender,
-            [selectedLanguage]: doctor.translations?.gender || "",
+            en: doctorEn.translations?.gender || "",
+            bn: doctorBn.translations?.gender || "",
           },
           department: {
-            ...prev.department,
-            [selectedLanguage]: doctor.translations?.department || "",
+            en: doctorEn.translations?.department || "",
+            bn: doctorBn.translations?.department || "",
           },
           shortBio: {
-            ...prev.shortBio,
-            [selectedLanguage]: doctor.translations?.shortBio || "",
+            en: doctorEn.translations?.shortBio || "",
+            bn: doctorBn.translations?.shortBio || "",
           },
           academicQualification: {
-            ...prev.academicQualification,
-            [selectedLanguage]:
-              doctor.translations?.academicQualification || "",
+            en: doctorEn.translations?.academicQualification || "",
+            bn: doctorBn.translations?.academicQualification || "",
           },
           yearsOfExperience: {
-            ...prev.yearsOfExperience,
-            [selectedLanguage]: doctor.translations?.yearsOfExperience || "",
+            en: doctorEn.translations?.yearsOfExperience || "",
+            bn: doctorBn.translations?.yearsOfExperience || "",
           },
           appointmentFee: {
-            ...prev.appointmentFee,
-            [selectedLanguage]: doctor.translations?.appointmentFee || "",
+            en: doctorEn.translations?.appointmentFee || "",
+            bn: doctorBn.translations?.appointmentFee || "",
           },
           followUpFee: {
-            ...prev.followUpFee,
-            [selectedLanguage]: doctor.translations?.followUpFee || "",
+            en: doctorEn.translations?.followUpFee || "",
+            bn: doctorBn.translations?.followUpFee || "",
           },
           patientAttended: {
-            ...prev.patientAttended,
-            [selectedLanguage]: doctor.translations?.patientAttended || "",
+            en: doctorEn.translations?.patientAttended || "",
+            bn: doctorBn.translations?.patientAttended || "",
           },
           avgConsultationTime: {
-            ...prev.avgConsultationTime,
-            [selectedLanguage]: doctor.translations?.avgConsultationTime || "",
+            en: doctorEn.translations?.avgConsultationTime || "",
+            bn: doctorBn.translations?.avgConsultationTime || "",
           },
-
-          profilePhoto: doctor.icon || prev.icon,
+          profilePhoto: doctorEn.icon || prev.icon,
         }));
-
-        // also update dynamic arrays
+  
+        // Dynamic Arrays
         setMemberships(
-          doctor.memberships?.map((m) => ({ name: m })) || [{ name: "" }]
+          doctorEn.memberships?.map((m) => ({ name: m })) || [{ name: "" }]
         );
-        setAwards(doctor.awards?.map((a) => ({ title: a })) || [{ title: "" }]);
+        setAwards(
+          doctorEn.awards?.map((a) => ({ title: a })) || [{ title: "" }]
+        );
         setTreatments(
-          doctor.treatments?.map((t) => ({ name: t })) || [{ name: "" }]
+          doctorEn.treatments?.map((t) => ({ name: t })) || [{ name: "" }]
         );
         setConditions(
-          doctor.conditions?.map((c) => ({ name: c })) || [{ name: "" }]
+          doctorEn.conditions?.map((c) => ({ name: c })) || [{ name: "" }]
         );
-        setSchedules(doctor.schedule || []);
-        setFaqs(doctor.faqs || [{ question: "", answer: "" }]);
+        setSchedules(doctorEn.schedule || []);
+        setFaqs(doctorEn.faqs || [{ question: "", answer: "" }]);
       } catch (error) {
-        console.error("Error fetching doctor data:", error);
+        console.error("❌ Error fetching doctor data:", error);
         toast.error("Failed to fetch doctor data");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchDoctor();
-  }, [id, selectedLanguage]);
+  }, [id]);
+  
 
   // --------------------------------------------------
   // 2. Handle language switch
