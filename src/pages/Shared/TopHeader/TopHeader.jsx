@@ -168,9 +168,13 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           <MdOutlineDarkMode size={22}/>
         </Link>
 
-        <div className="relative h-[73px] flex bg-[#fafafd] border-x-[#eef2f7]">
+        <Link to="https://mukti-frontend.vercel.app/" className="text-gray-600 hover:text-gray-800">
+          <FaHome size={20} />
+        </Link>
+
+        <div className="relative">
           <button
-            className="flex items-center gap-3 transition-all font-inter px-3 py-0 border-x border-[#eef2f7]"
+            className="flex items-center gap-3 transition-all font-inter px-3 py-0 border-x border-[#eef2f7] group"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             {user && user.profilePhoto ? (
@@ -183,11 +187,11 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
             ) : (
               <FaUserCircle size={24} />
             )}
-            <span className="text-sm text-left capitalize font-medium truncate text-ellipsis w-16">{user ? user.name : "Loading..."}</span>
+            <span className="text-sm text-left capitalize font-medium truncate text-ellipsis group-hover:text-M-primary-color w-16">{user ? user.name : "Loading..."}</span>
             {dropdownOpen ? (
-              <HiChevronUp size={18} />
+              <HiChevronUp className="group-hover:text-M-primary-color" size={18} />
             ) : (
-              <HiChevronDown size={18} />
+              <HiChevronDown className="group-hover:text-M-primary-color" size={18} />
             )}
           </button>
 
