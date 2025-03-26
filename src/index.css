@@ -64,3 +64,4 @@ abbr:where([title]) {
 .react-calendar__tile:disabled {
   @apply !text-M-text-color !bg-white !cursor-not-allowed
 }
+
