@@ -65,3 +65,26 @@ abbr:where([title]) {
   @apply !text-M-text-color !bg-white !cursor-not-allowed
 }
 
+
+/* Apex Chart */
+.apexcharts-toolbar {
+  @apply !hidden;
+}
+
+.apex-charts .apexcharts-bar-series path, .apex-charts .apexcharts-heatmap-series rect, .apex-charts .apexcharts-pie-series path, .apex-charts .apexcharts-treemap rect {
+  stroke: #fafdff;
+}
+
+.apexcharts-yaxis-label,
+.apexcharts-xaxis-label {
+  fill: #9ba6b7;
+  font-weight: 500;
+}
+
+.apexcharts-legend-series {
+  @apply font-inter text-sm
+}
+
+.apexcharts-ycrosshairs {
+  @apply !border !border-dashed !border-M-text-color/50
+}

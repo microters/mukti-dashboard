@@ -115,7 +115,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
   }, []);
 
   return (
-    <div className="bg-white text-gray-800 px-5 lg:px-8 flex justify-between items-center shadow-[#6886b126] relative h-[73px]">
+    <div className="bg-white text-gray-800 px-5 lg:px-8 flex justify-between items-center shadow shadow-[#6886b10e] relative h-[73px]">
       <div className="flex items-center gap-3">
         {isMobile && (
           <button
@@ -168,7 +168,11 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           <MdOutlineDarkMode size={22}/>
         </Link>
 
-        <div className="relative h-[73px] flex bg-[#fafafd] border-x-[#eef2f7]">
+        <Link to="https://mukti-frontend.vercel.app/" className="text-gray-600 hover:text-gray-800">
+          <FaHome size={20} />
+        </Link>
+
+        <div className="relative">
           <button
             className="flex items-center gap-3 transition-all font-inter px-3 py-0 border-x border-[#eef2f7] group"
             onClick={() => setDropdownOpen(!dropdownOpen)}

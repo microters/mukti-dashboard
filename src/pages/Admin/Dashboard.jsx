@@ -6,6 +6,8 @@ import { HiDotsVertical } from "react-icons/hi";
 import Cards from "../../components/Cards";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import ApexChart from "../../components/PatientsStatisticsChart";
+import TopDoctorCard from "../../components/TopDoctorCard";
 // import DatePicker from "../../components/DatePicker";
 
 const AdminDashboard = () => {
@@ -126,25 +128,58 @@ const AdminDashboard = () => {
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
               My Calendar
             </h2>
-            <button className="text-base font-medium text-gray-700"><HiDotsVertical /></button>
+            <button className="text-base font-medium text-gray-700">
+              <HiDotsVertical />
+            </button>
           </div>
           <div className="p-5 text-center">
             <Calendar onChange={setValue} value={value} minDate={new Date()} />
-            <button className="bg-M-primary-color text-white text-sm font-medium inline-flex items-center gap-1 px-3 py-1 rounded-md">Schedule a Meeting  <TiArrowRight  size={20} /></button>
+            <button className="bg-M-primary-color text-white text-sm font-medium inline-flex items-center gap-1 px-3 py-1 rounded-md">
+              Schedule a Meeting <TiArrowRight size={20} />
+            </button>
           </div>
         </div>
         {/* Patient Chat  */}
         <div className="bg-white shadow-lg rounded-lg col-span-2">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-            Patients Statistics <span className="text-M-text-color/60">(609.5k Patients)</span>
+              Patients Statistics{" "}
+              <span className="text-M-text-color/60">(609.5k Patients)</span>
             </h2>
             <ul className="flex items-center gap-2">
-              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center">All</li>
-              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center">1M</li>
-              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center">6M</li>
-              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center">1Y</li>
+              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center cursor-pointer transition-all duration-200">
+                All
+              </li>
+              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center cursor-pointer transition-all duration-200">
+                1M
+              </li>
+              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center cursor-pointer transition-all duration-200">
+                6M
+              </li>
+              <li className="bg-M-text-color/10 hover:bg-M-text-color/20 rounded-sm text-M-text-color text-sm font-inter font-normal w-9 py-1 text-center cursor-pointer transition-all duration-200">
+                1Y
+              </li>
             </ul>
+          </div>
+          <div className="text-center">
+            <ApexChart />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6 mt-5">
+        {/* Top Doctors */}
+        <div className="bg-white shadow-lg rounded-lg col-span-2">
+          <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+            <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+              Top Doctors
+            </h2>
+            <button className="text-base font-medium text-gray-700">
+              <HiDotsVertical />
+            </button>
+          </div>
+          <div className="p-5">
+            <TopDoctorCard />
           </div>
         </div>
       </div>
