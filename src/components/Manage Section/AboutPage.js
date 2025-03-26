@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaUpload } from "react-icons/fa";
 import axios from "axios";
 
-// 🔹 Reusable Image Upload Component
+// Reusable Image Upload Component
 const ImageUpload = ({ label, file, setFile }) => {
   const handleFileUpload = (event) => {
     const selectedFile = event.target.files[0];
@@ -15,7 +15,7 @@ const ImageUpload = ({ label, file, setFile }) => {
 
   const imageSrc =
     typeof file === "string"
-      ? `http://localhost:5000${file.startsWith("/") ? file : `/${file}`}`
+      ? `https://api.muktihospital.com${file.startsWith("/") ? file : `/${file}`}`
       : file
       ? URL.createObjectURL(file)
       : null;
@@ -70,9 +70,10 @@ const AboutPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/about");
-        const data = res.data?.data?.translations?.[language]; // ✅ ঠিক করলাম
-  
+        // Include language as query parameter
+        const res = await axios.get(`https://api.muktihospital.com/api/about?lang=${language}`);
+        // Use the translation field from API response
+        const data = res.data?.data?.translation;
         if (data) {
           setHeroImage(data.heroImage || null);
           setCallbackImage(data.callbackImage || null);
@@ -88,7 +89,6 @@ const AboutPage = () => {
     };
     fetchData();
   }, [language]);
-  
 
   const handleWhoWeAreChange = (e) => {
     setWhoWeAre({ ...whoWeAre, [e.target.name]: e.target.value });
@@ -143,7 +143,7 @@ const AboutPage = () => {
     });
 
     try {
-      await axios.post("http://localhost:5000/api/about", formData, {
+      await axios.post("https://api.muktihospital.com/api/about", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("✅ About Page Saved Successfully!");
@@ -159,6 +159,7 @@ const AboutPage = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Manage About Page</h1>
 
+      {/* Language Selection */}
       <div className="mb-6">
         <label className="block text-gray-700 font-medium">
           Select Language:

@@ -162,11 +162,12 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             {user && user.profilePhoto ? (
-              <img
-                src={`http://localhost:5000${user.profilePhoto}`}
-                alt="User Profile"
-                className="w-8 h-8 rounded-full"
-              />
+        <img 
+        src={`https://api.muktihospital.com${user.profilePhoto}`} 
+        alt="User Profile" 
+        className="w-8 h-8 rounded-full" 
+      />
+      
             ) : (
               <FaUserCircle size={24} />
             )}

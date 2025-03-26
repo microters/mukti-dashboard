@@ -114,7 +114,7 @@ const ProfilePage = () => {
         {user.profilePhoto && (
           <div>
             <img 
-              src={`http://localhost:5000${user.profilePhoto}`} 
+              src={`https://api.muktihospital.com${user.profilePhoto}`} 
               alt="User Profile"
               className="w-32 h-32 rounded-full object-cover mt-4"
             />

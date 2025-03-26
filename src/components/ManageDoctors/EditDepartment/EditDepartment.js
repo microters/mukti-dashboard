@@ -71,7 +71,7 @@ const EditDepartment = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/department/${id}?lang=${selectedLanguage}`,
+          `https://api.muktihospital.com/api/department/${id}?lang=${selectedLanguage}`,
           {
             headers: {
               "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
@@ -200,7 +200,7 @@ const EditDepartment = () => {
       formData.append("slug", departmentData.slug); // Append slug field
 
       const response = await axios.put(
-        `http://localhost:5000/api/department/${id}`,
+        `https://api.muktihospital.com/api/department/${id}`,
         formData,
         {
           headers: {
@@ -325,7 +325,7 @@ const EditDepartment = () => {
             <div className="mt-6">
               <label className="block mb-1 font-medium">Current Icon</label>
               <img
-                src={`http://localhost:5000${departmentData.icon}`}
+                src={`https://api.muktihospital.com${departmentData.icon}`}
                 alt="Dept Icon"
                 className="w-20 h-20 object-cover rounded"
               />
