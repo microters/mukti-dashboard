@@ -5,16 +5,19 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        'sm': '13px',
+      },
       fontFamily: {
-        jost: ["Jost", "serif"],
-        poppins: ["Poppins", "serif"],
+        inter: ["Inter", "serif"],
       },
       colors: {
-        "M-primary-color": "#009650",
-        "M-heading-color": "#323290",
-        "M-secondary-color": "#EA2A2E",
+        "M-primary-color": "#3F54E7",
+        "M-secondary-color": "#E7633D", 
+        "M-Green-color": "#60B452", 
+        "M-heading-color": "#232E51",
         "M-section-bg": "#EBF7F6",
-        "M-text-color": "#6A7C92",
+        "M-text-color": "#4C4D5D",
       },
       backgroundImage: {
         heroBG: "@/public/assets/heroBG.png",

@@ -209,14 +209,14 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`h-full bg-M-heading-color/20 text-white min-h-screen transition-all duration-300 hover:w-72 group ${
+      className={`h-full bg-M-heading-color text-white min-h-screen transition-all duration-300 hover:w-72 group ${
         isSidebarOpen ? "w-72" : "w-16"
       }`}
     >
       {/* Header Section */}
       <div className="relative">
         <div
-          className={`gap-2 bg-M-heading-color/10  py-[17px] border-b border-[#2a2d3b] flex ${
+          className={`gap-2  py-[17px] border-b border-M-section-bg/10 flex ${
             isSidebarOpen ? "px-8" : "px-2 group-hover:px-8"
           }`}
         >
@@ -280,7 +280,7 @@ const Sidebar = () => {
         {sidebarSections.map((section, sectionIndex) => (
           <div key={sectionIndex}>
             <h4
-              className={`pb-2 mt-6 border-b border-M-text-color/30 text-M-primary-color ${
+              className={`pb-2 mt-6 border-b border-M-text-color/30 text-white text-sm ${
                 isSidebarOpen
                   ? ""
                   : "text-center hidden group-hover:block group-hover:text-left text-nowrap"
@@ -289,7 +289,7 @@ const Sidebar = () => {
               {section.title}
             </h4>
             <ul
-              className={`flex flex-col font-jost mt-5 pl-3 ${
+              className={`flex flex-col font-inter mt-5 pl-3 ${
                 isSidebarOpen ? "gap-2" : "gap-5 group-hover:gap-2"
               } `}
             >
@@ -309,7 +309,7 @@ const Sidebar = () => {
                         }
                       >
                         {menuItem.isSubmenu ? (
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-2 text-sm text-[#e2eeff]">
                             <menuItem.icon />{" "}
                             <span
                               className={`${
@@ -324,7 +324,7 @@ const Sidebar = () => {
                         ) : (
                           <NavLink
                             to={menuItem.link}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 text-sm text-[#e2eeff]"
                           >
                             <menuItem.icon />{" "}
                             <span

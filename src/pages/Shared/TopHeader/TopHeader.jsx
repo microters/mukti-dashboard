@@ -135,7 +135,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           <input
             type="text"
             placeholder="Search..."
-            className="w-full py-2 px-6 pl-9 border border-M-text-color/20 rounded-md ring-0 focus:ring-1 focus:ring-M-primary-color outline-none duration-300 font-jost text-base"
+            className="w-full py-2 px-6 pl-9 border border-M-text-color/20 rounded-md ring-0 focus:ring-1 focus:ring-M-primary-color outline-none duration-300 font-inter text-base"
           />
           <IoSearchOutline  className="absolute left-3 top-[14px] text-M-text-color" />
         </div>
@@ -158,7 +158,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
 
         <div className="relative">
           <button
-            className="flex items-center gap-3 p-2 rounded-md transition-all font-jost "
+            className="flex items-center gap-3 p-2 rounded-md transition-all font-inter "
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             {user && user.profilePhoto ? (
