@@ -369,7 +369,7 @@ const Sidebar = () => {
                           <NavLink
                             to={subMenuItem.link}
                             // hrefLang={subMenuItem.link}
-                            className="text-base hover:text-white transition-all duration-300 relative pl-5 before:w-2 before:h-2 before:absolute before:bg-white before:rounded-full before:left-0 before:top-1/2 before:-translate-y-1/2 block"
+                            className="text-sm hover:text-white transition-all duration-300 relative pl-5 before:w-2 before:h-2 before:absolute before:bg-M-text-color before:rounded-full before:left-0 before:top-1/2 before:-translate-y-1/2 block hover:before:bg-white before:transition-all before:duration-300"
                           >
                             {subMenuItem.name}
                           </NavLink>
