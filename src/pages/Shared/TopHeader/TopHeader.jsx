@@ -115,7 +115,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
   }, []);
 
   return (
-    <div className="bg-white text-gray-800 px-5 lg:px-8 flex justify-between items-center shadow-[#6886b126] relative h-[73px]">
+    <div className="bg-white text-gray-800 px-5 lg:px-8 flex justify-between items-center shadow shadow-[#6886b10e] relative h-[73px]">
       <div className="flex items-center gap-3">
         {isMobile && (
           <button

@@ -7,6 +7,7 @@ import Cards from "../../components/Cards";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import ApexChart from "../../components/PatientsStatisticsChart";
+import TopDoctorCard from "../../components/TopDoctorCard";
 // import DatePicker from "../../components/DatePicker";
 
 const AdminDashboard = () => {
@@ -166,7 +167,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6 mt-4">
+      <div className="grid grid-cols-3 gap-6 mt-5">
+        {/* Top Doctors */}
         <div className="bg-white shadow-lg rounded-lg col-span-2">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
@@ -176,8 +178,8 @@ const AdminDashboard = () => {
               <HiDotsVertical />
             </button>
           </div>
-          <div className="text-center">
-
+          <div className="p-5">
+            <TopDoctorCard />
           </div>
         </div>
       </div>
