@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { toast, ToastContainer } from "react-toastify";
-import slugify from "slugify";  // ✅ Import slugify for generating slugs
+import slugify from "slugify"; // ✅ Import slugify for generating slugs
 import ImageUploader from "../../ImageUploader";
 import PageHeading from "../../PageHeading";
 // Example utility: Convert Bengali digits (০-৯) to English (0-9)
@@ -27,7 +27,7 @@ function convertBengaliToEnglish(str = "") {
 
 const AddDoctor = () => {
   const { t, i18n } = useTranslation(["addDoctor"]);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   // -----------------------------
   // 1) Profile photo state
@@ -50,7 +50,7 @@ const AddDoctor = () => {
     name: { en: "", bn: "" },
     slug: "",
     email: "",
-    profilePhoto:"",
+    profilePhoto: "",
     contactNumber: { en: "", bn: "" },
     contactNumberSerial: { en: "", bn: "" },
     designation: { en: "", bn: "" },
@@ -82,13 +82,16 @@ const AddDoctor = () => {
     const fetchDepartments = async () => {
       try {
         const lang = i18n.language; // "en" or "bn"
-        const response = await axios.get(`https://api.muktihospital.com/api/department?lang=${lang}`, {
-          headers: {
-            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
-          },
-        });
-        
-        
+        const response = await axios.get(
+          `https://api.muktihospital.com/api/department?lang=${lang}`,
+          {
+            headers: {
+              "x-api-key":
+                "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079",
+            },
+          }
+        );
+
         setDepartments(response.data);
       } catch (error) {
         console.error("❌ Error fetching departments:", error);
@@ -97,7 +100,7 @@ const AddDoctor = () => {
 
     fetchDepartments();
   }, [i18n.language]);
-console.log(departments);
+  console.log(departments);
 
   // ----------------------------------------------------------------
   //  B) Language Switch (English <-> Bangla)
@@ -113,7 +116,10 @@ console.log(departments);
 
   useEffect(() => {
     if (formData.name.en) {
-      const generatedSlug = slugify(formData.name.en, { lower: true, strict: true });
+      const generatedSlug = slugify(formData.name.en, {
+        lower: true,
+        strict: true,
+      });
       setFormData((prev) => ({
         ...prev,
         slug: generatedSlug,
@@ -123,7 +129,10 @@ console.log(departments);
 
   // ✅ Handle slug change (if user edits manually)
   const handleSlugChange = (e) => {
-    setFormData((prev) => ({ ...prev, slug: slugify(e.target.value, { lower: true, strict: true }) }));
+    setFormData((prev) => ({
+      ...prev,
+      slug: slugify(e.target.value, { lower: true, strict: true }),
+    }));
   };
   // ----------------------------------------------------------------
   //  C) Handle form input changes
@@ -152,15 +161,14 @@ console.log(departments);
   //  D) Profile photo
   // ----------------------------------------------------------------
 
-const handleProfilePhotoChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const fileURL = URL.createObjectURL(file);
-    setProfilePhoto(fileURL); 
-    setSelectedFile(file); 
-  }
-};
-
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const fileURL = URL.createObjectURL(file);
+      setProfilePhoto(fileURL);
+      setSelectedFile(file);
+    }
+  };
 
   // ----------------------------------------------------------------
   //  E) Dynamic Fields (memberships, awards, treatments, conditions)
@@ -218,37 +226,57 @@ const handleProfilePhotoChange = (e) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     // Convert Bengali digits to English for numeric fields
-    const finalYearsEn = convertBengaliToEnglish(formData.yearsOfExperience.en || "");
-    const finalYearsBn = convertBengaliToEnglish(formData.yearsOfExperience.bn || "");
-    const finalAppFeeEn = convertBengaliToEnglish(formData.appointmentFee.en || "");
-    const finalAppFeeBn = convertBengaliToEnglish(formData.appointmentFee.bn || "");
-    const finalFollowUpEn = convertBengaliToEnglish(formData.followUpFee.en || "");
-    const finalFollowUpBn = convertBengaliToEnglish(formData.followUpFee.bn || "");
-    const finalPatientEn = convertBengaliToEnglish(formData.patientAttended.en || "");
-    const finalPatientBn = convertBengaliToEnglish(formData.patientAttended.bn || "");
-    const finalAvgEn = convertBengaliToEnglish(formData.avgConsultationTime.en || "");
-    const finalAvgBn = convertBengaliToEnglish(formData.avgConsultationTime.bn || "");
-  
+    const finalYearsEn = convertBengaliToEnglish(
+      formData.yearsOfExperience.en || ""
+    );
+    const finalYearsBn = convertBengaliToEnglish(
+      formData.yearsOfExperience.bn || ""
+    );
+    const finalAppFeeEn = convertBengaliToEnglish(
+      formData.appointmentFee.en || ""
+    );
+    const finalAppFeeBn = convertBengaliToEnglish(
+      formData.appointmentFee.bn || ""
+    );
+    const finalFollowUpEn = convertBengaliToEnglish(
+      formData.followUpFee.en || ""
+    );
+    const finalFollowUpBn = convertBengaliToEnglish(
+      formData.followUpFee.bn || ""
+    );
+    const finalPatientEn = convertBengaliToEnglish(
+      formData.patientAttended.en || ""
+    );
+    const finalPatientBn = convertBengaliToEnglish(
+      formData.patientAttended.bn || ""
+    );
+    const finalAvgEn = convertBengaliToEnglish(
+      formData.avgConsultationTime.en || ""
+    );
+    const finalAvgBn = convertBengaliToEnglish(
+      formData.avgConsultationTime.bn || ""
+    );
+
     // 1. Create FormData object
     const formDataToSend = new FormData();
-  
+
     // 2. Append icon if selected
     if (selectedFile) {
-      formDataToSend.append("profilePhoto", selectedFile);  // Sending `profilePhoto` key but it will be stored as `icon` in backend
+      formDataToSend.append("profilePhoto", selectedFile); // Sending `profilePhoto` key but it will be stored as `icon` in backend
     }
-  
+
     // 3. Append other form data
     formDataToSend.append(
       "data",
       JSON.stringify({
         email: formData.email,
-        slug: formData.slug,  // ✅ Sending slug to backend
+        slug: formData.slug, // ✅ Sending slug to backend
         translations: {
           en: {
-            metaTitle:formData.metaTitle.en,
-            metaDescription:formData.metaDescription.en,
+            metaTitle: formData.metaTitle.en,
+            metaDescription: formData.metaDescription.en,
             name: formData.name.en,
             contactNumber: formData.contactNumber.en,
             contactNumberSerial: formData.contactNumberSerial.en,
@@ -262,16 +290,15 @@ const handleProfilePhotoChange = (e) => {
             patientAttended: finalPatientEn,
             avgConsultationTime: finalAvgEn,
             academicQualification: formData.academicQualification.en,
-
           },
           bn: {
-            metaTitle:formData.metaTitle.bn,
-            metaDescription:formData.metaDescription.bn,
+            metaTitle: formData.metaTitle.bn,
+            metaDescription: formData.metaDescription.bn,
             name: formData.name.bn,
             contactNumber: formData.contactNumber.bn,
             contactNumberSerial: formData.contactNumberSerial.bn,
             designation: formData.designation.bn,
-            gender:formData.gender.bn,
+            gender: formData.gender.bn,
             department: formData.department.bn,
             shortBio: formData.shortBio.bn,
             yearsOfExperience: finalYearsBn,
@@ -289,33 +316,35 @@ const handleProfilePhotoChange = (e) => {
         faqs,
       })
     );
-  
+
     try {
       const response = await axios.post(
         "https://api.muktihospital.com/api/doctor/add",
         formDataToSend, // Sending FormData with `icon`
         {
           headers: {
-            "Content-Type": "multipart/form-data",  // Set the correct header for file uploads
-            "x-api-key": "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Your API key
+            "Content-Type": "multipart/form-data", // Set the correct header for file uploads
+            "x-api-key":
+              "caf56e69405fe970f918e99ce86a80fbf0a7d728cca687e8a433b817411a6079", // Your API key
           },
         }
       );
-  
+
       if (response.status === 200 || response.status === 201) {
-        toast.success("✅ Doctor added successfully!");  // Show success message
-        handleDiscard();  // Reset form after submission
+        toast.success("✅ Doctor added successfully!"); // Show success message
+        handleDiscard(); // Reset form after submission
       } else {
-        toast.error(`❌ Failed to add doctor: ${response.data?.message || "Error"}`);  // Show error message
+        toast.error(
+          `❌ Failed to add doctor: ${response.data?.message || "Error"}`
+        ); // Show error message
       }
     } catch (error) {
       console.error("❌ Error submitting doctor data:", error);
-      toast.error("An error occurred while adding the doctor.");  // Show error message
+      toast.error("An error occurred while adding the doctor."); // Show error message
     } finally {
-      setLoading(false);  // Stop loading state
+      setLoading(false); // Stop loading state
     }
   };
-  
 
   // ----------------------------------------------------------------
   //  G) Discard form
@@ -355,9 +384,9 @@ const handleProfilePhotoChange = (e) => {
   // ----------------------------------------------------------------
 
   const breadcrumbs = [
-    { label: 'Dashboard', url: '/dashboard' },
-    { label: 'Manage Doctors', url: '/doctors' },
-    { label: 'Add New Doctor' }
+    { label: "Dashboard", url: "/dashboard" },
+    { label: "Manage Doctors", url: "/doctors" },
+    { label: "Add New Doctor" },
   ];
   return (
     <div>
@@ -436,34 +465,38 @@ const handleProfilePhotoChange = (e) => {
                 {/* Doctor Name */}
                 <div>
                   <label className="label">{t("doctorName")}</label>
-                  {loading ? <Skeleton height={40} /> : (
+                  {loading ? (
+                    <Skeleton height={40} />
+                  ) : (
                     <input
-                    type="text"
-                    name="name"
-                    className="input-field"
-                    placeholder="Enter Doctor Name"
-                    value={formData.name[i18n.language] || ""}
-                    onChange={handleChange}
-                  />
+                      type="text"
+                      name="name"
+                      className="input-field"
+                      placeholder="Enter Doctor Name"
+                      value={formData.name[i18n.language] || ""}
+                      onChange={handleChange}
+                    />
                   )}
                 </div>
-            {/* Slug Field */}
-            <div>
-                <label className="label">Slug (Editable)</label>
-                <input
-                  type="text"
-                  name="slug"
-                  className="input-field"
-                  placeholder="Enter Slug"
-                  value={formData.slug}
-                  onChange={handleSlugChange}
-                />
-              </div>
+                {/* Slug Field */}
+                <div>
+                  <label className="label">Slug (Editable)</label>
+                  <input
+                    type="text"
+                    name="slug"
+                    className="input-field"
+                    placeholder="Enter Slug"
+                    value={formData.slug}
+                    onChange={handleSlugChange}
+                  />
+                </div>
                 {/* Email */}
                 <div>
                   <label className="label">{t("email")}</label>
-                  {loading ? <Skeleton height={40} /> : (
-                      <input
+                  {loading ? (
+                    <Skeleton height={40} />
+                  ) : (
+                    <input
                       type="email"
                       name="email"
                       className="input-field"
@@ -639,16 +672,16 @@ const handleProfilePhotoChange = (e) => {
                     onChange={handleChange}
                   />
                 </div>
-                </div>
               </div>
-              {/* FAQs */}
-              <div className="bg-white shadow-sm rounded-lg mt-5">
-                  <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                    <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                       FAQs
-                    </h2>
-                  </div>
-                <div className="p-5">
+            </div>
+            {/* FAQs */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  FAQs
+                </h2>
+              </div>
+              <div className="p-5">
                 {faqs.map((faq, index) => (
                   <div
                     key={index}
@@ -687,12 +720,12 @@ const handleProfilePhotoChange = (e) => {
                 >
                   <FaPlus /> Add FAQ
                 </button>
-                </div>
               </div>
             </div>
+          </div>
 
-            {/* Profile Photo */}
-            {/* <div className="mt-6 flex flex-col">
+          {/* Profile Photo */}
+          {/* <div className="mt-6 flex flex-col">
               <div className="relative w-24 h-24">
               <img
     src={formData.icon || "https://placehold.co/100"}  // Ensure 'icon' field is used
@@ -706,248 +739,284 @@ const handleProfilePhotoChange = (e) => {
                 </label>
               </div>
             </div> */}
-            <div>
-              <div>
-                  {/* Treatments List */}
-                  <div className="bg-white shadow-sm rounded-lg">
-                    <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                      <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                        Treatments
-                      </h2>
-                    </div>
-                   <div className="p-5">
-                   {treatments.map((treatment, index) => (
-                      <div key={index} className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          value={treatment.name}
-                          onChange={(e) =>
-                            handleFieldChange(index, e.target.value, treatments, setTreatments)
-                          }
-                          className="input-field"
-                          placeholder="Enter Treatment Name"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveField(index, treatments, setTreatments)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleAddField(setTreatments, "treatments")}
-                      className="add-button"
-                    >
-                      <FaPlus /> Add Treatment
-                    </button>
-                   </div>
-                  </div>
-                {/* Memberships List */}
-                <div className="bg-white shadow-sm rounded-lg mt-5">
-                  <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                      <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                      Memberships
-                      </h2>
-                    </div>
+          <div>
+            {/* Treatments List */}
+            <div className="bg-white shadow-sm rounded-lg">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Treatments
+                </h2>
+              </div>
               <div className="p-5">
-              {memberships.map((item, index) => (
-                    <div key={index} className="flex gap-2 mt-2">
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) =>
-                          handleFieldChange(index, e.target.value, memberships, setMemberships)
-                        }
-                        className="input-field"
-                        placeholder="Enter Membership Name"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveField(index, memberships, setMemberships)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleAddField(setMemberships, "memberships")}
-                    className="add-button"
-                  >
-                    <FaPlus /> Add Membership
-                  </button>
-              </div>
-                </div>
-
-                {/* Awards */}
-                <div className="bg-white shadow-sm rounded-lg mt-5">
-                    <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                      <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                      Awards & Achievements
-                      </h2>
-                    </div>
-                  <div className="p-5">
-                    {awards.map((item, index) => (
-                      <div key={index} className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          value={item.title}
-                          onChange={(e) =>
-                            handleFieldChange(index, e.target.value, awards, setAwards, "title")
-                          }
-                          className="input-field"
-                          placeholder="Enter Award Title"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveField(index, awards, setAwards)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    ))}
+                {treatments.map((treatment, index) => (
+                  <div key={index} className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={treatment.name}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          index,
+                          e.target.value,
+                          treatments,
+                          setTreatments
+                        )
+                      }
+                      className="input-field"
+                      placeholder="Enter Treatment Name"
+                    />
                     <button
                       type="button"
-                      onClick={() => handleAddField(setAwards, "awards")}
-                      className="add-button"
+                      onClick={() =>
+                        handleRemoveField(index, treatments, setTreatments)
+                      }
+                      className="text-red-500 hover:text-red-700"
                     >
-                      <FaPlus /> Add Award
+                      <FaTrash />
                     </button>
                   </div>
-                </div>
-                {/* Conditions */}
-                <div className="bg-white shadow-sm rounded-lg mt-5">
-                    <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                      <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                      Conditions Treated
-                      </h2>
-                    </div>
-                <div className="p-5">
-                {conditions.map((item, index) => (
-                    <div key={index} className="flex gap-2 mt-2">
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) =>
-                          handleFieldChange(index, e.target.value, conditions, setConditions)
-                        }
-                        className="input-field"
-                        placeholder="Enter Condition Name"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveField(index, conditions, setConditions)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleAddField(setConditions, "conditions")}
-                    className="add-button"
-                  >
-                    <FaPlus /> Add Condition
-                  </button>
-                </div>
-                </div>
-
-                {/* Schedules */}
-                <div className="bg-white shadow-sm rounded-lg mt-5">
-                  <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                      <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                      Schedule for Appointment
-                      </h2>
-                    </div>
-                  <div className="p-5">
-                  {schedules.map((sch, index) => (
-                    <div key={index} className="flex items-center gap-3 mt-2">
-                      <select
-                        value={sch.day}
-                        onChange={(e) => handleScheduleChange(index, "day", e.target.value)}
-                        className="p-2 border rounded-md"
-                      >
-                        <option value="">Select Day</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                      </select>
-
-                      <input
-                        type="time"
-                        value={sch.startTime}
-                        onChange={(e) => handleScheduleChange(index, "startTime", e.target.value)}
-                        className="p-2 border rounded-md"
-                      />
-                      <input
-                        type="time"
-                        value={sch.endTime}
-                        onChange={(e) => handleScheduleChange(index, "endTime", e.target.value)}
-                        className="p-2 border rounded-md"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSchedule(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleAddSchedule}
-                    className="add-button"
-                  >
-                    <FaPlus /> Add Schedule
-                  </button>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white shadow-sm rounded-lg mt-5">
-                  <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
-                    <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                      Upload Profile Photo
-                    </h2>
-                  </div>
-
-                  <div className="p-5">
-                    <ImageUploader />
-                  </div>
-              </div>
-              {/* Submit & Discard */}
-              <div className="mt-6 flex gap-4 justify-end">
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition"
-                >
-                  Submit
-                </button>
+                ))}
                 <button
                   type="button"
-                  onClick={handleDiscard}
-                  className="bg-gray-400 text-white py-2 px-6 rounded-md hover:bg-gray-500 transition"
+                  onClick={() => handleAddField(setTreatments, "treatments")}
+                  className="add-button"
                 >
-                  Discard
+                  <FaPlus /> Add Treatment
                 </button>
               </div>
             </div>
+
+            {/* Memberships List */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Memberships
+                </h2>
+              </div>
+              <div className="p-5">
+                {memberships.map((item, index) => (
+                  <div key={index} className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          index,
+                          e.target.value,
+                          memberships,
+                          setMemberships
+                        )
+                      }
+                      className="input-field"
+                      placeholder="Enter Membership Name"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleRemoveField(index, memberships, setMemberships)
+                      }
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => handleAddField(setMemberships, "memberships")}
+                  className="add-button"
+                >
+                  <FaPlus /> Add Membership
+                </button>
+              </div>
+            </div>
+
+            {/* Awards */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Awards & Achievements
+                </h2>
+              </div>
+              <div className="p-5">
+                {awards.map((item, index) => (
+                  <div key={index} className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          index,
+                          e.target.value,
+                          awards,
+                          setAwards,
+                          "title"
+                        )
+                      }
+                      className="input-field"
+                      placeholder="Enter Award Title"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleRemoveField(index, awards, setAwards)
+                      }
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => handleAddField(setAwards, "awards")}
+                  className="add-button"
+                >
+                  <FaPlus /> Add Award
+                </button>
+              </div>
+            </div>
+
+            {/* Conditions */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Conditions Treated
+                </h2>
+              </div>
+              <div className="p-5">
+                {conditions.map((item, index) => (
+                  <div key={index} className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          index,
+                          e.target.value,
+                          conditions,
+                          setConditions
+                        )
+                      }
+                      className="input-field"
+                      placeholder="Enter Condition Name"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleRemoveField(index, conditions, setConditions)
+                      }
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => handleAddField(setConditions, "conditions")}
+                  className="add-button"
+                >
+                  <FaPlus /> Add Condition
+                </button>
+              </div>
+            </div>
+
+            {/* Schedules */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Schedule for Appointment
+                </h2>
+              </div>
+              <div className="p-5">
+                {schedules.map((sch, index) => (
+                  <div key={index} className="flex items-center gap-3 mt-2">
+                    <select
+                      value={sch.day}
+                      onChange={(e) =>
+                        handleScheduleChange(index, "day", e.target.value)
+                      }
+                      className="p-2 border rounded-md"
+                    >
+                      <option value="">Select Day</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                      <option value="Saturday">Saturday</option>
+                      <option value="Sunday">Sunday</option>
+                    </select>
+
+                    <input
+                      type="time"
+                      value={sch.startTime}
+                      onChange={(e) =>
+                        handleScheduleChange(index, "startTime", e.target.value)
+                      }
+                      className="p-2 border rounded-md"
+                    />
+                    <input
+                      type="time"
+                      value={sch.endTime}
+                      onChange={(e) =>
+                        handleScheduleChange(index, "endTime", e.target.value)
+                      }
+                      className="p-2 border rounded-md"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSchedule(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddSchedule}
+                  className="add-button"
+                >
+                  <FaPlus /> Add Schedule
+                </button>
+              </div>
+            </div>
+
+            {/* Image Uploader */}
+            <div className="bg-white shadow-sm rounded-lg mt-5">
+              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  Upload Profile Photo
+                </h2>
+              </div>
+              <div className="p-5">
+                <ImageUploader />
+              </div>
+            </div>
+            {/* Submit & Discard */}
+            <div className="mt-6 flex gap-4 justify-end">
+              <button
+                type="submit"
+                className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition"
+              >
+                Submit
+              </button>
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="bg-gray-400 text-white py-2 px-6 rounded-md hover:bg-gray-500 transition"
+              >
+                Discard
+              </button>
+            </div>
           </div>
-        </form>
-        {/* Toast container to show messages */}
-        <ToastContainer />
-    </div>
+        </div>
+      </form>
+      {/* Toast container to show messages */}
+      <ToastContainer />
+      </div>
     </div>
   );
 };

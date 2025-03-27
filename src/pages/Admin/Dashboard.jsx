@@ -3,11 +3,15 @@ import { TbSortAscending } from "react-icons/tb";
 import { SlCalender } from "react-icons/sl";
 import { TiArrowRight } from "react-icons/ti";
 import { HiDotsVertical } from "react-icons/hi";
+import { MdOutlineKeyboardDoubleArrowDown } from "react-icons/md";
+import { IoMan } from "react-icons/io5";
 import Cards from "../../components/Cards";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import ApexChart from "../../components/PatientsStatisticsChart";
 import TopDoctorCard from "../../components/TopDoctorCard";
+import drImg from "../../../src/assets/dr-one.jpg";
+import DonutChart from "../../components/DonutChart";
 // import DatePicker from "../../components/DatePicker";
 
 const AdminDashboard = () => {
@@ -84,6 +88,58 @@ const AdminDashboard = () => {
           value: "79.18K",
         },
       ],
+    },
+  ];
+
+  const doctorsData = [
+    {
+      name: "Dr. Master Gulati",
+      image: drImg, // Replace with actual image URL
+      specialization: "Dental Specialist",
+      rating: 5.0,
+      reviews: 580,
+    },
+    {
+      name: "Dr. David Wilson",
+      image: drImg,
+      specialization: "Ophthalmologist",
+      rating: 4.3,
+      reviews: 295,
+    },
+    {
+      name: "Dr. Robert Brown",
+      image: drImg,
+      specialization: "General Specialist",
+      rating: 5.0,
+      reviews: 405,
+    },
+    {
+      name: "Dr. Michael Johnson",
+      image: drImg,
+      specialization: "Neurologist",
+      rating: 4.1,
+      reviews: 120,
+    },
+    {
+      name: "Dr. Emily Davis",
+      image: drImg,
+      specialization: "Pediatrician",
+      rating: 5.0,
+      reviews: 385,
+    },
+    {
+      name: "Dr. Alice Smith",
+      image: drImg,
+      specialization: "Cardiologist",
+      rating: 4.0,
+      reviews: 92,
+    },
+    {
+      name: "Dr. Emily Davis",
+      image: drImg,
+      specialization: "Pediatrician",
+      rating: 5.0,
+      reviews: 385,
     },
   ];
 
@@ -179,7 +235,35 @@ const AdminDashboard = () => {
             </button>
           </div>
           <div className="p-5">
-            <TopDoctorCard />
+            <div className="grid grid-cols-3 gap-5">
+              {doctorsData.slice(0, 6).map((doctors, index) => (
+                <TopDoctorCard key={index} doctor={doctors} />
+              ))}
+            </div>
+            <button className="bg-[#783BFF]/80 hover:bg-[#783BFF] text-white text-sm font-medium flex items-center gap-1 mt-4 mx-auto px-3 py-1 rounded-md transition-all duration-300">
+              See All Doctors <TiArrowRight size={20} />
+            </button>
+          </div>
+        </div>
+        {/* Gender Area */}
+        <div className="bg-white shadow-lg rounded-lg ">
+          <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+            <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+              Top Doctors
+            </h2>
+            <button className="bg-M-primary-color/15 hover:bg-M-primary-color text-M-primary-color hover:text-white text-xs font-medium flex items-center gap-1 px-3 py-1 rounded-md transition-all duration-300">
+              See All Doctors <TiArrowRight size={20} />
+            </button>
+          </div>
+          <div className="p-5">
+              <DonutChart />
+              <div className="grid grid-cols-3 gap-5">
+                <div>
+                  <h5 className="text-M-text-color text-sm font-medium font-inter">Male Patient</h5>
+                  <p className="flex items-center gap-1 text-M-text-color text-base font-medium font-inter"><IoMan className="text-M-primary-color"/> 159.5k</p>
+                  <span className="items-center gap-1 text-sm font-medium font-inter bg-[#FFE9E3] inline-flex px-2 py-[2px] rounded-sm text-[#E7633D]"><MdOutlineKeyboardDoubleArrowDown /> 3.91%</span>
+                </div>
+              </div>
           </div>
         </div>
       </div>
