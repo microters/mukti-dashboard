@@ -172,7 +172,7 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
           <FaHome size={20} />
         </Link>
 
-        <div className="relative">
+        <div className="relative h-[73px] flex bg-[#fafafd] border-x-[#eef2f7]">
           <button
             className="flex items-center gap-3 transition-all font-inter px-3 py-0 border-x border-[#eef2f7] group"
             onClick={() => setDropdownOpen(!dropdownOpen)}
