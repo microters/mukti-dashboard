@@ -63,7 +63,7 @@ const ImageUploader = (props) => {
       <div
         {...getRootProps({
           className:
-            "border-2 border-dashed border-M-text-color/10 p-8 text-center cursor-pointer hover:bg-gray-100 rounded-md",
+            "border-2 border-dashed border-M-text-color/10 p-8 text-center cursor-pointer hover:bg-gray-100 rounded-md relative",
         })}
       >
         <IoCloudUploadOutline size={36} className="mx-auto text-M-text-color" />
