@@ -20,6 +20,9 @@ export const useAppointments = () => {
     try {
       const response = await makeRequest('get', ENDPOINTS.APPOINTMENTS.LIST);
       
+      // Log the response to check its structure
+      console.log('Appointments Response:', response);
+  
       // Handle response correctly based on API structure
       if (response && response.appointments && Array.isArray(response.appointments)) {
         setAppointments(response.appointments);
@@ -35,6 +38,7 @@ export const useAppointments = () => {
       return [];
     }
   }, [makeRequest]);
+  
   
   /**
    * Fetch today's appointments only

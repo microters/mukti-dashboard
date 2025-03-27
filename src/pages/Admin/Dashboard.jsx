@@ -148,7 +148,7 @@ const AdminDashboard = () => {
       {/* Top Totle Area */}
       <div className="flex items-center justify-between">
         <h1 className="font-semibold text-lg text-M-text-color">
-          Welcome back, Dr. mashur Gulati 👋
+          Welcome back, Mukti Hospital 👋
         </h1>
         <div className="flex gap-4 items-center">
           <button className="py-[10px] px-4 bg-M-Green-color/90 hover:bg-M-Green-color text-sm text-white flex items-center gap-2 rounded-md">
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
 
       <div className="grid grid-cols-3 gap-6 mt-5">
         {/* Top Doctors */}
-        <div className="bg-white shadow-lg rounded-lg col-span-2">
+       <div className="bg-white shadow-lg rounded-lg col-span-2">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
               Top Doctors
