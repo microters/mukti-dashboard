@@ -18,8 +18,11 @@ code {
     monospace;
 }
 
-.label {
+.label{
   @apply font-medium text-sm text-M-text-color mb-2 block;
+}
+.add-button{
+  @apply mt-2 text-sm text-blue-500 hover:text-blue-700 flex items-center justify-center gap-1;
 }
 
 .input-field {

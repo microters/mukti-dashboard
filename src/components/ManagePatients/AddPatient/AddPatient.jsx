@@ -28,6 +28,12 @@ const AddPatient = () => {
     image: null,
   });
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Manage Patients', url: '/patients' },
+    { label: 'Add New Patient' }
+  ];
+
   // Fetch user profile on component mount
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -208,7 +214,7 @@ const AddPatient = () => {
 
   return (
     <div>
-      <PageHeading />
+      <PageHeading title="Add Patient" breadcrumbs={breadcrumbs} />
       <div>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
@@ -225,7 +231,6 @@ const AddPatient = () => {
                   Basic Information
                 </h2>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
                 {/* Name - Required */}
                 <div>
