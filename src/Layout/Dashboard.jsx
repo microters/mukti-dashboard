@@ -101,7 +101,7 @@ const Dashboard = () => {
         <TopHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}  user={user} />
 
         {/* Main Content */}
-        <div className="px-5 py-4 hide-scrollbar overflow-y-auto bg-[#F5F9FD] flex-grow h-[calc(100vh-72px)]">
+        <div className="px-5 py-4 hide-scrollbar overflow-y-auto bg-[#F5F9FD] flex-grow h-[calc(100vh-73px)]">
           <Outlet />
         </div>
       </div>

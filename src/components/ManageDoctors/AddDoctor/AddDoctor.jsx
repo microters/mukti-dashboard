@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEdit, FaPlus, FaTrash, FaUserMd } from "react-icons/fa";
+import Select from 'react-select';
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { toast, ToastContainer } from "react-toastify";
@@ -101,9 +102,15 @@ console.log(departments);
   // ----------------------------------------------------------------
   //  B) Language Switch (English <-> Bangla)
   // ----------------------------------------------------------------
-  const handleLanguageChange = (e) => {
-    i18n.changeLanguage(e.target.value);
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);  // Update language based on selected value
   };
+
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'bn', label: 'Bangla' }
+  ];
+
   useEffect(() => {
     if (formData.name.en) {
       const generatedSlug = slugify(formData.name.en, { lower: true, strict: true });
@@ -357,14 +364,34 @@ const handleProfilePhotoChange = (e) => {
       <PageHeading title="Add New Doctor" breadcrumbs={breadcrumbs} />
        {/* Language switcher */}
        <div className="mb-4 flex justify-end">
-            <select
-              className="p-2 border rounded-md"
-              onChange={handleLanguageChange}
-              value={i18n.language}
-            >
-              <option value="en">{t('english')}</option>
-              <option value="bn">Bangla</option>
-            </select>
+       <Select
+          options={languageOptions}
+          onChange={handleLanguageChange}
+          value={languageOptions.find(option => option.value === i18n.language)}
+          className="react-select-container"
+          classNamePrefix="react-select"
+          isSearchable={false}
+          styles={{
+            control: (provided) => ({
+              ...provided,
+              borderColor: '#e2e8f0',
+              fontSize: '14px',
+              backgroundColor: '#f7fafc',
+            }),
+            option: (provided, state) => ({
+              ...provided,
+              fontSize: '14px',
+              backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#ebf8ff' : 'transparent',
+              color: state.isSelected ? '#ffffff' : '#2d3748',
+            }),
+            menu: (provided) => ({
+              ...provided,
+              backgroundColor: '#ffffff',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              padding: "0px"
+            }),
+          }}
+      />
           </div>
       <div className="min-h-screen">
         {/* Header */}
@@ -641,7 +668,7 @@ const handleProfilePhotoChange = (e) => {
                       placeholder="Enter FAQ Question"
                       value={faq.question}
                       onChange={(e) => handleFaqChange(index, "question", e.target.value)}
-                      className="p-2 border rounded-md w-full mt-1"
+                      className="input-field"
                     />
 
                     <label className="label mt-3">Answer</label>
@@ -649,14 +676,14 @@ const handleProfilePhotoChange = (e) => {
                       placeholder="Enter FAQ Answer"
                       value={faq.answer}
                       onChange={(e) => handleFaqChange(index, "answer", e.target.value)}
-                      className="p-2 border rounded-md w-full mt-1 h-24"
+                      className="input-field"
                     />
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={handleAddFaq}
-                  className="mt-3 text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                  className="add-button"
                 >
                   <FaPlus /> Add FAQ
                 </button>
