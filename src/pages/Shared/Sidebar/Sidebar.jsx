@@ -49,7 +49,7 @@ const Sidebar = () => {
         {
           name: "Dashboard",
           icon: FaHome,
-          link: "/dashboard",
+          link: "/",
           isSubmenu: false,
         },
         {
@@ -172,6 +172,24 @@ const Sidebar = () => {
         },
       ],
     },
+    {
+      title: "Contact Menu",
+      sectionKey: "contact",
+      menus: [
+        {
+          name: "Contact",
+          icon: FaHome,
+          link: "/contact",
+          isSubmenu: false,
+        },
+        {
+          name: "Callback",
+          icon: FaHome,
+          link: "/callback",
+          isSubmenu: false,
+        }
+      ]
+    },  
     {
       title: "Others",
       sectionKey: "others",
