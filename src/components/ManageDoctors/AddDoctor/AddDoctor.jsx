@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import slugify from "slugify"; // ✅ Import slugify for generating slugs
 import ImageUploader from "../../ImageUploader";
 import PageHeading from "../../PageHeading";
+import LanguageSelect from "../../LanguageSelect";
 // Example utility: Convert Bengali digits (০-৯) to English (0-9)
 function convertBengaliToEnglish(str = "") {
   const map = {
@@ -25,7 +26,7 @@ function convertBengaliToEnglish(str = "") {
   return str.replace(/[০-৯]/g, (digit) => map[digit]);
 }
 
-const AddDoctor = () => {
+const AddDoctor = ({isSearchable }) => {
   const { t, i18n } = useTranslation(["addDoctor"]);
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +51,7 @@ const AddDoctor = () => {
     name: { en: "", bn: "" },
     slug: "",
     email: "",
+    icon: "",
     profilePhoto: "",
     contactNumber: { en: "", bn: "" },
     contactNumberSerial: { en: "", bn: "" },
@@ -105,14 +107,14 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   //  B) Language Switch (English <-> Bangla)
   // ----------------------------------------------------------------
-  const handleLanguageChange = (selectedOption) => {
-    i18n.changeLanguage(selectedOption.value);  // Update language based on selected value
-  };
-
   const languageOptions = [
     { value: 'en', label: 'English' },
-    { value: 'bn', label: 'Bangla' }
+    { value: 'bn', label: 'Bangla' },
   ];
+
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);
+  };
 
   useEffect(() => {
     if (formData.name.en) {
@@ -139,7 +141,6 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // If field is multi-language object, update the current language only
     if (formData[name] && typeof formData[name] === "object") {
       setFormData((prev) => ({
         ...prev,
@@ -149,13 +150,29 @@ const AddDoctor = () => {
         },
       }));
     } else {
-      // Single-language
       setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
     }
   };
+
+   // Gender select
+   const genderOptions = [
+    { value: "male", label: t("male") },
+    { value: "female", label: t("female") },
+    { value: "other", label: t("other") },
+  ];
+
+  // Department select
+  const departmentOptions = departments.map((dep) => {
+    const depName =
+      dep.translations?.[i18n.language]?.name ||
+      dep.translations?.en?.name ||
+      "Unnamed Dept";
+
+    return { value: depName, label: depName };
+  });
 
   // ----------------------------------------------------------------
   //  D) Profile photo
@@ -259,13 +276,13 @@ const AddDoctor = () => {
       formData.avgConsultationTime.bn || ""
     );
 
-    // 1. Create FormData object
-    const formDataToSend = new FormData();
+   // 1. Create FormData object
+   const formDataToSend = new FormData();
 
-    // 2. Append icon if selected
-    if (selectedFile) {
-      formDataToSend.append("profilePhoto", selectedFile); // Sending `profilePhoto` key but it will be stored as `icon` in backend
-    }
+   // 2. Append icon if selected
+   if (selectedFile) {
+     formDataToSend.append("profilePhoto", selectedFile); // Sending `profilePhoto` key but it will be stored as `icon` in backend
+   }
 
     // 3. Append other form data
     formDataToSend.append(
@@ -393,33 +410,11 @@ const AddDoctor = () => {
       <PageHeading title="Add New Doctor" breadcrumbs={breadcrumbs} />
        {/* Language switcher */}
        <div className="mb-4 flex justify-end">
-       <Select
+       <LanguageSelect
           options={languageOptions}
           onChange={handleLanguageChange}
           value={languageOptions.find(option => option.value === i18n.language)}
-          className="react-select-container"
-          classNamePrefix="react-select"
-          isSearchable={false}
-          styles={{
-            control: (provided) => ({
-              ...provided,
-              borderColor: '#e2e8f0',
-              fontSize: '14px',
-              backgroundColor: '#f7fafc',
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              fontSize: '14px',
-              backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#ebf8ff' : 'transparent',
-              color: state.isSelected ? '#ffffff' : '#2d3748',
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: '#ffffff',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              padding: "0px"
-            }),
-          }}
+          isSearchable={isSearchable}
       />
           </div>
       <div className="min-h-screen">
@@ -436,32 +431,6 @@ const AddDoctor = () => {
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
-                  {/* Meta Title */}
-                <div>
-                  <label className="label">Meta Title</label>
-                  <input
-                    type="text"
-                    name="metaTitle"
-                    className="input-field"
-                    placeholder="Enter Meta Title"
-                    value={formData.metaTitle[i18n.language] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {/* Meta Description */}
-                <div>
-                  <label className="label">Meta Description</label>
-                  <input
-                    type="text"
-                    name="metaDescription"
-                    className="input-field"
-                    placeholder="Enter Meta Description"
-                    value={formData.metaDescription[i18n.language] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
-
                 {/* Doctor Name */}
                 <div>
                   <label className="label">{t("doctorName")}</label>
@@ -546,45 +515,46 @@ const AddDoctor = () => {
                   />
                 </div>
 
-                {/* Gender (Dropdown) */}
+                {/* Gender */}
                 <div>
                   <label className="label">{t("gender")}</label>
-                  <select
-                    name="gender"
-                    className="input-field"
-                    value={formData.gender[i18n.language] || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="">{t("selectGender")}</option>
-                    <option value={t("male")}>{t("male")}</option>
-                    <option value={t("female")}>{t("female")}</option>
-                    <option value={t("other")}>{t("other")}</option>
-                  </select>
+                  <Select
+                      name="gender"
+                      value={genderOptions.find(
+                        (option) => option.value === formData.gender[i18n.language]
+                      )}
+                      onChange={(selectedOption) =>
+                        handleChange({
+                          target: { name: "gender", value: selectedOption.value },
+                        })
+                      }
+                      options={genderOptions}
+                      placeholder={"Select Gender"} 
+                      isSearchable={isSearchable}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
                 </div>
 
                 {/* Department */}
                 <div>
                   <label className="label">{t("department")}</label>
-                  <select
-                    name="department"
-                    className="input-field"
-                    value={formData.department[i18n.language] || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="">{t("selectDepartment")}</option>
-                    {departments.map((dep) => {
-                      const depName =
-                        dep.translations?.[i18n.language]?.name ||
-                        dep.translations?.en?.name ||
-                        "Unnamed Dept";
-
-                      return (
-                        <option key={dep.id} value={depName}>
-                          {depName}
-                        </option>
-                      );
-                    })}
-                  </select>
+                  <Select
+                      name="department"
+                      value={departmentOptions.find(
+                        (option) => option.value === formData.department[i18n.language]
+                      )}
+                      onChange={(selectedOption) =>
+                        handleChange({
+                          target: { name: "department", value: selectedOption.value },
+                        })
+                      }
+                      options={departmentOptions}
+                      placeholder={"Select Department"} 
+                      isSearchable={isSearchable}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
                 </div>
 
                 {/* Years of Experience */}
@@ -984,15 +954,50 @@ const AddDoctor = () => {
               </div>
             </div>
 
-            {/* Image Uploader */}
-            <div className="bg-white shadow-sm rounded-lg mt-5">
+             {/* Meta Title */}
+             <div className="bg-white shadow-sm rounded-lg mt-5">
+             <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+                  SEO Configuration
+                </h2>
+              </div>
+            <div className="p-5 grid grid-cols-2 gap-6">
+            <div>
+                  <label className="label">Meta Title</label>
+                  <input
+                    type="text"
+                    name="metaTitle"
+                    className="input-field"
+                    placeholder="Enter Meta Title"
+                    value={formData.metaTitle[i18n.language] || ""}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Meta Description */}
+                <div>
+                  <label className="label">Meta Description</label>
+                  <input
+                    type="text"
+                    name="metaDescription"
+                    className="input-field"
+                    placeholder="Enter Meta Description"
+                    value={formData.metaDescription[i18n.language] || ""}
+                    onChange={handleChange}
+                  />
+                </div>
+            </div>
+             </div>
+
+           {/* Image Uploader */}
+           <div className="bg-white shadow-sm rounded-lg mt-5">
               <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
                 <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
                   Upload Profile Photo
                 </h2>
               </div>
               <div className="p-5">
-                <ImageUploader />
+               <ImageUploader onFileUpload={handleProfilePhotoChange} />
               </div>
             </div>
             {/* Submit & Discard */}

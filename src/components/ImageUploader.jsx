@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { IoCloudUploadOutline } from "react-icons/io5";
 
-const ImageUploader = (props) => {
+const ImageUploader = ({ onFileUpload }) => {
   const [files, setFiles] = useState([]);
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       "image/*": [],
     },
     onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0]; // Take the first file only
       setFiles(
         acceptedFiles.map((file) =>
           Object.assign(file, {
@@ -16,6 +17,7 @@ const ImageUploader = (props) => {
           })
         )
       );
+      onFileUpload(file); // Pass the selected file to the parent
     },
   });
 
