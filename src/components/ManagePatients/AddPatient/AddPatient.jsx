@@ -387,7 +387,8 @@ const AddPatient = () => {
                 </div>
               </div>
             </div>
-
+            
+            {/* Image Uploader */}
             <div className="bg-white shadow-lg rounded-lg">
               <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
                 <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
