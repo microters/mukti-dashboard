@@ -954,7 +954,7 @@ const AddDoctor = ({isSearchable }) => {
               </div>
             </div>
 
-             {/* Meta Title */}
+             {/* SEO Configuration */}
              <div className="bg-white shadow-sm rounded-lg mt-5">
              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
                 <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
@@ -962,7 +962,8 @@ const AddDoctor = ({isSearchable }) => {
                 </h2>
               </div>
             <div className="p-5 grid grid-cols-2 gap-6">
-            <div>
+              {/* Meta Title */}
+                <div>
                   <label className="label">Meta Title</label>
                   <input
                     type="text"

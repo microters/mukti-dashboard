@@ -50,7 +50,16 @@
   "language": "ভাষা",
   "selectLanguage": "ভাষা নির্বাচন করুন",
   "english": "ইংরেজি",
-  "bangla": "বাংলা"
+  "bangla": "বাংলা",
+  "pageName": "পেইজের নাম",
+  "slug": "স্লাগ",
+  "editable": "সম্পাদনাযোগ্য",
+  "metaTitle": "মেটা শিরোনাম",
+  "enterMetaTitle": "মেটা শিরোনাম লিখুন",
+  "metaDescription": "মেটা বিবরণ",
+  "content": "বিষয়বস্তু",
+  "addNewPage": "নতুন পেইজ যোগ করুন",
+  "seoConfiguration": "এসইও কনফিগারেশন"
 }
 
   
