@@ -454,7 +454,7 @@ const AddDoctor = ({isSearchable }) => {
        
         {/* Form */}
         <form onSubmit={handleSubmit}>
-         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <div>
               <div className="bg-white shadow-sm rounded-lg">
                 <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
