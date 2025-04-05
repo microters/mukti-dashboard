@@ -3,8 +3,12 @@ import { TbSortAscending } from "react-icons/tb";
 import { SlCalender } from "react-icons/sl";
 import { TiArrowRight } from "react-icons/ti";
 import { HiDotsVertical } from "react-icons/hi";
-import { MdOutlineKeyboardDoubleArrowDown } from "react-icons/md";
+import {
+  MdOutlineKeyboardDoubleArrowDown,
+  MdOutlineKeyboardDoubleArrowUp,
+} from "react-icons/md";
 import { IoMan } from "react-icons/io5";
+import { FiPlus } from "react-icons/fi";
 import Cards from "../../components/Cards";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -12,6 +16,7 @@ import ApexChart from "../../components/PatientsStatisticsChart";
 import TopDoctorCard from "../../components/TopDoctorCard";
 import drImg from "../../../src/assets/dr-one.jpg";
 import DonutChart from "../../components/DonutChart";
+import Table from "../../components/Shared/Table";
 // import DatePicker from "../../components/DatePicker";
 
 const AdminDashboard = () => {
@@ -143,6 +148,103 @@ const AdminDashboard = () => {
     },
   ];
 
+  // Data for appointments
+  const appointmentData = [
+    {
+      queueNumber: "#29",
+      name: "John Anderson",
+      gender: "Male",
+      age: 38,
+      appointment: "General Checkup",
+      dateTime: "29 Jun, 2024 11:15 AM",
+      assignDr: "Dr. Emily Davis",
+      status: "Completed",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#30",
+      name: "Jane Smith",
+      gender: "Female",
+      age: 45,
+      appointment: "Annual Physical",
+      dateTime: "10 Aug, 2024 09:30 AM",
+      assignDr: "Dr. Alex Johnson",
+      status: "Completed",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#31",
+      name: "Mark Brown",
+      gender: "Male",
+      age: 52,
+      appointment: "Follow-up",
+      dateTime: "11 Aug, 2024 10:00 AM",
+      assignDr: "Dr. Laura Thompson",
+      status: "Canceled",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#32",
+      name: "Lisa White",
+      gender: "Female",
+      age: 34,
+      appointment: "Consultation",
+      dateTime: "12 Aug, 2024 11:45 AM",
+      assignDr: "Dr. Emily Davis",
+      status: "Scheduled",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#33",
+      name: "Tom Clark",
+      gender: "Male",
+      age: 29,
+      appointment: "Dental Checkup",
+      dateTime: "13 Aug, 2024 08:00 AM",
+      assignDr: "Dr. Michael Brown",
+      status: "Completed",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#34",
+      name: "Susan Green",
+      gender: "Female",
+      age: 40,
+      appointment: "Wellness Visit",
+      dateTime: "14 Aug, 2024 10:30 AM",
+      assignDr: "Dr. Sarah Lee",
+      status: "Canceled",
+      actions: ["view"],
+    },
+    {
+      queueNumber: "#35",
+      name: "Robert Walker",
+      gender: "Male",
+      age: 55,
+      appointment: "Eye Exam",
+      dateTime: "15 Aug, 2024 09:00 AM",
+      assignDr: "Dr. Anna Martinez",
+      status: "Completed",
+      actions: ["view"],
+    },
+  ];
+
+  // Column configuration for dynamic rendering (you can change this to be dynamic as well)
+  const columns = [
+    { label: "Queue #", field: "queueNumber" },
+    { label: "Name", field: "name" },
+    { label: "Gender", field: "gender" },
+    { label: "Age", field: "age" },
+    { label: "Appointment", field: "appointment" },
+    { label: "Date / Time", field: "dateTime" },
+    { label: "Assign Dr.", field: "assignDr" },
+    { label: "Status", field: "status" },
+    { 
+      label: "Action", 
+      field: "action", 
+      actions: ["edit"]  // Define which actions you want to show
+    },
+  ];
   return (
     <div className="p-4">
       {/* Top Totle Area */}
@@ -179,7 +281,7 @@ const AdminDashboard = () => {
 
       <div className="grid grid-cols-3 gap-6 mt-4">
         {/* Calender Area */}
-        <div className="bg-white shadow-lg rounded-lg">
+        <div className="bg-white shadow-md rounded-lg">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
               My Calendar
@@ -196,7 +298,7 @@ const AdminDashboard = () => {
           </div>
         </div>
         {/* Patient Chat  */}
-        <div className="bg-white shadow-lg rounded-lg col-span-2">
+        <div className="bg-white shadow-md rounded-lg col-span-2">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
               Patients Statistics{" "}
@@ -246,7 +348,7 @@ const AdminDashboard = () => {
           </div>
         </div>
         {/* Gender Area */}
-        <div className="bg-white shadow-lg rounded-lg ">
+        <div className="bg-white shadow-md rounded-lg ">
           <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
             <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
               Top Doctors
@@ -256,15 +358,58 @@ const AdminDashboard = () => {
             </button>
           </div>
           <div className="p-5">
-              <DonutChart />
-              <div className="grid grid-cols-3 gap-5">
-                <div>
-                  <h5 className="text-M-text-color text-sm font-medium font-inter">Male Patient</h5>
-                  <p className="flex items-center gap-1 text-M-text-color text-base font-medium font-inter"><IoMan className="text-M-primary-color"/> 159.5k</p>
-                  <span className="items-center gap-1 text-sm font-medium font-inter bg-[#FFE9E3] inline-flex px-2 py-[2px] rounded-sm text-[#E7633D]"><MdOutlineKeyboardDoubleArrowDown /> 3.91%</span>
-                </div>
+            <DonutChart />
+            <div className="grid grid-cols-3 gap-5">
+              <div className="text-center">
+                <h5 className="text-M-text-color/70 text-sm font-medium font-inter">
+                  Male Patient
+                </h5>
+                <p className="flex items-center justify-center gap-1 text-M-text-color text-base font-medium font-inter">
+                  <IoMan className="text-M-primary-color" /> 159.5k
+                </p>
+                <span className="items-center gap-1 text-sm font-medium font-inter bg-[#FFE9E3] inline-flex px-2 py-[2px] rounded-sm text-[#E7633D]">
+                  <MdOutlineKeyboardDoubleArrowDown /> 3.91%
+                </span>
               </div>
+              <div className="text-center">
+                <h5 className="text-M-text-color/70 text-sm font-medium font-inter">
+                  Female Patient
+                </h5>
+                <p className="flex items-center justify-center gap-1 text-M-text-color text-base font-medium font-inter">
+                  <IoMan className="text-M-Green-color" /> 159.5k
+                </p>
+                <span className="items-center gap-1 text-sm font-medium font-inter bg-M-Green-color/20 inline-flex px-2 py-[2px] rounded-sm text-M-Green-color">
+                  <MdOutlineKeyboardDoubleArrowUp /> 3.91%
+                </span>
+              </div>
+              <div className="text-center">
+                <h5 className="text-M-text-color/70 text-sm font-medium font-inter">
+                  Child Patient
+                </h5>
+                <p className="flex items-center justify-center gap-1 text-M-text-color text-base font-medium font-inter">
+                  <IoMan className="text-M-primary-color" /> 159.5k
+                </p>
+                <span className="items-center gap-1 text-sm font-medium font-inter bg-M-Green-color/20 inline-flex px-2 py-[2px] rounded-sm text-M-Green-color">
+                  <MdOutlineKeyboardDoubleArrowUp /> 3.91%
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Table Area */}
+      <div className="bg-white shadow-md rounded-lg col-span-2 mt-5">
+        <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+          <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+            All Appointments
+          </h2>
+          <button className="bg-[#783BFF]/80 hover:bg-[#783BFF] text-white text-sm font-medium flex items-center gap-1 mt-4 px-3 py-2 rounded-md transition-all duration-300">
+            Add New <FiPlus />
+          </button>
+        </div>
+        <div className="py-5">
+          <Table columns={columns} tableData={appointmentData} />
         </div>
       </div>
     </div>
