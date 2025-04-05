@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 
-const LanguageSelect = ({ options, onChange, value, isSearchable }) => {
+const DynamicSelect = ({ options, onChange, value, isSearchable }) => {
   return (
     <Select
       options={options}
@@ -34,5 +34,5 @@ const LanguageSelect = ({ options, onChange, value, isSearchable }) => {
   );
 };
 
-export default LanguageSelect;
+export default DynamicSelect;
 

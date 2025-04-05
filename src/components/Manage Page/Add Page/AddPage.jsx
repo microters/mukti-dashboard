@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiSave } from "react-icons/fi";
 import PageHeading from "../../PageHeading";
-import LanguageSelect from "../../LanguageSelect";
+import LanguageSelect from "../../DynamicSelect";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import RichTextEditor from "../../RichTextEditor";
