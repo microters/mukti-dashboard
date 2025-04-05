@@ -50,5 +50,15 @@
   "language": "Language",
   "selectLanguage": "Select Language",
   "english": "English",
-  "bangla": "Bangla"
+  "bangla": "Bangla",
+  "pageName": "Page Name",
+  "slug": "Slug",
+  "editable": "Editable",
+  "metaTitle": "Meta Title",
+  "enterMetaTitle": "Enter Meta Title",
+  "metaDescription": "Meta Description",
+  "content": "Content",
+  "addNewPage": "Add New Page",
+  "basicInformation": "Basic Information",
+  "seoConfiguration": "SEO Configuration"
 }

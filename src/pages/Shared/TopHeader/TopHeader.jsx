@@ -151,24 +151,24 @@ const TopHeader = ({ isSidebarOpen, setIsSidebarOpen, user }) => {
         </Link>
         <Link
           to="/"
-          className=" text-[#6c757d] hover:text-M-primary-color"
+          className=" text-[#6c757d] hover:text-M-primary-color hidden sm:block"
         >
           <TbApps size={22}/>
         </Link>
         <Link
           to="/"
-          className="text-[#6c757d] hover:text-M-primary-color"
+          className="text-[#6c757d] hover:text-M-primary-color hidden sm:block"
         >
           <IoSettingsOutline size={22}/>
         </Link>
         <Link
           to="/"
-          className="text-[#6c757d] hover:text-M-primary-color"
+          className="text-[#6c757d] hover:text-M-primary-color hidden sm:block"
         >
           <MdOutlineDarkMode size={22}/>
         </Link>
 
-        <Link to="https://mukti-frontend.vercel.app/" className="text-gray-600 hover:text-gray-800">
+        <Link to="https://mukti-frontend.vercel.app/" className="text-gray-600 hover:text-gray-800 hidden sm:block">
           <FaHome size={20} />
         </Link>
 

@@ -1,65 +1,43 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { IoCloudUploadOutline } from "react-icons/io5";
+import { IoCloudUploadOutline, IoClose } from "react-icons/io5";
 
-const ImageUploader = (props) => {
+const ImageUploader = ({ onFileUpload }) => {
   const [files, setFiles] = useState([]);
+
   const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "image/*": [],
-    },
+    accept: { "image/*": [] },
     onDrop: (acceptedFiles) => {
-      setFiles(
-        acceptedFiles.map((file) =>
-          Object.assign(file, {
-            preview: URL.createObjectURL(file),
-          })
-        )
-      );
+      const file = acceptedFiles[0];
+      const fileWithPreview = Object.assign(file, {
+        preview: URL.createObjectURL(file),
+      });
+
+      setFiles([fileWithPreview]); // Only one file
+      onFileUpload(file); // Notify parent
     },
   });
 
-  // Function to format the file size in a human-readable format
   const formatFileSize = (size) => {
     if (size < 1024) return `${size} bytes`;
     else if (size < 1048576) return `${(size / 1024).toFixed(1)} KB`;
     else return `${(size / 1048576).toFixed(1)} MB`;
   };
 
-  const thumbs = files.map((file) => (
-    <div
-      className="inline-flex gap-3 items-center border border-gray-300 rounded-md w-full h-auto px-3 py-4"
-      key={file.name}
-    >
-      <div className="flex min-w-0 overflow-hidden">
-        <img
-          src={file.preview}
-          className="block w-14 border border-M-heading-color/10 rounded-md p-1"
-          onLoad={() => {
-            // Revoke data uri after image is loaded to avoid memory leaks
-            URL.revokeObjectURL(file.preview);
-          }}
-          alt={file.name}
-        />
-      </div>
-      <div className="flex flex-col text-left">
-        <span className="text-sm text-M-text-color/60 font-inter font-semibold mb-1 truncate">
-          {file.name}
-        </span>
-        <span className="text-xs text-M-text-color font-inter font-medium">
-          {formatFileSize(file.size)}
-        </span>
-      </div>
-    </div>
-  ));
+  const handleRemove = () => {
+    files.forEach((file) => URL.revokeObjectURL(file.preview));
+    setFiles([]);
+    onFileUpload(null); // Notify parent that image is removed
+  };
 
   useEffect(() => {
-    // Revoke the data URIs to avoid memory leaks when component unmounts
-    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
+    return () => {
+      files.forEach((file) => URL.revokeObjectURL(file.preview));
+    };
   }, [files]);
 
   return (
-    <section className="text-center ">
+    <section className="text-center">
       <div
         {...getRootProps({
           className:
@@ -72,10 +50,45 @@ const ImageUploader = (props) => {
         </h4>
         <input {...getInputProps()} />
         <p className="text-M-text-color text-xs">
-          Drag & drop Your files here, or click to select files
+          Drag & drop your file here, or click to select
         </p>
       </div>
-      <aside className="flex flex-wrap mt-4">{thumbs}</aside>
+
+      {files.length > 0 && (
+        <aside className="flex flex-wrap mt-4">
+          {files.map((file) => (
+            <div
+              className="relative inline-flex gap-3 items-center border border-gray-300 rounded-md w-full h-auto px-3 py-4"
+              key={file.name}
+            >
+              <div className="flex min-w-0 overflow-hidden">
+                <img
+                  src={file.preview}
+                  className="block w-14 border border-M-heading-color/10 rounded-md p-1"
+                  alt={file.name}
+                />
+              </div>
+              <div className="flex flex-col text-left flex-1">
+                <span className="text-sm text-M-text-color/60 font-inter font-semibold mb-1 truncate">
+                  {file.name}
+                </span>
+                <span className="text-xs text-M-text-color font-inter font-medium">
+                  {formatFileSize(file.size)}
+                </span>
+              </div>
+
+              {/* ❌ Remove Button */}
+              <button
+                onClick={handleRemove}
+                className="ml-auto text-red-500 hover:text-red-700"
+                title="Remove image"
+              >
+                <IoClose size={20} />
+              </button>
+            </div>
+          ))}
+        </aside>
+      )}
     </section>
   );
 };

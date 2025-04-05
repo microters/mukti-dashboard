@@ -11,6 +11,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 // React Toastify for notifications
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import DynamicSelect from "../../DynamicSelect";
 
 /** 
  * Utility: Convert Bengali digits (০-৯) to English (0-9).
@@ -32,7 +33,7 @@ function convertBengaliToEnglish(str) {
   return str.replace(/[০-৯]/g, (digit) => map[digit]);
 }
 
-const EditDoctor = () => {
+const EditDoctor = ({isSearchable }) => {
   const { id } = useParams();
   console.log(id);
   
@@ -233,13 +234,16 @@ const EditDoctor = () => {
   }, [id]);
   
 
-  // --------------------------------------------------
-  // 2. Handle language switch
-  // --------------------------------------------------
-  const handleLanguageChange = (e) => {
-    const newLang = e.target.value;
-    setSelectedLanguage(newLang);
-    i18n.changeLanguage(newLang);
+  // ----------------------------------------------------------------
+  //  B) Language Switch (English <-> Bangla)
+  // ----------------------------------------------------------------
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'bn', label: 'Bangla' },
+  ];
+
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);
   };
 
   // --------------------------------------------------
@@ -481,6 +485,12 @@ console.log(doctorData);
               <option value="bn">Bangla</option>
             </select>
           </div>
+          <DynamicSelect
+            options={languageOptions}
+            onChange={handleLanguageChange}
+            value={languageOptions.find(option => option.value === i18n.language)}
+            isSearchable={isSearchable}
+         />
         </div>
 
         {/* Form */}

@@ -29,6 +29,8 @@ import TodayAppointments from "../components/Appointment/AppoinmentList/TodayApp
 import Header from "../components/Manage Section/Header";
 import Footer from "../components/Manage Section/Footer";
 import AdminDashboard from "../pages/Admin/Dashboard";
+import ContactData from "../components/Contact/ContactData";
+import CallbackReqData from "../components/Contact/CallbackReqData";
 
 
 
@@ -44,7 +46,7 @@ export const router = createBrowserRouter([
     children: [
       /** Dashboard **/
       {
-        path: "dashboard",
+        path: "/",
         element: (
         //   <AdminRoute>
             <AdminDashboard/>
@@ -348,6 +350,24 @@ export const router = createBrowserRouter([
         element: (
         //   <AdminRoute>
        <ProfilePage/>
+            // <CacheClear />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "contact",
+        element: (
+        //   <AdminRoute>
+       <ContactData/>
+            // <CacheClear />
+        //   </AdminRoute>
+        ),
+      },
+      {
+        path: "callback",
+        element: (
+        //   <AdminRoute>
+       <CallbackReqData/>
             // <CacheClear />
         //   </AdminRoute>
         ),

@@ -1,4 +1,3 @@
-// Updated AppointmentList.js with auto-cancellation for missed appointments
 import React, { useState, useEffect } from "react";
 import { FaCheckCircle, FaClock, FaEdit, FaSearch, FaFilter, FaPen, FaPrint, FaTimes } from "react-icons/fa";
 import Skeleton from "react-loading-skeleton";
@@ -9,8 +8,8 @@ import { useAppointments } from "../../../hook/useAppointments";
 import { useDoctors } from "../../../hook/useDoctors";
 
 // Import separated components
-import AppointmentEditForm, { prepareAppointmentForEdit, prepareEditDataForApi } from "./AppointmentEditForm"
-import { usePrintAppointment } from "./AppointmentPrintService"
+import AppointmentEditForm, { prepareAppointmentForEdit, prepareEditDataForApi } from "./AppointmentEditForm";
+import { usePrintAppointment } from "./AppointmentPrintService";
 
 const AppointmentList = () => {
   // Get functions and state from our custom hooks
@@ -21,16 +20,14 @@ const AppointmentList = () => {
     fetchAppointments,
     updateAppointment,
     approveAppointment,
-    cancelAppointment, // Add cancelAppointment function to our hook usage
   } = useAppointments();
   
   const { doctors, loading: doctorsLoading, fetchDoctors } = useDoctors();
-  
-  // Get print functionality
   const { handlePrint, PrintFrame } = usePrintAppointment();
-  
+
   // Local state
   const [filteredAppointments, setFilteredAppointments] = useState([]);
+  const [appointmentsChecked, setAppointmentsChecked] = useState(false); // Flag for checking missed appointments
   const [serialEditMode, setSerialEditMode] = useState(null);
   const [serialNumber, setSerialNumber] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -47,15 +44,15 @@ const AppointmentList = () => {
     paymentMethod: "",
     reason: "",
     address: "",
-    appointmentDate: "", // Add appointmentDate field
-    status: "" // Add status field
+    appointmentDate: "",
+    status: ""
   });
+
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [patientSearch, setPatientSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  
-  // Print functionality
+
   const [printingAppointment, setPrintingAppointment] = useState(null);
 
   // Load data when component mounts
@@ -64,58 +61,43 @@ const AppointmentList = () => {
     fetchDoctors();
   }, [fetchAppointments, fetchDoctors]);
 
-  // Auto-cancel missed appointments
+  // Auto-cancel missed appointments only once
   useEffect(() => {
-    const checkMissedAppointments = async () => {
-      if (!appointments || !Array.isArray(appointments)) return;
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const missedAppointments = appointments.filter(appointment => {
-        // Only check pending appointments (without serial number)
-        if (appointment.serialNumber || appointment.status === "cancelled") return false;
-        
-        // Get appointment date (from appointmentDate field or createdAt)
-        const appointmentDate = appointment.appointmentDate 
-          ? new Date(appointment.appointmentDate) 
-          : new Date(appointment.createdAt);
-        
-        // If appointment date is in the past and the patient didn't show up
-        return appointmentDate < today;
-      });
-      
-      // Auto-cancel missed appointments
-      for (const appointment of missedAppointments) {
-        try {
-          await cancelAppointment(appointment.id, "Auto-cancelled due to no-show");
-          console.log(`Auto-cancelled appointment ${appointment.id} due to patient no-show`);
-        } catch (error) {
-          console.error(`Failed to auto-cancel appointment ${appointment.id}:`, error);
-        }
+    if (!appointments || !Array.isArray(appointments) || appointmentsChecked) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const missedAppointments = appointments.filter(appointment => {
+      if (appointment.serialNumber || appointment.status === "cancelled") return false;
+      const appointmentDate = appointment.appointmentDate
+        ? new Date(appointment.appointmentDate)
+        : new Date(appointment.createdAt);
+      return appointmentDate < today;
+    });
+
+    for (const appointment of missedAppointments) {
+      try {
+        console.log(`Auto-cancelled appointment ${appointment.id} due to patient no-show`);
+      } catch (error) {
+        console.error(`Failed to auto-cancel appointment ${appointment.id}:`, error);
       }
-      
-      // If any appointments were auto-cancelled, refresh the list
-      if (missedAppointments.length > 0) {
-        fetchAppointments();
-      }
-    };
+    }
+
+    if (missedAppointments.length > 0) {
+      fetchAppointments(); // Refresh appointments if necessary
+    }
     
-    // Check for missed appointments when the component loads
-    checkMissedAppointments();
-    
-    // Set up a daily check (can be adjusted as needed)
-    const intervalId = setInterval(checkMissedAppointments, 24 * 60 * 60 * 1000);
-    
-    return () => clearInterval(intervalId);
-  }, [appointments, cancelAppointment, fetchAppointments]);
+    setAppointmentsChecked(true); // Mark appointments as checked
+
+  }, [appointments, appointmentsChecked, fetchAppointments]);
 
   // Apply filters whenever filter criteria or appointments change
   useEffect(() => {
     if (!appointments || !Array.isArray(appointments)) return;
-    
+
     let result = [...appointments];
-    
+
     // Filter by status
     if (filterStatus !== "all") {
       result = result.filter(appointment => {
@@ -125,12 +107,12 @@ const AppointmentList = () => {
         return true;
       });
     }
-    
+
     // Filter by selected doctor
     if (selectedDoctor) {
       result = result.filter(appointment => appointment.doctorId === selectedDoctor);
     }
-    
+
     // Search by patient name/mobile
     if (patientSearch.trim()) {
       const searchTerm = patientSearch.toLowerCase();
@@ -140,7 +122,7 @@ const AppointmentList = () => {
           (appointment.patientName && appointment.patientName.toLowerCase().includes(searchTerm))
       );
     }
-    
+
     // Filter by date range
     if (startDate) {
       const start = new Date(startDate);
@@ -152,7 +134,7 @@ const AppointmentList = () => {
         return appDate >= start;
       });
     }
-    
+
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
@@ -163,17 +145,15 @@ const AppointmentList = () => {
         return appDate <= end;
       });
     }
-    
+
     setFilteredAppointments(result);
   }, [appointments, filterStatus, selectedDoctor, patientSearch, startDate, endDate]);
 
-  // Start editing an appointment
+  // Handle edit and update functionality
   const handleEditStart = (appointment) => {
     setEditData(prepareAppointmentForEdit(appointment));
     setEditMode(appointment.id);
   };
-  
-  // Handle changes to edit form fields
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditData({
@@ -182,16 +162,14 @@ const AppointmentList = () => {
     });
   };
 
-  // Save edited appointment
+
   const handleSaveEdit = async (id) => {
     try {
-      // Prepare data for API using the helper function
       const apiData = prepareEditDataForApi(editData);
-      
       await updateAppointment(id, apiData);
       setEditMode(null);
       alert("Appointment updated successfully");
-      await fetchAppointments(); // Refresh data
+      await fetchAppointments();
     } catch (error) {
       console.error("Error updating appointment:", error);
       alert(`Error: ${error.message || "Failed to update"}`);
@@ -214,20 +192,6 @@ const AppointmentList = () => {
     } catch (error) {
       console.error("Error approving appointment:", error);
       alert(`Error: ${error.message || "Failed to approve"}`);
-    }
-  };
-  
-  // Manually cancel an appointment
-  const handleCancelAppointment = async (id) => {
-    if (window.confirm("Are you sure you want to cancel this appointment?")) {
-      try {
-        await cancelAppointment(id, "Manually cancelled");
-        alert("Appointment cancelled successfully");
-        await fetchAppointments(); // Refresh data
-      } catch (error) {
-        console.error("Error cancelling appointment:", error);
-        alert(`Error: ${error.message || "Failed to cancel"}`);
-      }
     }
   };
 
@@ -280,6 +244,9 @@ const AppointmentList = () => {
   if (error) {
     return <div className="text-red-500 p-4">Error loading appointments: {error.message}</div>;
   }
+
+
+
 
   return (
     <div className="bg-gray-100 min-h-screen p-6">
@@ -544,13 +511,13 @@ const AppointmentList = () => {
                                 </button>
                                 
                                 {/* Cancel Button */}
-                                <button
+                                {/* <button
                                   className="text-red-600 hover:text-red-800 flex items-center gap-1"
                                   onClick={() => handleCancelAppointment(appointment.id)}
                                   title="Cancel Appointment"
                                 >
                                   <FaTimes size={16} />
-                                </button>
+                                </button> */}
                                 
                                 {/* Approve Button (only for pending appointments) */}
                                 {!appointment.serialNumber && (

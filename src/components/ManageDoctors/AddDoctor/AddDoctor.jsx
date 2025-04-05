@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaEdit, FaPlus, FaTrash, FaUserMd } from "react-icons/fa";
-import Select from 'react-select';
+import { FaPlus, FaTrash} from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { toast, ToastContainer } from "react-toastify";
-import slugify from "slugify"; // ✅ Import slugify for generating slugs
+import slugify from "slugify";
 import ImageUploader from "../../ImageUploader";
 import PageHeading from "../../PageHeading";
+import DynamicSelect from "../../DynamicSelect";
 // Example utility: Convert Bengali digits (০-৯) to English (0-9)
 function convertBengaliToEnglish(str = "") {
   const map = {
@@ -25,7 +25,7 @@ function convertBengaliToEnglish(str = "") {
   return str.replace(/[০-৯]/g, (digit) => map[digit]);
 }
 
-const AddDoctor = () => {
+const AddDoctor = ({isSearchable }) => {
   const { t, i18n } = useTranslation(["addDoctor"]);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +34,7 @@ const AddDoctor = () => {
   // -----------------------------
   const [profilePhoto, setProfilePhoto] = useState("https://placehold.co/100");
   const [selectedFile, setSelectedFile] = useState(null);
+
 
   // -----------------------------
   // 2) Department list from API
@@ -50,6 +51,7 @@ const AddDoctor = () => {
     name: { en: "", bn: "" },
     slug: "",
     email: "",
+    icon: "",
     profilePhoto: "",
     contactNumber: { en: "", bn: "" },
     contactNumberSerial: { en: "", bn: "" },
@@ -74,6 +76,7 @@ const AddDoctor = () => {
   const [treatments, setTreatments] = useState([{ name: "" }]);
   const [conditions, setConditions] = useState([{ name: "" }]);
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
+  const [previewURL, setPreviewURL] = useState(null);
 
   // ----------------------------------------------------------------
   //  A) Fetch departments list from backend whenever language changes
@@ -105,14 +108,14 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   //  B) Language Switch (English <-> Bangla)
   // ----------------------------------------------------------------
-  const handleLanguageChange = (selectedOption) => {
-    i18n.changeLanguage(selectedOption.value);  // Update language based on selected value
-  };
-
   const languageOptions = [
     { value: 'en', label: 'English' },
-    { value: 'bn', label: 'Bangla' }
+    { value: 'bn', label: 'Bangla' },
   ];
+
+  const handleLanguageChange = (selectedOption) => {
+    i18n.changeLanguage(selectedOption.value);
+  };
 
   useEffect(() => {
     if (formData.name.en) {
@@ -139,7 +142,6 @@ const AddDoctor = () => {
   // ----------------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // If field is multi-language object, update the current language only
     if (formData[name] && typeof formData[name] === "object") {
       setFormData((prev) => ({
         ...prev,
@@ -149,7 +151,6 @@ const AddDoctor = () => {
         },
       }));
     } else {
-      // Single-language
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -157,18 +158,34 @@ const AddDoctor = () => {
     }
   };
 
-  // ----------------------------------------------------------------
-  //  D) Profile photo
-  // ----------------------------------------------------------------
+   // Gender select
+   const genderOptions = [
+    { value: "male", label: t("male") },
+    { value: "female", label: t("female") },
+    { value: "other", label: t("other") },
+  ];
 
-  const handleProfilePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const fileURL = URL.createObjectURL(file);
-      setProfilePhoto(fileURL);
-      setSelectedFile(file);
-    }
-  };
+  // Day Select
+  const dayOptions = [
+    { value: "Monday", label: "Monday" },
+    { value: "Tuesday", label: "Tuesday" },
+    { value: "Wednesday", label: "Wednesday" },
+    { value: "Thursday", label: "Thursday" },
+    { value: "Friday", label: "Friday" },
+    { value: "Saturday", label: "Saturday" },
+    { value: "Sunday", label: "Sunday" },
+  ];
+  
+
+  // Department select
+  const departmentOptions = departments.map((dep) => {
+    const depName =
+      dep.translations?.[i18n.language]?.name ||
+      dep.translations?.en?.name ||
+      "Unnamed Dept";
+
+    return { value: depName, label: depName };
+  });
 
   // ----------------------------------------------------------------
   //  E) Dynamic Fields (memberships, awards, treatments, conditions)
@@ -194,7 +211,7 @@ const AddDoctor = () => {
 
   // Schedules
   const handleAddSchedule = () => {
-    setSchedules((prev) => [...prev, { day: "", startTime: "", endTime: "" }]);
+    setSchedules((prev) => [...prev, { day: "", startTime: "09:00", endTime: "17:00" }]);
   };
   const handleRemoveSchedule = (index) => {
     setSchedules((prev) => prev.filter((_, i) => i !== index));
@@ -218,6 +235,34 @@ const AddDoctor = () => {
   };
   const handleRemoveFaq = (index) => {
     setFaqs((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleImageUpload = (file) => {
+    // Clear any previous preview
+    if (previewURL) {
+      URL.revokeObjectURL(previewURL);
+      setPreviewURL(null);
+    }
+
+    if (file instanceof File) {
+      const fileURL = URL.createObjectURL(file);
+      setProfilePhoto(fileURL);
+      setPreviewURL(fileURL);
+      setSelectedFile(file);
+
+      setFormData((prev) => ({
+        ...prev,
+        icon: fileURL, // for preview purposes
+      }));
+    } else {
+      // When file is null (❌ clicked)
+      setProfilePhoto("https://placehold.co/100");
+      setSelectedFile(null);
+      setFormData((prev) => ({
+        ...prev,
+        icon: "",
+      }));
+    }
   };
 
   // ----------------------------------------------------------------
@@ -259,13 +304,13 @@ const AddDoctor = () => {
       formData.avgConsultationTime.bn || ""
     );
 
-    // 1. Create FormData object
-    const formDataToSend = new FormData();
+   // 1. Create FormData object
+   const formDataToSend = new FormData();
 
-    // 2. Append icon if selected
-    if (selectedFile) {
-      formDataToSend.append("profilePhoto", selectedFile); // Sending `profilePhoto` key but it will be stored as `icon` in backend
-    }
+   // 2. Append icon if selected
+   if (selectedFile) {
+     formDataToSend.append("profilePhoto", selectedFile); // Sending `profilePhoto` key but it will be stored as `icon` in backend
+   }
 
     // 3. Append other form data
     formDataToSend.append(
@@ -369,6 +414,10 @@ const AddDoctor = () => {
       patientAttended: { en: "", bn: "" },
       avgConsultationTime: { en: "", bn: "" },
     });
+    if (previewURL) {
+      URL.revokeObjectURL(previewURL);
+      setPreviewURL(null);
+    }
     setProfilePhoto("https://placehold.co/100");
     setSelectedFile(null);
     setSchedules([]);
@@ -393,33 +442,11 @@ const AddDoctor = () => {
       <PageHeading title="Add New Doctor" breadcrumbs={breadcrumbs} />
        {/* Language switcher */}
        <div className="mb-4 flex justify-end">
-       <Select
+       <DynamicSelect
           options={languageOptions}
           onChange={handleLanguageChange}
           value={languageOptions.find(option => option.value === i18n.language)}
-          className="react-select-container"
-          classNamePrefix="react-select"
-          isSearchable={false}
-          styles={{
-            control: (provided) => ({
-              ...provided,
-              borderColor: '#e2e8f0',
-              fontSize: '14px',
-              backgroundColor: '#f7fafc',
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              fontSize: '14px',
-              backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#ebf8ff' : 'transparent',
-              color: state.isSelected ? '#ffffff' : '#2d3748',
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: '#ffffff',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              padding: "0px"
-            }),
-          }}
+          isSearchable={isSearchable}
       />
           </div>
       <div className="min-h-screen">
@@ -427,7 +454,7 @@ const AddDoctor = () => {
        
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-6 items-start">
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <div>
               <div className="bg-white shadow-sm rounded-lg">
                 <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
@@ -436,32 +463,6 @@ const AddDoctor = () => {
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
-                  {/* Meta Title */}
-                <div>
-                  <label className="label">Meta Title</label>
-                  <input
-                    type="text"
-                    name="metaTitle"
-                    className="input-field"
-                    placeholder="Enter Meta Title"
-                    value={formData.metaTitle[i18n.language] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {/* Meta Description */}
-                <div>
-                  <label className="label">Meta Description</label>
-                  <input
-                    type="text"
-                    name="metaDescription"
-                    className="input-field"
-                    placeholder="Enter Meta Description"
-                    value={formData.metaDescription[i18n.language] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
-
                 {/* Doctor Name */}
                 <div>
                   <label className="label">{t("doctorName")}</label>
@@ -546,45 +547,46 @@ const AddDoctor = () => {
                   />
                 </div>
 
-                {/* Gender (Dropdown) */}
+                {/* Gender */}
                 <div>
                   <label className="label">{t("gender")}</label>
-                  <select
-                    name="gender"
-                    className="input-field"
-                    value={formData.gender[i18n.language] || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="">{t("selectGender")}</option>
-                    <option value={t("male")}>{t("male")}</option>
-                    <option value={t("female")}>{t("female")}</option>
-                    <option value={t("other")}>{t("other")}</option>
-                  </select>
+                  <DynamicSelect
+                      name="gender"
+                      value={genderOptions.find(
+                        (option) => option.value === formData.gender[i18n.language]
+                      )}
+                      onChange={(selectedOption) =>
+                        handleChange({
+                          target: { name: "gender", value: selectedOption.value },
+                        })
+                      }
+                      options={genderOptions}
+                      placeholder={"Select Gender"} 
+                      isSearchable={isSearchable}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
                 </div>
 
                 {/* Department */}
                 <div>
                   <label className="label">{t("department")}</label>
-                  <select
-                    name="department"
-                    className="input-field"
-                    value={formData.department[i18n.language] || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="">{t("selectDepartment")}</option>
-                    {departments.map((dep) => {
-                      const depName =
-                        dep.translations?.[i18n.language]?.name ||
-                        dep.translations?.en?.name ||
-                        "Unnamed Dept";
-
-                      return (
-                        <option key={dep.id} value={depName}>
-                          {depName}
-                        </option>
-                      );
-                    })}
-                  </select>
+                  <DynamicSelect
+                      name="department"
+                      value={departmentOptions.find(
+                        (option) => option.value === formData.department[i18n.language]
+                      )}
+                      onChange={(selectedOption) =>
+                        handleChange({
+                          target: { name: "department", value: selectedOption.value },
+                        })
+                      }
+                      options={departmentOptions}
+                      placeholder={"Select Department"} 
+                      isSearchable={isSearchable}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
                 </div>
 
                 {/* Years of Experience */}
@@ -723,22 +725,6 @@ const AddDoctor = () => {
               </div>
             </div>
           </div>
-
-          {/* Profile Photo */}
-          {/* <div className="mt-6 flex flex-col">
-              <div className="relative w-24 h-24">
-              <img
-    src={formData.icon || "https://placehold.co/100"}  // Ensure 'icon' field is used
-    alt="Profile"
-    className="rounded-full border shadow-md"
-  />
-
-                <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer">
-                  <FaEdit />
-                  <input type="file" className="hidden" onChange={handleProfilePhotoChange} />
-                </label>
-              </div>
-            </div> */}
           <div>
             {/* Treatments List */}
             <div className="bg-white shadow-sm rounded-lg">
@@ -923,92 +909,143 @@ const AddDoctor = () => {
 
             {/* Schedules */}
             <div className="bg-white shadow-sm rounded-lg mt-5">
-              <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+  <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
+    <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
+      Schedule for Appointment
+    </h2>
+  </div>
+
+  <div className="p-5">
+    {/* Header Labels */}
+    {schedules.length > 0 && (
+      <div className="hidden md:grid md:grid-cols-[1fr_1fr_1fr_20px] gap-4 mb-2 text-sm font-medium text-gray-600">
+        <div>Day</div>
+        <div>From Time</div>
+        <div>To Time</div>
+        <div></div>
+      </div>
+    )}
+
+    {schedules.map((sch, index) => (
+      <div
+        key={index}
+        className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_20px] gap-4 items-center mb-4"
+      >
+        {/* Day select */}
+        <DynamicSelect
+          options={dayOptions}
+          value={dayOptions.find((opt) => opt.value === sch.day)}
+          onChange={(selectedOption) =>
+            handleScheduleChange(index, "day", selectedOption?.value || "")
+          }
+          isSearchable={false}
+        />
+
+        {/* From time */}
+        <input
+          type="time"
+          value={sch.startTime}
+          onChange={(e) =>
+            handleScheduleChange(index, "startTime", e.target.value)
+          }
+          className="p-2 border rounded-md w-full bg-gray-50 text-sm"
+        />
+
+        {/* To time */}
+        <input
+          type="time"
+          value={sch.endTime}
+          onChange={(e) =>
+            handleScheduleChange(index, "endTime", e.target.value)
+          }
+          className="p-2 border rounded-md w-full bg-gray-50 text-sm"
+        />
+
+        {/* Remove */}
+        <button
+          type="button"
+          onClick={() => handleRemoveSchedule(index)}
+          className="text-red-500 hover:text-red-700 grid-cols-[50px]"
+          title="Remove"
+        >
+          <FaTrash />
+        </button>
+      </div>
+    ))}
+
+    {/* Add Schedule Button */}
+    <button
+      type="button"
+      onClick={handleAddSchedule}
+      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm mt-4"
+    >
+      <FaPlus /> Add Schedule
+    </button>
+  </div>
+            </div>
+             {/* SEO Configuration */}
+             <div className="bg-white shadow-sm rounded-lg mt-5">
+             <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
                 <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
-                  Schedule for Appointment
+                  SEO Configuration
                 </h2>
               </div>
-              <div className="p-5">
-                {schedules.map((sch, index) => (
-                  <div key={index} className="flex items-center gap-3 mt-2">
-                    <select
-                      value={sch.day}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "day", e.target.value)
-                      }
-                      className="p-2 border rounded-md"
-                    >
-                      <option value="">Select Day</option>
-                      <option value="Monday">Monday</option>
-                      <option value="Tuesday">Tuesday</option>
-                      <option value="Wednesday">Wednesday</option>
-                      <option value="Thursday">Thursday</option>
-                      <option value="Friday">Friday</option>
-                      <option value="Saturday">Saturday</option>
-                      <option value="Sunday">Sunday</option>
-                    </select>
+            <div className="p-5 grid grid-cols-2 gap-6">
+              {/* Meta Title */}
+                <div>
+                  <label className="label">Meta Title</label>
+                  <input
+                    type="text"
+                    name="metaTitle"
+                    className="input-field"
+                    placeholder="Enter Meta Title"
+                    value={formData.metaTitle[i18n.language] || ""}
+                    onChange={handleChange}
+                  />
+                </div>
 
-                    <input
-                      type="time"
-                      value={sch.startTime}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "startTime", e.target.value)
-                      }
-                      className="p-2 border rounded-md"
-                    />
-                    <input
-                      type="time"
-                      value={sch.endTime}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "endTime", e.target.value)
-                      }
-                      className="p-2 border rounded-md"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSchedule(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddSchedule}
-                  className="add-button"
-                >
-                  <FaPlus /> Add Schedule
-                </button>
-              </div>
+                {/* Meta Description */}
+                <div>
+                  <label className="label">Meta Description</label>
+                  <input
+                    type="text"
+                    name="metaDescription"
+                    className="input-field"
+                    placeholder="Enter Meta Description"
+                    value={formData.metaDescription[i18n.language] || ""}
+                    onChange={handleChange}
+                  />
+                </div>
             </div>
+             </div>
 
-            {/* Image Uploader */}
-            <div className="bg-white shadow-sm rounded-lg mt-5">
+           {/* Image Uploader */}
+           <div className="bg-white shadow-sm rounded-lg mt-5">
               <div className="flex items-center justify-between border-b border-dashed border-M-text-color/50 p-4">
                 <h2 className="text-base font-medium text-gray-700 flex items-center gap-2">
                   Upload Profile Photo
                 </h2>
               </div>
               <div className="p-5">
-                <ImageUploader />
+               <ImageUploader onFileUpload={handleImageUpload} />
               </div>
             </div>
             {/* Submit & Discard */}
             <div className="mt-6 flex gap-4 justify-end">
               <button
                 type="submit"
-                className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition"
+                className="bg-M-primary-color/90 text-sm text-white py-2 px-6 rounded-md hover:bg-M-primary-color transition-all duration-200"
+                disabled={loading}
               >
-                Submit
+                  {loading ? "adding..." : "Add Doctor"}
               </button>
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="bg-gray-400 text-white py-2 px-6 rounded-md hover:bg-gray-500 transition"
+                className="bg-[#E7633D]/90 text-sm text-white py-2 px-6 rounded-md hover:bg-[#E7633D] transition-all duration-300"
+                disabled={loading}
               >
-                Discard
+                Cancel
               </button>
             </div>
           </div>

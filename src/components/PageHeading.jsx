@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const PageHeading = ({ title, breadcrumbs }) => {
   return (
-    <div className='flex items-center justify-between gap-9 mb-5 mt-1'>
+    <div className='block sm:flex items-center justify-between gap-9 mb-5 mt-1'>
       <h2 className='font-inter font-semibold text-lg text-[#4C4D5D]'>{title}</h2>
       <ul className='flex items-center gap-5'>
         {breadcrumbs.map((breadcrumb, index) => (
